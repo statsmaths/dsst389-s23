@@ -1,0 +1,23 @@
+{
+	"item": "Apple",
+	"liked_by": ["Adam", "Eve", "Heracles"],
+	"nutrition": {
+		"vitamin_a": 1,
+		"vitamin_c": 8,
+		"iron": 0.26
+	},
+	"colors": ["red", "yellow", "green"],
+	"cultivars": [{
+			"name": "Fuji",
+			"source": "Japan"
+		},
+		{
+			"name": "Gala",
+			"source": "New Zealand"
+		},
+		{
+			"name": "Cripps Pink",
+			"source": "Australia"
+		}
+	]
+}

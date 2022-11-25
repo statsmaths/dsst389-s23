@@ -1,0 +1,151 @@
+---
+title: "Notebook 06"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+## Getting Started
+
+Before running this notebook, select "Session > Restart R and Clear Output" in
+the menu above to start a new R session. You may also have to hit the broom in
+the upper right-hand corner of the window. This will clear any old data sets and
+give us a blank slate to start with.
+
+After starting a new session, run the following code chunk to load the
+libraries and data that we will be working with today.
+
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+```
+
+I have set the options `message=FALSE` and `echo=FALSE` to avoid cluttering
+your solutions with all the output from this code.
+
+## Reading the Data
+
+Today we are going to look at a dataset of short texts taken from a set of 5
+British authors:
+
+```{r, message = FALSE}
+docs <- read_csv("../data/stylo_uk.csv")
+anno <- read_csv("../data/stylo_uk_token.csv.gz")
+```
+
+The prediction task is to determine the identity of the author based on the
+text.
+
+## Questions
+
+### Baseline Elastic Net
+
+Start by fitting an elastic net model with all of the default parameters. We
+will need this several different times, so save the model with a unique name
+such as `model_enet`:
+
+```{r, question-01}
+
+```
+
+Compute the error rate of the elastic net model:
+
+```{r, question-02}
+
+```
+
+### Baseline Gradient Boosted Trees
+
+Now, fit a gradient boosted tree model using the default parameters:
+
+```{r, question-03}
+
+```
+
+Compute the error rate of this model:
+
+```{r, question-04}
+
+```
+
+Note that this model is not particularly good. The problem is that we need
+a significantly larger set of trees. Create a new gradient boosted tree model
+using 1000 trees:
+
+```{r, question-05}
+
+```
+
+Compute the error rate now:
+
+```{r, question-06}
+
+```
+
+How does the error rate compare to the elastic net model? Make sure to look at
+both the training and validation results.
+
+### Variable Importance
+
+Now, look at the coefficients for the elastic net model. There are a lot, so
+you may want to limit the lambda number to something around 30.
+
+```{r, question-07}
+
+```
+
+And, for comparison, look at the importance scores for the gradient boosted
+trees:
+
+```{r, question-08}
+
+```
+
+How do the two lists compare to one another? Is there a lot of overlap? Is there
+any  particular pattern to the differences?
+
+### Comparison of POS grams
+
+Finally, fit an elastic net model using the variable "xpos" to create the
+features. [Note: Not the n-grams; the tags themselves].
+
+```{r, question-09}
+
+```
+
+Compute the error rate for the elastic net model:
+
+```{r, question-10}
+
+```
+
+And look at the strongest coefficients:
+
+```{r, question-11}
+
+```
+
+Now, fit a gradient boosted tree model using the variable "xpos" to create the
+features. Use 1000 trees and set eta equal to 0.2 and use 300 trees.
+
+```{r, question-12}
+
+```
+
+Compute the error rate of the gbm model and compate to the elastic net model
+above. You should see that this model work better. Any idea why the trees are
+better at this model?
+
+```{r, question-13}
+
+```
+
+As a last step, look at the most important variables from the GBM model.
+
+```{r, question-14}
+
+```
+
+How do the top terms compare to the elastic net model?

@@ -1,0 +1,111 @@
+---
+title: "Notebook 09"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+## Getting Started
+
+Before running this notebook, select "Session > Restart R and Clear Output" in
+the menu above to start a new R session. You may also have to hit the broom in
+the upper right-hand corner of the window. This will clear any old data sets and
+give us a blank slate to start with.
+
+After starting a new session, run the following code chunk to load the
+libraries and data that we will be working with today.
+
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+```
+
+I have set the options `message=FALSE` and `echo=FALSE` to avoid cluttering
+your solutions with all the output from this code.
+
+## Reading the Data
+
+Today we are going to look at a subset of a well-known text analysis corpus
+call NewsGroups-20. It's an old set of mailing list archives from 20 different
+categories.
+
+```{r, message = FALSE}
+docs <- read_csv("../data/newsgroups.csv.bz2")
+anno <- read_csv("../data/newsgroups_token.csv.bz2")
+```
+
+## Questions
+
+### Supervised Learning
+
+Build an elastic net model to determine the category of the newsgroup messages:
+
+```{r, question-01}
+
+```
+
+Produce a confusion matrix for the messages. Take note of any commonly confused
+categories:
+
+```{r, question-02}
+
+```
+
+Look at the positive coefficients from the model; perhaps use `lambda_num = 30`.
+Do the terms seem to correspond to the categories in an expected way?
+
+```{r, question-03}
+
+```
+
+Now, use the G-score metrics to find the terms that are most associated with
+each category. Again, do these seem to match your intuition?
+
+```{r, question-04}
+
+```
+
+### Unsupervised Learning
+
+Let's move on to new material. Compute the first two principal components of
+the categories. Remember to set the document variable to "label".
+
+```{r, question-05}
+
+```
+
+Plot (in R) the first two principal components of the categories. Try to find
+some of the document pairs in the PCA plot.
+
+```{r, question-06}
+
+```
+
+Now, produce a corresponding UMAP plot. Is this easier or more difficult to
+interpret?
+
+```{r, question-07}
+
+```
+
+Next, produce the principal components for the messages themselves. Save the
+results as a JSON file and go to the link below to visualise the results. Color
+the points based on the labels.
+
+- https://statsmaths.github.io/text-embed-explo/build/
+
+```{r, question-08}
+
+```
+
+Repeat the last question for the UMAP parameters. Did you find any interesting
+clusters of documents?
+
+```{r, question-09}
+
+```
+
+Make sure to not rush through this step; take a couple minutes to pan around
+in the embedding space.

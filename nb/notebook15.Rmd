@@ -1,0 +1,117 @@
+---
+title: "Notebook 15"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "note-style.css"
+---
+
+## Getting Started
+
+Before running this notebook, select "Session > Restart R and Clear Output" in
+the menu above to start a new R session. This will clear any old data sets and
+give us a blank slate to start with.
+
+After starting a new session, run the following code chunk to load the
+libraries and data that we will be working with today.
+
+```{r, include=FALSE, message=FALSE}
+source("start.R")
+source("cache.R")
+```
+
+Today's questions are more open-ended than in some of the previous notebooks.
+
+### Time API
+
+Let's come back to the largest cities data. This data contains a code for the
+latitude and longitude of each of the 81 cities:
+
+```{r}
+cities <- read_csv(file.path("data", "largest_cities.csv"))
+cities
+```
+
+The time API we saw today has an API endpoint for looking up the time zone of
+a particular longitude and latitude. The URL has the following elements:
+
+  protocol:            https
+  authority:           www.timeapi.io
+  path:                /api/Time/current/coordinate 
+  query parameters:    longitude and latitude
+  
+Use this information and the techniques we learned today to build a data set 
+with one row for each city in `cities` and six columns: the city name, the
+longitude, the latitude, the name of the timezone, the current datetime, and
+the current hour.
+
+```{r, question-01}
+
+```
+
+Now, use the data to show a visualization of the current hours of the day in 
+different world cities:
+
+```{r, question-02}
+
+```
+
+### XKCD
+
+As a second task for today, let's create a data set from the API for the popular
+web comic XKCD. The API has a slightly different structure because the
+information about the kind of data we want to grab is stored in the path rather
+than the query parameters. To get the URL for the 10th comic from XKCD, for
+example, we need this code:
+
+```{r}
+i <- 10
+url_str <- modify_url(sprintf("https://xkcd.com/%d/info.0.json", i))
+```
+
+In the following code, create a data set with all of the metadata for the first
+25 XKCD comics. Make sure to grab all of the fields in the data. 
+
+```{r, question-03}
+
+```
+
+Note that it should be trivial to adjust your code to get all of the comics as
+long as you know the number of the most recent comic. We are stopping at 25 
+to reduce our load on their servers and also to avoid a long run time in class.
+
+### Qu'ran Cycle
+
+Return to the API we used in notebook14 to grab the text from the Qu'ran. 
+Create a data set that has one row for each ayah (verse) from the first 10 
+surah (chapters). The data only needs three columns: an id for the surah, an
+id for the ayah, and a column containing the actual text. You'll need to use a
+similar technique to the XKCD example above.
+
+```{r}
+n <- 10
+output <- vector("list", length = n)
+
+for (i in seq_len(n))
+{
+  url_str <- modify_url(sprintf("http://api.alquran.cloud/v1/surah/%d/en.asad", i))
+  res <- http_cache_get(url_str, cache_dir = "cache")
+  
+  stop_for_status(res)
+
+  obj <- content(res, type = "application/json")
+  output[[i]] <- tibble(
+    surah = obj$data$number,
+    ayah = map_int(obj$data$ayahs, ~ .x$number),
+    text = map_chr(obj$data$ayahs, ~ .x$text)
+  )
+}
+
+output <- bind_rows(output)
+output
+```
+
+We will use a version of this data set in the next class.
+
+

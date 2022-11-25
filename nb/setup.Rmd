@@ -1,0 +1,25 @@
+---
+title: "Setup"
+author: "Taylor Arnold"
+---
+
+## Setup
+
+This notebook installs all of the packaged needed for the other notebooks.
+Click the two green play buttons to start the installation.
+
+```{r}
+install.packages(
+  pkgs = c(
+    "tidyverse", "ggrepel", "jsonlite", "lubridate", "readxl", "rnaturalearth",
+    "sf", "xml2", "lwgeom", "RcppRoll", "remotes", "knitr", "rmarkdown"
+  ),
+  quiet = TRUE,
+  dependencies = TRUE,
+  type = "binary"
+)
+```
+
+There may be some red text that prints out, but you should not need to worry
+unless the screen says the word "Error".
+

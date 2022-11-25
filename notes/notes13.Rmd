@@ -1,0 +1,448 @@
+---
+title: "13. APIs and JSON"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "note-style.css"
+---
+
+```{r, include=FALSE, message =FALSE}
+source("../funs/funs.R")
+options(dsst.traceit = FALSE)
+
+knitr::opts_chunk$set(eval=TRUE)
+```
+
+# JSON
+
+## Format
+
+JSON (JavaScript Object Notation) is a popular format for storing data.
+While, as its name suggests, it was designed for use in a particular
+programming language (JavaScript), methods for importing JSON are
+available in almost all programming languages, including R. Because of
+the importance of JavaScript in web development, JSON is a particularly
+popular format for providing data that is either provided by a web
+interface or is designed to be displayed through a browser-based
+visualization.
+
+There would be no need for an entire chapter on the process of JSON
+files if it was just an alternative data format that could be read into
+R with an appropriate package. Unfortunately, there is often more work
+required in order to work with JSON data. First, unlike CSV files,
+data stored in a JSON format may not (and often is not) be rectangular.
+This requires understanding the internal structures used to store JSON
+data and learning how to use R to turn these structures into tables.
+This is not something that can automated because there are often
+different approaches depending on the meaning of the data and underlying
+research questions. Secondly, data provided in JSON format is often
+given through a web-based API. Typically this requires requesting small
+chunks of a dataset and writing code to put them together. In this
+chapter we will cover both of these complications by drawing on the
+base R and string manipulation skills covered in the previous chapters.
+
+As a starting place, it is useful to see an example of a typical JSON
+file. Here is a small file that contains information about an Apple,
+such as some nutritional information, common colors, cultivars, and
+a set of mythical people who have been traditionally associated with
+apples.
+
+```
+{
+	"item": "Apple",
+	"liked_by": ["Adam", "Eve", "Heracles"],
+	"nutrition": {
+		"vitamin_a": 1,
+		"vitamin_c": 8,
+		"iron": 0.26
+	},
+	"colors": ["red", "yellow", "green"],
+	"cultivars": [
+		{
+			"name": "Fuji",
+			"source": "Japan"
+		},
+		{
+			"name": "Gala",
+			"source": "New Zealand"
+		},
+		{
+			"name": "Cripps Pink",
+			"source": "Australia"
+		}
+	]
+}
+```
+
+JSON data can be created out of four basic types:
+
+- scalar values: a number, a string, true, false, or null
+- ordered array
+- a set of name-value pairs
+
+Ordered arrays are contained in square brackets and sets of
+name value pairs are stored inside of curly braces. The names
+are contained in double quotes, followed by a colon. All other
+strings are also contained in quotes. The arrays and
+sets can themseleves contain scalar values, ordered arrays, and
+name-valued pairs. In this way, JSON data can contain a limitless
+set of heirarchical relationships.
+
+Notice that the JSON file described above is organized with nice
+spacing in order to see the heirarchical structure of the file.
+However, this does not effect the way data are interpretted within
+the file. Often, for space reasons, all of the organizing whitespace
+is ignored and a JSON file is stored in a *minified* format. For
+example, the following:
+
+```{r, echo=FALSE}
+mini  <- '{"item":"Apple","liked_by":["Adam","Eve","Heracles"],"nutrition":{"vitamin_a":1,"vitamin_c":8,"iron":0.26},"colors":["red","yellow","green"],"cultivars":[{"name":"Fuji","source":"Japan"},{"name":"Gala","source":"New Zealand"},{"name":"Cripps Pink","source":"Australia"}]}'
+
+cat(stri_wrap(mini, width = 70), sep="\n")
+```
+
+Would be parsed exactly the same as the more aesthetically pleasing
+format shown above.
+
+## Reading JSON
+
+Reading a JSON file into R is relatively easy using the functions provided
+by the **jsonlite** package. Assuming we have a file "apple.json" in our
+data directory, the package's function `read_json` can be used to read in
+the file without an additional setup.
+
+```{r, message=FALSE, warning=FALSE}
+library(jsonlite)
+
+obj <- read_json("../data/apple.json")
+```
+
+However, because there is not clear way to create a rectangular dataset from
+the JSON file, the package has loaded the JSON data into an R list object.
+
+```{r}
+class(obj)
+```
+
+This list, in turn, contains elements that contain sublists, that can then
+contain their own sublists. In general, a set of name-value pairs are stored
+as named lists and ordered arrays are stored as unnamed lists. Scalar values
+are the only objects that can be unambiguously stored as an R vector (of length
+1).
+
+In order to get access to the internal data in the JSON file from within R,
+we need to successively drill down into the various sublists. The easiest way
+to do this is to first call the names function to see the names of the name-value
+pairs.
+
+```{r}
+names(obj)
+```
+
+The item record is a scalar value. Using the dollar sign operator allows for access
+to the item name of the record as an R vector.
+
+```{r}
+obj$item
+```
+
+Selecting the nutrition element, on the other hand, returns another named list
+because it is another set of name-value pairs in the JSON file.
+
+```{r}
+obj$nutrition
+```
+
+Grabing the `liked_by` element also gives a list object, but this time without names
+because it corresponds to an array of ordered values.
+
+```{r}
+obj$liked_by
+```
+
+In the next section we will see a way of creating tabular datasets from
+the data given in the JSON records.
+
+## Creating Tabular Data
+
+The data from "apple.json" cannot be easily stored in a single rectangular
+data format, however it is possible to create three datasets that contain
+all of the records. These are: (1) a one-row dataset of the nutritional
+values, (2) a dataset with one row for each person associated as liking
+apples, and (3) a dataset with one row for each cultivar.
+
+In order to create these tables, we will use several R functions. Functions
+`as.numeric` and `as.character` will take a list of elements and unravel
+them into the respective type. For example, we can create a vector of the
+people in the "liked by" array as follows:
+
+```{r}
+as.character(obj$liked_by)
+```
+
+In order to put individual vectors into a dataset, we will use the function
+`tibble`. We provide the names of the columns, followed by an equals sign,
+and the vector containing the data. Generally, you will want to either put
+all vectors of the same lengths into a call to `tibble` or pass length 1
+vectors that are repeated for every row. For example, here is nutrional
+value table:
+
+```{r}
+tibble(
+  item = obj$item,
+  vitamin_a = obj$nutrition$vitamin_a,
+  vitamin_c = obj$nutrition$vitamin_c,
+  iron = obj$nutrition$iron
+)
+```
+
+The nutritional values are already scalar values so there is no need to use the
+`as.numeric` function here. Alternatively, as an illustration of how there are
+multiple ways to turn a JSON dataset into a table, we could have stored this
+data in a long format with one row for each nutritional value. This requires
+unraveling the list of name-value pairs with `as.nuermci` and using the
+`names` function to get the names of the nutrients. However, it is also
+somewhat simplier because we do not need to manually specify each of the
+nutrients individually.
+
+```{r}
+tibble(
+  item = obj$item,
+  element = names(obj$nutrition),
+  value = as.numeric(obj$nutrition)
+)
+```
+
+For the "liked by" table, we need a similar kind of unravelling:
+
+```{r}
+tibble(
+  item = obj$item,
+  liked_by = as.character(obj$liked_by)
+)
+```
+
+Unlike the nutrional data, there is no obvious way to store this in a wider
+format.
+
+The cultivars dataset is slightly more complicated because within each cultivar
+we need to grab the name and the source location of the cultivar. To do this,
+we can use `lapply` along with the function `getElement`. Here are the names,
+for example:
+
+```{r}
+as.character(lapply(obj$cultivars, getElement, "name"))
+```
+
+Putting this all together, we can put together the full cultivars dataset.
+
+```{r}
+tibble(
+  item = obj$item,
+  cultivar = as.character(lapply(obj$cultivars, getElement, "name")),
+  source = as.character(lapply(obj$cultivars, getElement, "source"))
+)
+```
+
+The `getElement` function is often a very useful tool for pulling apart
+data read from a tree-like JSON data structure while turning it into a
+tabular dataset.
+
+## Fetching JSON Data through an API
+
+As a quick test, open the [DuckDuckGo](https://duckduckgo.com/) search
+homepage and search for a phrase. Then, on the search results page, take
+a look at the URL of the page. If you search for the term "data science",
+you should see something like this:
+
+- https://duckduckgo.com/?q=data+science&t=h_&ia=web
+
+This is an example of a URL containing a query string. The part after
+the question mark symbol is a way of defining input variables. These
+variables are, typically seperated by amperstands. This query specifies
+three variables: "q", "t", and "ia". The important variable for us is
+the variable "q" (the search query), which contains the terms that were
+being for.
+
+When most people use the internet, search query strings are constantly
+being created automatically to pass data between webpages and indicate
+what kinds of content should be served through the a browser. Typically,
+we don't think too much (or at all) about these variables and what they
+mean because we do not directly interact with them.
+
+A Web API is a way of requesting structured data through the use of a
+URL query string. Unlike the example of the automatically created query
+string from DuckDuckGo, when requesting data from a Web API the query
+string must be constructed intentionally. Usually there will be extensive
+documentation about what variables are available to specify, what options
+are allowed, along with a description of the output format. Most commonly,
+these APIs return data in a JSON format, though they can in theory
+return data in any format they choose.
+
+In this section we are going to grab data from the Wikipedia API. For
+a complete documentation of their extensive API
+see [MediaWiki API documentation page](https://en.wikipedia.org/w/api.php).
+Our goal here is to get page view statistics from the "apple" page over
+the past 60 days. To do this, we need to set the following query
+parameters:
+
+- **action**: Describes the kind of action we want to perform. Here we
+want to "query" the data rather than trying to change any of the available
+data.
+- **format**: Gives the output format of the dataset, which we set to "json".
+Other options include "xml" and "php", but JSON data is the prefered method.
+- **prop**: Are the properties that we are requesting for a given page. In
+this case we are asking for "pageviews".
+- **titles**: A list of pages we are requesting data for. There can be up
+to 50 of these, seperated by pipes (`|`), but here we are requesting only a
+single page for "apple".
+
+To create a query string with these parameters, we can use the `stri_paste`
+function. This will make it easier in the next section to modify the code
+to search for other pages.
+
+```{r}
+base_url <- "https://en.wikipedia.org/w/api.php"
+options <- "?action=query&format=json&prop=pageviews&titles="
+url <- stri_paste(base_url, options, "apple")
+url
+```
+
+In order to request this data through the media wiki API, we will use
+the `read_lines` function. Typically JSON data is sent without an extra
+"newline" character at the end in order to save space.
+
+```{r, echo=FALSE}
+json_text <- read_lines("../data/apple.json")
+```
+```{r, eval=FALSE}
+json_text <- read_lines(url)
+json_text
+```
+
+The result is a string containing JSON data. We can parse this using `parse_json`
+and start looking through its contents.
+
+```{r}
+obj <- parse_json(json_text)
+names(obj)
+```
+
+The actual interesting data is buried a bit inside several layers of data structures.
+Specifically, we need to look inside the "query" value, then inside of the pages value.
+As we only requested one page, we can select the first page, and then grab the values
+for the "pageviews" key. Here are the first 3 values from the page views:
+
+```{r}
+obj$query$pages[[1]]$pageviews[c(1, 2, 3)]
+```
+
+This should look similar to the nutrition data we had in our example page. To grab
+the data we need to call `as.numeric` to access to the counts and `names` to accees
+the dates.
+
+```{r}
+page_views <- tibble(
+  item = "apple",
+  date = names(obj$query$pages[[1]]$pageviews),
+  views = as.numeric(unlist(obj$query$pages[[1]]$pageviews)),
+)
+page_views
+```
+
+This dataset already looks like a format that we can work with using the skills
+covered in the core chapters of this text. A little more work using the methods
+from Chapter 11 could be used to turn the date variable into a date-type object,
+but the work of requesting data from API and parsing apart the JSON data is complete.
+
+## Creating a Larger Dataset
+
+To finish, we will put together the process used in the previous section to
+build a pageview dataset for all of the pages, in our `foods` dataset. The
+dataset already contains the proper names to describe the Wikipedia pages for
+each food item. These mostly match the names of the foods. There are some differences,
+such as indicators that we want the "turkey" page for the bird and not the country.
+
+```{r}
+food <- read_csv("../data/food.csv")
+all_items <- food$wiki
+all_items
+```
+
+Everytime that we request data from the MediaWiki API it puts a small strain
+on the Wikipedia servers. It also takes a bit of time to send the request to
+their servers, wait for the response, and then load the results. For larger
+datasets it would be a bad idea to make a new request every time we want another
+field from our collection of data. A good practice is to split this process into
+two parts: first we download the JSON files and save them locally, then we
+read the local files and process them as needed.
+
+The function `file.exists` can be used to check if a file exists locally,
+and download the file otherwise. It has arguments: `src` for the location of
+the URL and `dest` for the local location where the file is found. Here, we
+will use this function to store all of the json pageview files for our dataset
+in a directory called "pageview_cache".
+
+```{r}
+for (item in all_items)
+{
+  src_url <- paste0(base_url, options, item)
+  dest_path <- file.path("pageview_cache", paste0(item, ".json"))
+
+  if (file.exists(dest_path)) { download.file(src_url, dest_path) }
+}
+```
+
+With the pages downloaded, we now repeat the process in the previous section
+for each of the pages in our dataset using a for loop. The individual page
+view tables are combined using `bind_rows` into a larger table `page_views_all`
+containing all of the data
+
+```{r}
+page_views_all <- NULL
+for (item in all_items)
+{
+  dest_path <- file.path("../output/pageview_cache", paste0(item, ".json"))
+  obj <- read_json(dest_path)
+
+	views <- unlist(obj$query$pages[[1]]$pageviews)
+  page_views <- tibble(
+    item = item,
+    date = names(views),
+    views = as.numeric(views),
+  )
+  page_views_all <- bind_rows(page_views_all, page_views)
+}
+```
+
+Looking at the data, we see that there are now 60 rows for each of the items in
+the `foods` data.
+
+```{r}
+page_views_all
+```
+
+We can now use this dataset to start exploring the page view dataset. As an
+interesting starting point, we can compute the minimum and maximum page views
+over the last two months for each page, and label the 10 pages that have
+had the highest number of maximum page views.
+
+```{r}
+df <- page_views_all %>%
+  group_by(item) %>%
+  summarize(views_min = min(views), views_max = max(views))
+
+df %>%
+  arrange(desc(views_max)) %>%
+  slice(1:10) %>%
+  ggplot(aes(views_min, views_max)) +
+    geom_point(data = df, alpha = 0.1) +
+    geom_point(color = "maroon") +
+    geom_text_repel(aes(label = item), color = "maroon") +
+    geom_abline(slope = 1, intercept = 0, linetype = "dashed")
+```
+
+Several additional applications using the page views dataset are shown in
+Chapter 11. Now, having following along with the notes here, it should now be
+clear how the data were constructed using the MediaWiki API.

@@ -1,0 +1,87 @@
+---
+title: "Project 03 -- Instructions"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, include=FALSE}
+Sys.setlocale("LC_TIME", "en_US.UTF-8")
+```
+
+**Due Date**: 22 March 2023
+
+## General Instructions
+
+This page outlines the instructions for the first project. You should
+have a file `project03.Rmd` in your RStudio workspace where you can
+work on the project. I find that students prefer having a consistent
+format for the projects, so I will attempt to keep the format the same
+throughout the semester.
+
+Your group is responsible for completing two elements:
+
+1. Slides presenting your results, also submitted in your Box folder.
+2. A presentation based on your slide show. This should be 10-15 minutes in
+length.
+
+The slides must be uploaded by the first day of presentations regardless of
+when you present. As described on the syllabus, the project will be graded
+using a rubric, which can be found [here](../extra/project_rubric.pdf).
+
+## Specific Instructions
+
+The data for this project is similar to the previous one, but this time reviews
+come from Yelp. I created the data set based on what is provided by the
+[Yelp Open Dataset](https://www.yelp.com/dataset/) project. As with before, I
+have selected reviewers with a large number of reviews. However, this time
+you have a number of different variables to work with. Variables that
+are available to focus on (either as a prediction or as an unsupervised
+grouping variable) are:
+
+1. author gender (binary categories; automatically guessed using first names;
+yes there are a lot of problems with this, but still interesting to look at)
+2. author name (100 authors in each dataset)
+3. stars (1-5)
+4. business categories
+5. business names
+
+As with the first two projects, you are encouraged to take the data in whatever
+direction you find most interesting. The only thing I require is that you focus
+a non-trivial amount of your work on integrating the unsupervised approaches
+covered in Notebooks 8 and 9 into your analysis. Note that gender has too few
+categories to use unsupervised on its own and business names likely have too
+many to do supervised learning.
+
+If you need some questions to get started, I am happy to provide some of these.
+However, there are so many directions to go in, I only want to do this if you
+are struggling with an idea.
+
+## Groups
+
+Each group is working with a different city's data. You should be able to
+download your data set from within the `project03.Rmd` file.
+
+**Group 1**: `charlotte`
+
+**Group 2**: `calgary`
+
+**Group 3**: `pittsburgh`
+
+**Group 4**: `phoenix`
+
+**Group 5**: `las-vegas`
+
+**Group 6**: `madison`
+
+**Group 7**: `cleveland`
+
+**Group 8**: `toronto`
+
+## Notes
+
+While working through the project, I typically find that many groups ask for
+help writing the same bits of code. Any notes that I want to share about how
+to do specific tasks will be added here as we work through the project.

@@ -1,0 +1,164 @@
+---
+title: "Notebook 05"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+## Getting Started
+
+Before running this notebook, select "Session > Restart R and Clear Output" in
+the menu above to start a new R session. You may also have to hit the broom in
+the upper right-hand corner of the window. This will clear any old data sets and
+give us a blank slate to start with.
+
+After starting a new session, run the following code chunk to load the
+libraries and data that we will be working with today.
+
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+```
+
+I have set the options `message=FALSE` and `echo=FALSE` to avoid cluttering
+your solutions with all the output from this code.
+
+## Reading the Data
+
+Today we are going to look at a dataset of short texts taken from a set of 3
+American authors:
+
+```{r, message = FALSE}
+docs <- read_csv("../data/stylo_us.csv")
+anno <- read_csv("../data/stylo_us_token.csv.gz")
+```
+
+The prediction task is to determine the identity of the author based on the
+text.
+
+## Questions
+
+### Authorship Detection with the Elastic Net
+
+To start, build an elastic net model using the default term-frequency features
+to predict the authorship of each text:
+
+```{r, question-01}
+
+```
+
+Now, what is the overall error rate of this model?
+
+```{r, question-02}
+
+```
+
+In the code block below, look at the model coefficients. You may want to limit
+the number of results by setting `lambda_num` to something around 30
+
+```{r, question-03}
+
+```
+
+You should notice several interesting things about the model. What are the main
+features that are being used here? Do you see any patterns about where the
+strongest coefficients are concentrated?
+
+Build another elastic net model but remove the proper nouns from the texts.
+Note, we can use `!=` to signal not equal to in R.
+
+```{r, question-04}
+
+```
+
+What is the error rate of the model now? Note how it changes from above.
+
+```{r, question-05}
+
+```
+
+In the code block below, look at the model coefficients. You may want to limit
+the number of results by setting `lambda_num` to something around 40.
+
+```{r, question-06}
+
+```
+
+You should now notice that the types of words being used are very different.
+What are the primary qualities of (most of) the terms now being selected?
+
+Now, build an elastic net model using the "xpos" column to build frequencies.
+These are a more granular way of describing parts of speech.
+
+```{r, question-07}
+
+```
+
+Compute the error rate, comparing it to the previous error rates.
+
+```{r, question-08}
+
+```
+
+We can do a bit better using n-grams of xpos tags. Create a model using 3-grams
+of xpos tags.
+
+```{r, question-09}
+
+```
+
+Finally, compute the error rate of this model:
+
+```{r, question-10}
+
+```
+
+How does it compare the word-based model above? It will likely be very close,
+though perhaps still slightly worse.
+
+### Authorship Detection with the k-nearest neighbors
+
+Now, let's use the k-nearest neighbors method to build a model. Start by
+creating a knn model with all of the default features and k = 1 (the default).
+
+```{r, question-11}
+
+```
+
+Now, print out the error rate of the model. Compare to the same model using
+the elastic net.
+
+```{r, question-12}
+
+```
+
+Now, fit a knn model using the 3-gram xpos features and k = 1.
+
+```{r, question-13}
+
+```
+
+Compute the error rate and compare the results using the elastic net.
+
+```{r, question-14}
+
+```
+
+Finally, fit a model using 3-gram xpos features and k = 10.
+
+```{r, question-15}
+
+```
+
+Compute the error rate and compare the previous results. Does setting k equal
+to 10 change the model?
+
+```{r, question-16}
+
+```
+
+You should have noticed that knn is significantly worse than the elastic net
+model. Take a few moments and think about what the difference between these
+models is and why knn is not particularly suitable to the prediction task here.

@@ -1,0 +1,74 @@
+---
+title: "Project 04 -- Instructions"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, include=FALSE}
+Sys.setlocale("LC_TIME", "en_US.UTF-8")
+```
+
+**Due Date**: 19 April 2023
+
+## General Instructions
+
+This page outlines the instructions for the first project. You should
+have a file `project04.Rmd` in your RStudio workspace where you can
+work on the project. I find that students prefer having a consistent
+format for the projects, so I will attempt to keep the format the same
+throughout the semester.
+
+Your group is responsible for completing two elements:
+
+1. Slides presenting your results, also submitted in your Box folder.
+2. A presentation based on your slide show. This should be 10-15 minutes in
+length (can be slightly shorter if you are a group of one person).
+
+The slides must be uploaded by the first day of presentations regardless of
+when you present. As described on the syllabus, the project will be graded
+using a rubric, which can be found [here](../extra/project_rubric.pdf).
+
+## Specific Instructions
+
+For this project, part of the assignment is constructing your data set from
+Wikipeda. This can be done with the code in `project04-create.Rmd`. Following
+the method used in Notebook11, you will start with a small set of pages, and
+create a corpus of pages by following the links from those starting page(s).
+
+The set of documents you create is completely up to your group. You may, for
+example, choose to start with one option, and then modify it based on the
+initial results. I will come around and make sure everyone is on the right
+track. If you need a suggestion, I would suggest looking at "list" pages, such as
+[Early modern universities](https://en.wikipedia.org/wiki/List_of_early_modern_universities_in_Europe),
+[Sovereign States](https://en.wikipedia.org/wiki/List_of_sovereign_states),
+[U.S. Cities](https://en.wikipedia.org/wiki/List_of_United_States_cities_by_population), or
+[Fantasy Novels](https://en.wikipedia.org/wiki/List_of_fantasy_novels_(A–H)).
+
+You can even work with a language other than English,
+but please check with me as I can offer guidance on what other languages are complete
+enough (and have good-enough parsers) to work for the project. Ultimately, you
+should aim for somewhere in the range of 100-1500 pages.
+
+This project does not have a predictive modeling task associated to it. The
+goal is simply to explain your corpus to the rest of the class using the
+techniques we have learned, such as topic models, document clustering, TF-IDF,
+and KWiC. Consider including interesting visualizations in addition to tables
+and keep in mind that it is better to give a focused and interesting
+presentation, rather than a boring and encyclopedic one.
+
+**Note**: You may decide for this project that you want to work alone. Please
+let me know if you choose to split into two sub-groups.
+
+## Groups
+
+Each group is free to determine how they would like to create their data set
+according to the instructions above.
+
+## Notes
+
+While working through the project, I typically find that many groups ask for
+help writing the same bits of code. Any notes that I want to share about how
+to do specific tasks will be added here as we work through the project.

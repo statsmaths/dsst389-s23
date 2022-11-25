@@ -1,0 +1,244 @@
+---
+title: "15. API Iteration Examples"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, include=FALSE, message=FALSE}
+source("../funs/funs.R")
+options(dsst.traceit = FALSE)
+```
+
+## Wikipedia Page Views Again
+
+Let's grab the Wikipedia page views data that we worked with in the previous
+classes. Again, we will start with defining a base URL using the
+protocol, authority, path, and query parameters.
+
+```{r}
+url_base <- modify_url(
+  "https://en.wikipedia.org/w/api.php",
+  query = list(action = "query", format = "json", prop = "pageviews")
+)
+```
+
+To fetch a particular page, all we need to do is add an additional parameter
+called titles that contains the page title you want to grab.
+
+```{r}
+url_str <- modify_url(url_base, query = list(titles = "apple"))
+res <- dsst_cache_get(url_str, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+```
+
+And as before, we can turn this into a rectangular data set by parsing the
+list `obj`.
+
+```{r}
+dt <- tibble(
+  page = obj$query$pages[[1]]$title,
+  date = ymd(names(obj$query$pages[[1]]$pageviews)),
+  views = map_int(obj$query$pages[[1]]$pageviews, ~ null_to_na(.x)),
+)
+dt
+```
+
+Now, let's try to cycle through all of the pages in the `food` data set. We 
+will build up to this using the techniques you should have read in the R4DS
+text. **But note that you only actually need the final bit of code.**
+
+To cycle through the foods in the data, we can write for loop like this,
+printing each food item in every step:
+
+```{r}
+food <- read_csv("../data/food.csv")
+
+for (i in seq_along(food$item))
+{
+  print(food$item[i])
+}
+```
+
+We can actually do something with each entry by creating an output object and
+assigning something to it. Here, let's just fill in the list with the food 
+names.
+
+```{r}
+output <- vector("list", nrow(food))
+
+for (i in seq_along(food$item))
+{
+  output[[i]] <- food$item[i]
+}
+
+head(output) # just to see the first few results
+```
+
+Now, let's skip ahead by putting the code we had above for the apple page into
+the for loop structure here.
+
+```{r}
+output <- vector("list", nrow(food))
+
+for (i in seq_along(food$item))
+{
+  url_str <- modify_url(url_base, query = list(titles = food$wiki[i]))
+  res <- dsst_cache_get(url_str, cache_dir = "cache")
+  
+  stop_for_status(res)
+
+  obj <- content(res, type = "application/json")
+  output[[i]] <- tibble(
+    page = obj$query$pages[[1]]$title,
+    date = ymd(names(obj$query$pages[[1]]$pageviews)),
+    views = map_int(obj$query$pages[[1]]$pageviews, ~ null_to_na(.x)),
+    wiki = food$wiki[i]
+  )
+}
+
+output <- bind_rows(output)
+output
+```
+
+And now we can work directly with the data using the visualization and data
+manipulation techniques we have learned in the previous weeks. 
+
+```{r, fig.height = 4}
+output %>%
+  filter(!is.na(views)) %>%
+  group_by(page, wiki) %>%
+  summarize(total_views = sum(views)) %>%
+  inner_join(food, by = "wiki") %>%
+  ungroup() %>%
+  arrange(desc(total_views)) %>%
+  mutate(page = fct_inorder(page)) %>%
+  mutate(food_group = stri_trans_totitle(food_group)) %>%
+  ggplot(aes(total_views, page)) +
+    geom_col(aes(fill = food_group), show.legend = FALSE) +
+    scale_fill_viridis_d() +
+    facet_wrap(~food_group, scales = "free") +
+    labs(x = "", y = "Page Views")
+```
+
+## Continuation over an API
+
+As a final example here, let's see another common API pattern using an API 
+provided by the Library of Congress. We start by creating a base URL:
+
+```{r}
+url_base <- modify_url(
+  "https://www.loc.gov/collections/fsa-owi-color-photographs",
+  query = list(fo = "json", c = "150")
+)
+```
+
+Making a request on the base API returns the first 150 results. 
+
+```{r}
+res <- dsst_cache_get(url_base, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+```
+
+Which we can parse using some map functions:
+
+```{r}
+df <- tibble(
+  contributor =  map_chr(obj$results, ~ .x$contributor[[1]] ),
+  title = map_chr(obj$results, ~ .x$title),
+  year = map_chr(obj$results, ~ .x$date),
+  state = map_chr(obj$results, ~ null_to_na(.x$location_state[[1]])),
+  city = map_chr(obj$results, ~ null_to_na(.x$location_city[[1]]))
+)
+df
+```
+
+The results contain another field called pagination, which has a key called
+"next" (a reserved word in R, so you need the quotes). It tells us the URL
+needed to grab the next 150 results:
+
+```{r}
+obj$pagination$"next"
+```
+
+And, we can directly call this URL to get the next page:
+
+```{r}
+url_next <- obj$pagination$"next"
+res <- dsst_cache_get(url_next, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+```
+
+Which in turn has another next field with the next set of results:
+
+```{r}
+obj$pagination$"next"
+```
+
+In this example, we can easily see the pattern that the query parameter "sp" 
+contains the page number. However, often this is not the case you need to use 
+the next URL field, so let's do that here.
+
+We want to cycle through the pages until the next field is missing, which 
+requires a little bit more programming:
+
+```{r}
+# create an empty list to store the output in
+output <- list()
+
+# set the starting url
+url_str <- url_base
+
+# loop through the data until the "next" string is NULL (that means we have hit
+# the end of the data)
+while (!is.null(url_str))
+{
+  # grab the next page of data
+  res <- dsst_cache_get(url_str, cache_dir = "cache")
+  stop_for_status(res)
+  obj <- content(res, type = "application/json")
+
+  # parse the data
+  df <- tibble(
+    contributor = map_chr(obj$results, ~ null_to_na(.x$contributor[[1]])),
+    title = map_chr(obj$results, ~ .x$title),
+    year = map_chr(obj$results, ~ null_to_na(.x$date)),
+    state = map_chr(obj$results, ~ null_to_na(.x$location_state[[1]])),
+    city = map_chr(obj$results, ~ null_to_na(.x$location_city[[1]]))
+  )
+
+  # save the results by appending to the output list
+  output <- c(output, list(df))
+  
+  # set the next page's URL; will be null at the end
+  url_str <- obj$pagination$"next"
+}
+
+output <- bind_rows(output)
+output
+```
+
+And just for fun, let's create a plot of the output:
+
+```{r}
+output %>%
+  group_by(contributor, year) %>%
+  summarize(n = n()) %>%
+  ungroup() %>%
+  arrange(desc(n)) %>%
+  filter(!is.na(contributor)) %>%
+  mutate(contributor = stri_trans_totitle(contributor)) %>%
+  mutate(contributor = fct_inorder(contributor)) %>%
+  ggplot(aes(n, contributor)) +
+    geom_col(aes(fill = year)) +
+    labs(x = "Number of Photographs", y = "Photographer", fill = "Year")
+```
+
+
+
+
+
+
+

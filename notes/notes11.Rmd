@@ -1,0 +1,144 @@
+---
+title: "11. Clustering Redux, EDA"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+options(dsst.traceit = FALSE)
+```
+
+## Load the Data
+
+For today's notes we will work with one of the data sets from Project 2,
+specifically the reviews of Music CDs.
+
+```{r, message=FALSE}
+docs <- read_csv("../data/amazon_cds.csv.bz2")
+anno <- read_csv("../data/amazon_cds_token.csv.bz2")
+```
+
+We are going to briefly redescribe the two clutsering algorithms from last time
+and show how they can be used in data analysis.
+
+## Clustering (Again)
+
+I was still unable to find the original visualisation of K-Means I mentioned
+last week, but here is a good interactive visualisation to describe the process
+of iteratively choosing centroids and cluster assignments:
+
+- [visualisation of kmeans](https://www.naftaliharris.com/blog/visualizing-k-means-clustering/)
+
+Let's compute the K-means algorithms using nouns and verbs in two dimensions.
+
+```{r}
+df <- anno %>%
+  filter(upos %in% c("NOUN", "VERB")) %>%
+  dsst_kmeans(docs, doc_var = "label", n_dims = 2,
+                  n_clusters = 5L, output_type="df")
+```
+
+And plot the results, just as before. You can see a clear structure to the data
+in the clustering output:
+
+```{r}
+library(ggrepel)
+ggplot(df, aes(v1, v2)) +
+  geom_point(aes(color = factor(cluster))) +
+  geom_text_repel(aes(color = factor(cluster), label = label), show.legend = FALSE)   
+```
+
+Last time I had used a very different approach to computing the hierarchical
+clustering. It was not wrong per say, but worked in a way that was hard to
+compare to the K-means clustering. I have updated the code and the results
+should now align better with those from the K-means code:
+
+```{r}
+model <- anno %>%
+  filter(upos %in% c("NOUN", "VERB")) %>%
+  dsst_hclust(docs, doc_var = "label")
+
+dsst_hclust_plot(model)
+```
+
+Can you see the correspondence between the two techniques now?
+
+## Working with the Clusters
+
+I wanted to show a few things you can do with the cluster assignments. In
+general, I use them as artificially constructed labels for the documents.
+For example, we can see the average length of each cluster's documents:
+
+```{r}
+anno %>%
+  group_by(doc_id) %>%
+  summarise(n = n()) %>%
+  left_join(docs, by = "doc_id") %>%
+  left_join(df, by = "label") %>%
+  group_by(cluster) %>%
+  summarise(avg_tokens = mean(n)) %>%
+  ggplot(aes(factor(cluster), avg_tokens)) +
+    geom_col(aes(fill = factor(cluster)), show.legend = FALSE) +
+    labs(x = "Cluster", y = "Average Number of Tokens per Review")
+```
+
+Or compute the G-score metrics:
+
+```{r}
+anno %>%
+  filter(upos %in% c("NOUN", "VERB")) %>%
+  dsst_metrics(left_join(docs, df, by = "label"),
+               label_var = "cluster", higher_only = TRUE)
+```
+
+Or even build a predictive model:
+
+```{r}
+model <- anno %>%
+  filter(upos %in% c("NOUN", "VERB")) %>%
+  dsst_enet_build(left_join(docs, df, by = "label"),
+                  label_var = "cluster")
+
+dsst_erate(model)
+```
+
+Does the confusion matrix show a similar structure to that of the heirarchical
+clustering?
+
+```{r}
+dsst_confusion_matrix(model)
+```
+
+You can even do the clustering on all of the documents and analyse those.
+
+```{r}
+df <- anno %>%
+  dsst_kmeans(docs, n_dims = 2L, n_clusters = 20L, output_type="df")
+```
+
+Do the clusters of the documents correspond to particular users?
+
+```{r}
+df %>%
+  left_join(docs, by = "doc_id") %>%
+  select(cluster, label) %>%
+  table()
+```
+
+And are there any patterns related to the length of each of the clusters?
+
+```{r}
+anno %>%
+  group_by(doc_id) %>%
+  summarise(n = n()) %>%
+  left_join(df, by = "doc_id") %>%
+  group_by(cluster) %>%
+  summarise(avg_tokens = mean(n)) %>%
+  ggplot(aes(factor(cluster), avg_tokens)) +
+    geom_col(aes(fill = factor(cluster)), show.legend = FALSE) +
+    labs(x = "Cluster", y = "Average Number of Tokens per Review")
+```

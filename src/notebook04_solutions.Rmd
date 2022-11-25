@@ -1,0 +1,182 @@
+---
+title: "Notebook 04"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+## Getting Started
+
+Before running this notebook, select "Session > Restart R and Clear Output" in
+the menu above to start a new R session. You may also have to hit the broom in
+the upper right-hand corner of the window. This will clear any old data sets and
+give us a blank slate to start with.
+
+After starting a new session, run the following code chunk to load the
+libraries and data that we will be working with today.
+
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+options(dsst.traceit = FALSE)
+```
+
+I have set the options `message=FALSE` and `echo=FALSE` to avoid cluttering
+your solutions with all the output from this code.
+
+## Reading the Data
+
+To start, let's read in some text data to study for today. The dataset for this
+notebook consists of a set of movie reviews.
+
+```{r, message = FALSE}
+docs <- read_csv("../data/imdb_polarity_mod.csv.gz")
+anno <- read_csv("../data/imdb_polarity_mod_token.csv.gz")
+```
+
+The label we are trying to predict is whether a review is a 4 (out of 10) or a
+7 (out of 10).
+
+## Questions
+
+### Model with defaults
+
+Start by building an elastic net model for this data using the default values.
+Note that you will have to set the parameter `label_var` equal to "category"
+because the label has a different name.
+
+```{r, question-01}
+model <- anno %>%
+  dsst_enet_build(docs, label_var = "category")
+```
+
+Now compute the error rate of the model.
+
+```{r, question-02}
+dsst_erate(model)
+```
+
+Then, the model coefficients.
+
+```{r, question-03}
+dsst_coef(model)
+```
+
+And finally, use the following code to see the cross-validation curve.
+
+```{r, question-04}
+plot(model$model)
+```
+
+Now, before proceeding, take a moment to look at all of the results and
+understand what the model is telling you about the data and how well we can
+make predictions of the label.
+
+### Model using verbs
+
+Now, fit an elastic net model using only those lemmas labeled as a VERB.
+
+```{r, question-05}
+model <- anno %>%
+  filter(upos %in% c("VERB")) %>%
+  dsst_enet_build(docs, label_var = "category")
+```
+
+Now compute the error rate of the model.
+
+```{r, question-06}
+dsst_erate(model)
+```
+
+Then, the model coefficients.
+
+```{r, question-07}
+dsst_coef(model)
+```
+
+And finally, plot the cross-validation curve.
+
+```{r, question-08}
+plot(model$model)
+```
+
+Take a moment to compare the results to the previous model. How well does this
+do compared to all of the parts of speech? Can you make any sense of the
+coefficients in a new way that tells you something about the data? How about
+the cross-validation curve, does it tell you anything about the model?
+
+### Model using ngrams
+
+Now, fit an elastic net model using bigrams and unigrams of all the lemmas.
+
+```{r, question-09}
+model <- anno %>%
+  dsst_ngram(n = 2, n_min = 1) %>%
+  dsst_enet_build(docs, label_var = "category")
+```
+
+Now compute the error rate of the model.
+
+```{r, question-10}
+dsst_erate(model)
+```
+
+Then, the model coefficients.
+
+```{r, question-11}
+dsst_coef(model)
+```
+
+And finally, plot the cross-validation curve.
+
+```{r, question-12}
+plot(model$model)
+```
+
+How does this model do compared to the original model? How many of the top
+variables are bigrams compared with unigrams? How much new do you learn about
+the data from the bigram model?
+
+### Model using pos values
+
+Finally, fit an elastic net model using just the upos codes.
+
+```{r, question-13}
+model <- anno %>%
+  dsst_enet_build(docs, token_var = "upos", label_var = "category")
+```
+
+Now compute the error rate of the model.
+
+```{r, question-14}
+dsst_erate(model)
+```
+
+Then, the model coefficients.
+
+```{r, question-15}
+dsst_coef(model)
+```
+
+And finally, plot the cross-validation curve.
+
+```{r, question-16}
+plot(model$model)
+```
+
+How does this model do compared to the original one? Probably not great, but
+notice that it does do better than random guessing. What can be learned from
+the model? Can you understand why any of the coefficients have the signs that
+they do? Does this help you understand any results above?
+
+### Best model?
+
+If you have some extra time, try to find the most predictive model that you
+can create in the block below.
+
+```{r, question-17}
+# No fixed solution; did you try trigrams and/or part of speech labels? maybe
+# also increasing the number of terms?
+```

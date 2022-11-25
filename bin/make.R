@@ -32,8 +32,10 @@ xml_remove(links[index])
 # after 13h15 (time of the last class) advance an extra day; also, remove
 # links that do not exist
 td <- as_date(now() + 60 * 60 * 13.25) + 0L
-index <- which((td < avail) | !file.exists(xml_attr(links, "href"))) 
-links <- links[td < avail]
+#index <- which(td < avail) 
+#if (length(index)) { links <- links[index] }
+index <- which(!file.exists(xml_attr(links, "href")))
+if (length(index)) { links <- links[index] }
 xml_set_name(links, "span")
 xml_set_attr(links, "href", NULL)
 xml_set_attr(links, "class", "futurelink")

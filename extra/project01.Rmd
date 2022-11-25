@@ -1,0 +1,112 @@
+---
+title: "Project 01 -- Instructions"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, include=FALSE}
+```
+
+**Due Date**: 01 February 2023
+
+## General Instructions
+
+This page outlines the instructions for the first project. You should
+have a file `project01.Rmd` in your RStudio workspace where you can
+work on the project. I find that students prefer having a consistent
+format for the projects, so I will attempt to keep the format the same
+throughout the semester.
+
+On the due-date, your group is responsible for completing two elements:
+
+1. Slides presenting your results, also submitted in your Box folder.
+2. A presentation based on your slide show. This should be 5 minutes in length.
+
+As described on the syllabus, the project will be graded using a rubric, which
+can be found [here](../extra/project_rubric.pdf).
+
+## Instructions
+
+This project uses a collection of book reviews from the website Good Reads.
+The data have been taken from the following paper:
+
+> Mengting Wan, Julian McAuley, "Item Recommendation on Monotonic Behavior Chains",
+> in RecSys'18.
+
+Groups will be assigned different genres to look at, so you will have a slightly
+different analysis compared to the rest of the class. You can read more about
+the collection as a whole [here](https://sites.google.com/eng.ucsd.edu/ucsdbookgraph/home#h.p_VCP_qovwtnn1).
+
+There are two different prediction tasks that you may look at. The first is to
+classify the score of the book on a scale from 1-5. The second is to predict
+the gender of the author of the book being described. Here are some things you
+might consider addressing:
+
+- How accurately can you classify the groups based on the text on the
+validation data? What kinds of errors does the model tend to make?
+- What terms most distinguish the groups? If you look at just verbs or
+adjectives does anything different pop up?
+- Looking at negative example from your best model, do you find it easy to
+identify the correct class or not?
+- If any of the most indicative terms seem surprising, apply KWiC to the
+data. Does that help explain why the term is predictive?
+- Is there a difference in the parts of speech used between the groups?
+- Create a confusion matrix and describe any patterns (interesting or not).
+
+At the end of the day, though, your task is an open-ended one. I want you to
+explore the data using the techniques we have learned so far and then produce
+a short presentation showing your results to the rest of the class.
+
+## Presentation
+
+Your presentation should be in the form of a set of slides. You can build these
+in whatever software you would like, but please create a PDF version to submit
+on Box by the project deadline.
+
+The exact format of the slides is up to you, however there should be a final
+slide titled "Synthesis" that summarises what you have learned about the data
+from your analysis. It should take a big picture view of the analysis and not
+be overly focused on the models.
+
+You will find that most (perhaps all) of the results you want to show are
+tables and example reviews. Do not use screen shots for these! Screen shots are
+messy and not ideal. Instead, I suggest using the function `dsst_clipboard()`
+to copy information to the clipboard. This can then be pasted into a spreadsheet
+program or (in some cases) directly into a presentation. For example:
+
+```{r, eval=FALSE}
+dsst_neg_examples(model) %>% dsst_clipboard()
+```
+
+For visualisations, you should use the function `dsst_save_plot` to store the
+most recent plot as a JPG or PNG file.
+
+## Groups
+
+Groups are assigned different genres to look at in their project. You
+should be able to download your data set from within the `project01.Rmd` file.
+
+**Group 1**: `children_b`
+
+**Group 2**: `comics_graphic_b`
+
+**Group 3**: `fantasy_paranormal_b`
+
+**Group 4/9**: `history_biography_b`
+
+**Group 5**: `mystery_thriller_crime_b`
+
+**Group 6**: `poetry_b`
+
+**Group 7**: `romance_b`
+
+**Group 8**: `young_adult_b`
+
+## Notes
+
+While working through the project, I typically find that many groups ask for
+help writing the same bits of code. Any notes that I want to share about how
+to do specific tasks will be added here as we work through the project.

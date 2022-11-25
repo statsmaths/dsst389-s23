@@ -1,0 +1,127 @@
+---
+title: "05. Local Models: KNN"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+options(dsst.traceit = FALSE)
+```
+
+## Load the Data
+
+I like using one set of data for the notes to make it easy to compare them
+against one another. We will continue to look at a variety of different data
+sets and prediction tasks in the class notebooks. For today's notes we are
+going to look again at the Amazon product classification task. We will read in
+the `docs` and `anno` tables:
+
+```{r, message = FALSE}
+docs <- read_csv("../data/amazon_product_class.csv")
+anno <- read_csv("../data/amazon_product_class_token.csv.gz")
+```
+
+In these notes, we will start by seeing a new kind of predictive model that can
+be applied to this data set.
+
+## Local Models
+
+The model that we have looked at up to this point (the elastic net) derives
+itself from linear regression. We have seen that we can extend this model in a
+number of ways. Using a link function produced generalized linear regression,
+allowing us to do classification with logistic regression. Adding a penalty
+term produces estimators such as the lasso, ridge, and elastic net estimators.
+All of these allow for working with a large collection of variables without
+overfitting to the training data.
+
+We could continue on this trend and learn even more extensions of linear
+regression. Linear discriminant analysis and support vector machines, for
+example, can be derived as a geometric extension of logistic regression.
+Fixed and mixed effects models allow for more control in the way that correlated
+observations are used in training. Generalized additive models provide a more
+complete and adaptive form of feature expansion for find non-linear
+relationships. Bayesian models allow for more complex relationships between
+parameters in the model and measurement over how we understand the output.
+
+All of these approaches, though, approach the prediction problem in the same
+fundamental way. Weights are assigned to each feature variable (column of X)
+and the final prediction is determined by combining all of these effects
+together. I call all of these **global models**. We could spend more time
+learning more examples, but I think there are diminishing returns. It is
+unlikely the other alternatives will produce consistently better estimators
+than the ones we have already learned.
+
+What I want instead to spend this class and next looking at **local models**.
+These are completely different in approach, working off of this idea: If we
+want to make a prediction for a new observation, just look at the most common
+classes of points that are "close" to new point. So, instead of learning global
+weights, just use distances and compare to the training data that we already
+have.
+
+## k-nearest neighbors
+
+The most straightforward local model, which we will look at today, is called
+k-nearest neighbors, or KNN. Given a training dataset, to make predictions on a
+new point take the k closest points in the training dataset and take the most
+dominant class (in the case of ties, remove the farther points until their is
+a winner). Unlike logistic regression, there is no specific *model* per say.
+The algorithm jumps right to the predictions. 
+
+This seems straightforward, but do we mean by "near" in the case of text
+analysis? In this case we are still thinking of producing numeric features as
+the counts of term frequencies. One produces, we could use Euclidean distance
+to describe which documents use similar terms to one another. This is
+more-or-less the approach we will use. The only tweak is that we will scale the
+features in a way that makes sure that rarer words (with low counts) are more
+important than common words (with larger counts).
+
+The scaling that we will use results in a technique called TF-IDF (term
+frequency-inverse document frequency). It creates features which are a scaled
+version of the term frequencies divided by a scaled weight of how often the
+term is used in other documents. Mathematically, if
+`tf` are the number of times a term is used in a document, `df` are the
+number of documents that use the term at least once, and `N` are the total
+number of document, a TF-IDF score can be computed as:
+
+$$ \text{tfidf} = (1 + log_2(\text{tf})) \times log_2(\text{N} / \text{df}) $$
+
+The score gives a measurement of how important a term is in describing a
+document in the context of the other documents. Note that this is a popular
+choice for the scaling functions, but they are not universal and other choices
+are possible. We will use this score more when we get to unsupervised learning
+in a few weeks.
+
+To apply the k-nearest neighbors algorithm to our data, we use the function
+`dsst_knn_build`:
+
+```{r}
+model <- dsst_knn_build(anno, docs)
+```
+
+It can take a few minutes to finish. After it does, we can see how predictive
+the model is:
+
+```{r}
+dsst_erate(model)
+```
+
+This is not nearly as good as the global model. We will see that when we have
+a larger set of classes the model starts to become more competitive with the
+global model.
+
+By default, the function uses k equal to 1. We can manually set a different k
+by setting the argument `k` in the function call.
+
+This is a nice example of a completely different model that can help show how
+well your other models are working. It has a very different approach and is
+best when given a relatively dense matrix and particularly good when there are
+tricky interactions that are hard to get with global models or a larger number
+of categories.
+
+There is not much more that we can do with it here for now. Next time we will
+see a different local model that produces more interesting importance scores
+that can help describe the most important variables in a local model approach.

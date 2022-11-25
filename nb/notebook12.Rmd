@@ -1,0 +1,192 @@
+---
+title: "Notebook 12"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+## Getting Started
+
+Before running this notebook, select "Session > Restart R and Clear Output" in
+the menu above to start a new R session. You may also have to hit the broom in
+the upper right-hand corner of the window. This will clear any old data sets and
+give us a blank slate to start with.
+
+After starting a new session, run the following code chunk to load the
+libraries and data that we will be working with today.
+
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+```
+
+I have set the options `message=FALSE` and `echo=FALSE` to avoid cluttering
+your solutions with all the output from this code.
+
+## Reading the Data
+
+We are going to work briefly with the French Philosophers dataset. Let's read
+in the data I made last time:
+
+```{r, message = FALSE}
+docs <- read_csv(file.path("..", "data", "wiki_list_of_fr_philosophers.csv"))
+anno <- read_csv(file.path("..", "data", "wiki_list_of_fr_philosophers_anno.csv.gz"))
+```
+
+Here are some useful cleaning techniques that you should run on the data and
+may want to use on your own Project04 dataset.
+
+```{r, message = FALSE}
+docs$train_id <- "train"
+docs <- filter(docs, stri_length(text) > 1000)
+anno <- semi_join(anno, docs, by = "doc_id")
+```
+
+This makes sure we do not have documents that are too short and that there is
+a train id column (some of my code may assume it exists).
+
+## Questions
+
+### Unsupervised Learning I
+
+Start by creating and plotting the first two principal components for the data
+using all of the tokens.
+
+```{r, question-01}
+
+```
+
+Now, use kmeans with 25 clusters and take a moment to look at the cluster
+assignments.
+
+```{r, question-02}
+
+```
+
+Now, use the following code (yes, I have already written it for you) to compute
+the G-score metrics for each cluster. Take a look at some of the results and
+see how well you can understand what the algorithm is doing. Note any
+difficulties that might prevent these from representing the themes of the
+texts.
+
+```{r}
+docs_new <- dsst_kmeans(anno, n_clusters = 25, output_type = "df") %>%
+  left_join(docs, by = "doc_id")
+
+dsst_metrics(anno, docs_new, label_var = "cluster")
+```
+
+### Unsupervised Learning II
+
+Now, use the following code (keep it in mind, it may be helpful for your
+project) to produce a new version of the annotations dataset that includes only
+certain parts of speech, no capital letters, and no special characters.
+
+```{r}
+anno_new <- anno %>%
+  filter(upos %in% c("NOUN", "VERBS", "ADJ", "ADV")) %>%
+  filter(lemma == stri_trans_tolower(lemma)) %>%
+  filter(!stri_detect(lemma, regex = "\\W"))
+```
+
+Recreate the PCA plot from the previous set of questions using the newly created
+set of annotations. Notice that the shape of the plot changes considerably.
+
+```{r, question-03}
+
+```
+
+Now re-run the kmeans clustering using the new annotations:
+
+```{r, question-04}
+
+```
+
+And finally, compute the metrics for the new annotations.
+
+```{r, question-05}
+
+```
+
+In general, how do these compare to the original results?
+
+### Topic Models
+
+Now, build a topic model using 16 topics and the dataset `anno_new`. Save the
+model as an object in R.
+
+```{r, question-06}
+
+```
+
+Print the top 5 documents associated with each topic:
+
+```{r, question-07}
+
+```
+
+And then print out the top 5 terms associated with each topic:
+
+```{r, question-08}
+
+```
+
+To what extent can you understand what themes the topics are capturing? Are
+there any difficulties in interpreting the results? What kind of mixed effects
+exist in this data?
+
+### Word Frequencies
+
+The package **cleanNLP** contains a dataset describing the frequency of
+various terms in a large collection of English text on the internet. We can
+load the dataset using the following (the words are ordered from most to
+least frequent):
+
+```{r}
+data(word_frequency, package = "cleanNLP")
+word_frequency
+```
+
+You probably noticed some very common terms in the models above, such as "book".
+The code below can determine the frequency of any given term in the corpus:
+
+```{r}
+filter(word_frequency, word == "book")
+```
+
+Finally, the next set of code will remove all terms that are overly frequent.
+This might be helpful in understanding the topic model (though also not, this
+is not something you always want to do).
+
+```{r}
+anno_new %>%
+  semi_join(filter(word_frequency, frequency < 0.01), by = c("lemma" = "word"))
+```
+
+Recreate the topic model, this time using only those terms in `anno_new` that
+have a frequency of less than 0.01 in the `word_frequency` data.
+
+```{r, question-09}
+
+```
+
+Again, print out the documents:
+
+```{r, question-10}
+
+```
+
+And the terms:
+
+```{r, question-11}
+
+```
+
+How do these compare to the previous results? Are they better, worse, or just
+different in terms of undestanding the data?
+
+If you have time, feel free to play with the frequency cut-off as well as the
+number of topics. You will likely find better results after trying several
+combinations.

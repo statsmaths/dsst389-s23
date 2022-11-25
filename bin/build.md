@@ -34,7 +34,13 @@ To make the dev.html file, you can use the following bit of R code:
 library(tidyverse); library(lubridate); library(stringi)
 
 start_date <- ymd("2023-01-09")
-no_number <- ymd(c("2023-01-16", "2023-03-06", "2023-03-08", "2023-04-19"))
+no_number <- ymd(c("2023-01-09", "2023-01-16", "2023-03-06", "2023-03-08"))
+no_number <- c(no_number,
+  ymd(c("2023-01-30", "2023-02-01",
+        "2023-02-20", "2023-02-22",
+        "2023-03-27", "2023-03-29",
+        "2023-04-17", "2023-04-19"))
+)
 all_dates <- sort(c(start_date + seq(0, 14) * 7, start_date + seq(0, 14) * 7 + 2))
 
 nums <- rep(1L, length(all_dates))

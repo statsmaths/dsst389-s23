@@ -1,0 +1,64 @@
+---
+title: "07. Naïve Bayes"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+options(dsst.traceit = FALSE)
+```
+
+# Load the Data
+
+As in the previous notes, I will use the Amazon product classification task.
+We will read in the `docs` and `anno` tables:
+
+```{r, message = FALSE}
+docs <- read_csv("../data/amazon_product_class.csv")
+anno <- read_csv("../data/amazon_product_class_token.csv.gz")
+```
+
+Today, we are going to derive a new metric for seeing how strongly a term is
+associated with a category as well as a related predictive algorithm called
+Naïve Bayes:
+
+- [slides](../extra/naive_bayes.pdf)
+
+## G-Score
+
+Here is a function that computes the G-scores for a set of terms related to
+each label in the data.
+
+```{r}
+dsst_metrics(anno, docs)
+```
+
+By default a table is given for each category. If you want to copy these two
+another program, you'll need to run something like this and then copy to the
+clipboard:
+
+```{r}
+dsst_metrics(anno, docs) %>% bind_rows() %>% group_by(label) %>% slice_head(n = 10)
+```
+
+## Naïve Bayes
+
+To run the Naïve Bayes estimator, we use the following function:
+
+```{r}
+model <- dsst_nb_build(anno, docs)
+```
+
+It performs relatively well here, though not quite as good as the other models:
+
+```{r}
+dsst_erate(model)
+```
+
+Note that playing around with the parts of speech or other filters can have a
+larger positive effect compared to other models, so you may need to make some
+tweaks to get the best results.

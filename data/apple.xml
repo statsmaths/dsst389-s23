@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<root>
+  <food>
+    <name>Apple</name>
+    <nutrition>
+      <item name="Vitamin A">1</item>
+      <item name="Vitamin C">8</item>
+      <item name="Iron">0.26</item>
+    </nutrition>
+    <likes>
+      <person>Adam</person>
+      <person>Eve</person>
+      <person>Heracles</person>
+    </likes>
+    <cultivars>
+      <cultivar name="Fuji" location="Japan"></cultivar>
+      <cultivar name="Gala" location="New Zealand"></cultivar>
+      <cultivar name="Cripps Pink" location="Australia"></cultivar>
+    </cultivars>
+  </food>
+</root>

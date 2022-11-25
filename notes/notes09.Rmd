@@ -1,0 +1,215 @@
+---
+title: "09. Unsupervised Learning I"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+options(dsst.traceit = FALSE)
+```
+
+## Load the Data
+
+For today's notes we will work with one of the data sets from Project 2,
+specifically the reviews of Music CDs.
+
+```{r, message=FALSE}
+docs <- read_csv("../data/amazon_cds.csv.bz2")
+anno <- read_csv("../data/amazon_cds_token.csv.bz2")
+```
+
+Today we make a shift towards a different type of analysis. So far we
+have been mostly interested in a large collection of texts with the goal of
+associating textual features with one or more labels. Here, we start to
+consider the case where we are interested in understanding specific documents
+in a corpus.
+
+As we talked about on the first day of class, there are three broad classes of
+model types. So far we have worked with supervised (i.e., predictive) learning,
+in which we have a relatively small set of categories, each with many examples.
+We wanted to find trends to predict the category based on common properties of
+the examples.
+
+Now, we want to introduce methods for unsupervised learning. In unsupervised
+models, we are interested in each document individually and want to understand
+how it relates to all of the other documents. Often unsupervised learning is
+used as a first step in supervised learning, but it can be, and often is, used
+on its own.
+
+**Note**: Please be patient with the notes today. I think the best approach to
+introducing the material starts by showing a few techniques in a way that does
+not have an immediate pay-off. We will get to them in a few minutes!
+
+## TF-IDF
+
+Most of models that we have built so far use the term frequencies (TF) to make
+predictions. These are counts of how often individual terms (usually lemmas,
+but these could be counts of parts of speech or other things) are used in each
+document.
+
+As we move into unsupervised learning, we will see that it is important to
+consider modifying this object to scale the entries to account for the overall
+frequency of terms across the corpus. In other words, without the guidance of
+a predictive task to tell us how much to weight each term frequency, we need to
+apply a manually scaling method to help account for this.
+
+The scaling that we will use results in a technique called TF-IDF (term
+frequency-inverse document frequency). It creates features which are a scaled
+version of the term frequencies divided by a scaled weight of how often the
+term is used in other documents. Mathematically, if
+`tf` are the number of times a term is used in a document, `df` are the
+number of documents that use the term at least once, and `N` are the total
+number of document, a TF-IDF score can be computed as:
+
+$$ \text{tfidf} = (1 + log_2(\text{tf})) \times log_2(\text{N} / \text{df}) $$
+
+The score gives a measurement of how important a term is in describing a
+document in the context of the other documents. Note that this is a popular
+choice for the scaling functions, but they are not universal and other choices
+are possible.
+
+In addition to using TF-IDF as the first step in other unsupervised algorithms,
+which we will see below, we can also TF-IDF to try to measure the most important
+words in each document by finding the terms that have the highest score. We
+can do this using the `dsst_tfidf` function:
+
+```{r, message = FALSE}
+dsst_tfidf(anno)
+```
+
+Note that we do not need to use this function itself any of the following
+applications. The TF-IDF code is already embedded into the implementations of
+other unsupervised tasks.
+
+Before moving on, if you recall, I mentioned that we used a scaled version of
+the term-frequencies in the KNN estimator and we would return to that concept.
+The TF-IDF matrix is what was being used to generate nearest neighbours. In the
+next section, we will again use the TF-IDF scores to compute distances, but in
+a slightly different way.
+
+## Principal component analysis (PCA)
+
+Now, let's consider one of the most important types of unsupervised learning:
+dimensionality reduction. Here, the goal is to take data that has a large
+number of features and map it into a much smaller set of features. We want
+as much structure as possible to be retained in the new set of features; in
+the process, however, we will lose the interpretability of the individual
+features.
+
+Principal component analysis (PCA) is a common method for taking a
+high-dimensional data set and converting it into a smaller set of dimensions
+that capture many of the most interesting aspects of the higher dimensional
+space. Specifically, it tries to preserve all of the (Euclidean) distances
+between pairs of points in a smaller dimensional space. For example, if we
+used a two-dimensional PCA, this would try to arrange the points in a plane in
+a way such that they have distances that are similar as possible to in the
+larger space.
+
+An interesting trait of PCA is that the best way to arrange points in K
+dimensions ends up being a linear subspace of the space that best arranges
+points in K-1 dimensions. Why is this important? It means that we can define
+specific quantities called **principal components** in a way such that the
+PCA mapping into K dimensional space is simply the first K principal components.
+
+We can compute principal components of the TF-IDF features using the function
+`dsst_pca`. By default we include only two components; more can be selected
+with the parameter `n_dims`.
+
+```{r, warning = FALSE}
+dsst_pca(anno)
+```
+
+What can we do with these components? One thing we can do is plot the
+first two components to show the relationship between the documents within
+the high dimensional space:
+
+```{r, warning = FALSE}
+dsst_pca(anno) %>% dsst_plot_dred()
+```
+
+Again, let's hold on one a moment and we will get to why this all matters in
+a moment.
+
+## UMAP
+
+A similar, slightly more complex, method for doing dimensionality reduction
+is called Uniform Manifold Approximation and Projection (UMAP). I will
+refer you to the [original paper](https://arxiv.org/abs/1802.03426) for a
+formal description; in short, it tries to preserve the nearest neighbours of
+points while not being concerned with their specific distances. We can compute
+the embedding with the `dsst_umap` function:
+
+```{r, warning = FALSE}
+anno %>%
+  filter(upos %in% c("NOUN", "ADJ", "VERB")) %>%
+  dsst_umap()
+```
+
+As with the principal components, the exact value are unimportant. It is the
+relationship between the documents that counts. For example, we can make a plot
+similar to the previous one:
+
+```{r, warning = FALSE}
+anno %>%
+  filter(upos %in% c("NOUN", "ADJ", "VERB")) %>%
+  dsst_umap() %>%
+  dsst_plot_dred()
+```
+
+Notice that shape of the dimensionality reduction results are noticeably
+different from those of the PCA analysis.
+
+## Visualise the Embedding
+
+The result of a dimensionality reduction algorithm such as PCA or UMAP analysis,
+are known as **embeddings**. The shapes can be interesting to look at but they
+do not immediately tell us much about the space. The key is that we need a new
+way of visualising the output in an interactive way beyond what is possible
+directly in R. Instead, let's save the results of the embedding as a json
+file and visualise it using a tool written in JavaScript.
+
+To create the data to load, run the following function (note the two options
+that control the output):
+
+```{r}
+dsst_pca(anno) %>%
+  dsst_json_drep(docs, color_var = "label", title_vars = c("doc_id", "label"))
+```
+
+By default, it saves the result as a file named "dim_reduction.json" contained
+in your class output directory. Now, go to the website
+[Text Embedding Visualizer](https://statsmaths.github.io/text-embed-explo/build/)
+and then upload the JSON file that we just produced. It should create an
+interactive visualisation for you to explore the dataset in.
+
+## What is a Document?
+
+In addition to making an interactive visualisation, another way that we can
+make the results of unsupervised learning more interesting is to change what
+we consider a document. The documents in this example by default are individual
+product reviews. However, we could collect the tokens across another metadata
+category. For example, we could consider all of a users reviews to collectively
+be a single "document". To change this, all we need to do is set the value of
+the `doc_id` variable in the respective functions.
+
+Let's see some results. When dimensionality reduction is plotted with fewer
+than 100 items, it also includes labels that help us understand the plot without
+using the JavaScript interface (though the latter is still available):
+
+```{r, warning = FALSE}
+dsst_pca(anno, docs, doc_var = "label") %>% dsst_plot_dred()
+```
+
+We can, for example, understand the difference structure now between the PCA
+and UMAP embeddings by comparing them here:
+
+```{r, warning = FALSE}
+dsst_umap(anno, docs, doc_var = "label") %>% dsst_plot_dred()
+```
+
+Notice that we start to see clusters of users in the output. How could these
+have been useful in your previous project?

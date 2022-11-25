@@ -1,0 +1,65 @@
+---
+title: "Project 04 --- Create Data"
+output: html_document
+---
+
+```{r, include=FALSE, message=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+```
+
+You should use this file to create your dataset, and then use the other file
+to read in your data and run the analysis as with the other projects. This
+will help avoid needing to create the data set each time you are working with
+the project.
+
+Here, select a starter page. I'll fill in my example from the notes:
+
+```{r}
+obj <- dsst_wiki_load("List_of_French_philosophers")
+```
+
+Now, look at some of the links. Note that you may need to change the code here
+based on your starting page.
+
+```{r, message=TRUE}
+links <- dsst_wiki_get_links(obj, xpath = ".//li//a")
+links
+```
+
+Next, grab all of the pages associated with the links you grabbed. This will
+take a while the first time you run it.
+
+```{r, message=TRUE}
+docs <- dsst_wiki_make_data(links[1:25,])
+docs
+```
+
+We can then run the udpipe annotator over your data. It will be a bit slower
+and not quite as accurate, as the spaCy annotator, but does not require setting
+up Python on your machine (a real pain for just this one assignment).
+
+```{r}
+library(cleanNLP)
+cnlp_init_udpipe("english")
+
+docs <- filter(docs, stringi::stri_length(text) > 0)
+anno <- cnlp_annotate(docs)$token
+```
+
+Here is a good sanity check, looking at the TF-IDF scores:
+
+```{r}
+dsst_tfidf(anno)
+```
+
+Finally, we can save our data set here:
+
+```{r}
+write_csv(docs, file.path("..", "data_project", "wiki.csv"))
+write_csv(anno, file.path("..", "data_project", "wiki_token.csv.gz"))
+```
+
+You can then read back into R using the code in `project04.Rmd`. If you don't
+find the results very interesting, or need to adjust anything, you can do it
+here

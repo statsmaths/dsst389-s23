@@ -1,0 +1,39 @@
+---
+title: "Self-Assessment Instructions"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+**Due Date**: 19 April 2023
+
+## Instructions
+
+The self-assessment consists of your responses to six questions. Each of these
+should take the form of a paragraph or two. The entire document has a strict
+two-page limit. Unlike the projects, you will be doing the self-assessment on
+your own. The questions to respond to are:
+
+1. What did you hope to get out of the class? Have you met these goals?
+2. Which project was your favorite? Why?
+3. If a friend asked you to describe the most significant thing you learned
+this semester, what would you say?
+4. Consider Project 3 (the Yelp data). Describe, specifically, how you
+contributed to your group's analysis and presentation.
+5. What aspect(s) of your work this semester was particularly strong?
+6. Suggest a letter grade for your class engagement that you feel accurately
+reflects your work. Briefly justify your suggestion.
+
+You can submit your assessment as either a pdf file or a docx file; the
+file should be named `selfassessment_first_last.docx` or
+`selfassessment_first_last.pdf` with your first and list names filled in.
+You may download a
+[template document file](https://github.com/statsmaths/dsst389-s23/raw/main/extra/selfassessment_first_last.docx)
+to use.
+
+## Submission
+
+Please upload your document on Box before the due date and time listed
+above.

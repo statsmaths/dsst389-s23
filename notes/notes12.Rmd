@@ -1,0 +1,123 @@
+---
+title: "12. Topic Models"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+options(dsst.traceit = FALSE)
+```
+
+## Load Wikipedia Data
+
+We will start by looking at the sovereign states dataset that we
+creating in the previous set of notes.
+
+```{r, message=FALSE}
+docs <- read_csv(file.path("..", "data", "wiki_list_of_sovereign_states.csv"))
+anno <- read_csv(file.path("..", "data", "wiki_list_of_sovereign_states_anno.csv.gz"))
+```
+
+Today we will investigate another unsupervised learning approach, this time one
+one specifically designed for modelling textual data.
+
+## Latent Dirchlet Allocation: Method
+
+Now, we will investigate a method for *topic modeling*. This is an
+unsupervised task that seeks to identify topics within a corpus of text. What
+exactly is a topic? Mathematically speaking, it is usually defined as a
+probability distribution over a collection of words. Words that have a high
+probability within a topic tend to classify the topics themes in a colloquial
+sense. For example, a topic that captures the idea of baseball would have high
+probabilities on words such as "base", "player", "strike", "umpire", "team",
+and so forth.
+
+We will be use a model today called Latent Dirchlet Allocation, or more commonly
+LDA. Given a fixed number of topics and fixed set of words (called a *lexicon*),
+LDA assumes that documents consist of a random collection of words
+constructed according to the following model:
+
+1. Each document is randomly partitioned into topics. For example, one document
+may be 20% in Topic A, 70% in Topic B, and 1% in the remaining 10 topics.
+2. Each topic is similarly assigned as a probability distribution of all the
+available words.
+3. When choosing words to create a document, pick a topic at random
+proportional to the topic distribution of the document, and then pick a word
+proportional to the chosen topic.
+4. The number of words in each document is assumed to be fixed, and there is
+assumed to be no relationship between the words in each document.
+
+This model is a great example of the adage that "all models are wrong, but
+some are useful". Clearly, this is not how documents are constructed, and
+words are not independent of one another. However, the approximation is close
+enough to produce a useful abstraction for detecting themes within a corpus of
+textual documents.
+
+You will notice that the description above is in some ways backwards from
+reality. It assumes that we know the distribution of the topics over the words
+and documents but do not know what words are present in the documents. In fact,
+we know the words but not the topics! This is an example of a Bayesian model.
+If we wrote down the assumptions rigorously, we could invert the probabilities
+using Bayes' Theorem. That is, instead of knowing the probability of the
+documents given the topics, we can determine the probability of the topics given
+the documents. It is not possible to do this analytically, however, and a
+simulation method is needed to figure out what distribution of topics over the
+words and documents is most likely to have produced the observed data.
+
+As a final note about the method, the name comes from the standard distribution
+used to determine the topics (the Dirichlet distribution) and the fact that the
+topics themselves are never observed (that is, the are *latent*).
+
+## Latent Dirchlet Allocation: Application
+
+Now, let's actually compute an LDA topic model using the function
+`dsst_lda_build`. It requires setting the number of topics; 16 is a good
+starting number. I tend to use only nouns, adjectives, adverbs, and verbs for
+the LDA model. The model can take a few minutes to finish; it should print
+out results as the algorithm proceeds.
+
+```{r}
+model <- anno %>%
+  filter(upos %in% c("NOUN", "VERBS", "ADJ", "ADV")) %>%
+  dsst_lda_build(num_topics = 16)
+```
+
+The results in the object `model` are structured as data tables. You can use
+them directly if you want to do some direct EDA on the object. For example,
+here are the documents most associated with each topic:
+
+```{r}
+model$docs %>%
+  group_by(topic) %>%
+  arrange(desc(prob)) %>%
+  slice_head(n = 5) %>%
+  summarise(countries = paste(doc_id, collapse = "; "))
+```
+
+Likewise, here are the words most associated with each topic:
+
+```{r}
+model$terms %>%
+  group_by(topic) %>%
+  arrange(desc(beta)) %>%
+  slice_head(n = 5) %>%
+  summarise(words = paste(token, collapse = "; "))
+```
+
+Otherwise, we return again to the idea of building an interactive visualisation
+using JavaScript. We can write all of the model data as a local JSON file with
+the `dsst_json_lda` function:
+
+```{r}
+dsst_json_lda(model, docs)
+```
+
+The results are, by default, stored in the output directory of your class
+notes as a file named "". If we go to the website
+[Topic Model Visualizer](https://statsmaths.github.io/topic-explo/build/)
+and upload the JSON file that we just produced, it will create an interactive
+visualisation of the topics for us to explore.

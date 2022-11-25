@@ -1,0 +1,125 @@
+---
+title: "Project 02 -- Instructions"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, include=FALSE}
+Sys.setlocale("LC_TIME", "en_US.UTF-8")
+```
+
+**Due Date**: 22 February 2023
+
+## General Instructions
+
+This page outlines the instructions for the second project. You should
+have a file `project02.Rmd` in your RStudio workspace where you can
+work on the project. I find that students prefer having a consistent
+format for the projects, so I will attempt to keep the format the same
+throughout the semester.
+
+Your group is responsible for completing two elements:
+
+1. Slides presenting your results, also submitted in your Box folder.
+2. A presentation based on your slide show. This should be ~~10-15~~ 8-10
+minutes in length.
+
+The slides must be uploaded by the first day of presentations regardless of
+when you present. As described on the syllabus, the project will be graded
+using a rubric, which can be found [here](../extra/project_rubric.pdf).
+
+## Specific Instructions
+
+This project uses a collection of product reviews from Amazon. I created it
+from the archive [here](https://nijianmo.github.io/amazon/index.html), produced
+by Jianmo Ni, Jiacheng Li, Julian McAuley. I have selected a collection of
+reviews from the most prolific reviewers. The classification task for the
+project is to be able to predict the author of a review; there are 25 authors in
+each dataset. Each group has been assigned a different product category to work
+with (see assignments below).
+
+The goal of your project is to apply the methods we have developed so far to
+explore your corpus and understand what features distinguish the authors.
+Remember that the goal is not just to classify; we want to use the methods to
+understand the style of the authors so it can be useful to build a variety of
+models (some of which may be less predictive) in order to achieve this. Here
+are some things you might consider looking into:
+
+- How well can you classify the authors based on word usage?
+- Are any of the most predictive words surprising? You can use KWiC to figure
+out what is going on.
+- How well can you classify the authors based on unigrams/bigrams/trigrams of
+`upos` and/or `xpos` tags? How does this compare to the word usage? Compare
+the predictiveness of a local model with a penalized regression.
+- Are some authors particularly hard to classify? Easy to classify? Can you
+tell why?
+- Do you think that the particular products that each person reviews is the
+main driver of you model? How could you remove this factor (and can you)?
+- Can you summarize the results in any interesting way?
+
+These are just some ideas to get you started. Feel free to go in a different
+direction if you find something interesting! Keep in mind that confusion
+matrices will be useful and that even classification rates around 50% are much
+better than random guessing when there are many classes.
+
+At the end of the day, though, your task is an open-ended one. I want you to
+explore the data using the techniques we have learned so far and then produce
+a short presentation showing your results to the rest of the class.
+
+## Presentation
+
+Your presentation should be in the form of a set of slides. You can build these
+in whatever software you would like, but please create a PDF version to submit
+on Box by the project deadline.
+
+The exact format of the slides is up to you, however there should be a final
+slide titled "Synthesis" that summarises what you have learned about the data
+from your analysis. It should take a big picture view of the analysis and not
+be overly focused on the models.
+
+You will find that most (perhaps all) of the results you want to show are
+tables and example reviews. Do not use screen shots for these! Screen shots are
+messy and not ideal. Instead, I suggest using the function `dsst_clipboard()`
+to copy information to the clipboard. This can then be pasted into a spreadsheet
+program or (in some cases) directly into a presentation. For example:
+
+```{r, eval=FALSE}
+dsst_neg_examples(model) %>% dsst_clipboard()
+```
+
+For visualisations, you can either use the function `dsst_save_plot` to store
+the most recent plot as a JPG or PNG file or right/ctrl click on a plot and
+save the file.
+
+## Groups
+
+Each group is working with a different product category. You should be able to
+download your data set from within the `project02.Rmd` file.
+
+We will have:
+
+**Group 1**: `video_games`
+
+**Group 2**: `grocery`
+
+**Group 3**: `toys_games`
+
+**Group 4**: `movies_tv`
+
+**Group 5**: `tools`
+
+**Group 6**: `kindle`
+
+**Group 7**: `cds`
+
+**Group 8**: `pet_supplies`
+
+
+## Notes
+
+While working through the project, I typically find that many groups ask for
+help writing the same bits of code. Any notes that I want to share about how
+to do specific tasks will be added here as we work through the project.

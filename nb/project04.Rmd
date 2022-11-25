@@ -1,0 +1,18 @@
+---
+title: "Project 04"
+output: html_document
+---
+
+```{r, include=FALSE, message=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+```
+
+# Load and Download the Data
+
+```{r, message=FALSE}
+wiki <- read_csv(file.path("..", "data_project", "wiki.csv"))
+token <- read_csv(file.path("..", "data_project", "wiki_token.csv.gz")
+```
+
+# Project Code
