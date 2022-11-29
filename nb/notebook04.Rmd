@@ -57,13 +57,15 @@ Now compute the error rate of the model.
 
 ```
 
-Then, the model coefficients.
+Then, the model coefficients. Select a smaller lambda number to only have a 
+small set of parameters.
 
 ```{r, question-03}
 
 ```
 
-And finally, use the following code to see the cross-validation curve.
+And finally, use the command `plot` applied to the `model$model` object to
+obtain the cross-validation curve.
 
 ```{r, question-04}
 
@@ -87,7 +89,8 @@ Now compute the error rate of the model.
 
 ```
 
-Then, the model coefficients.
+Then, the model coefficients. Again, select a lambda number to get a reasonable
+number of values.
 
 ```{r, question-07}
 
@@ -118,13 +121,13 @@ Now compute the error rate of the model.
 
 ```
 
-Then, the model coefficients.
+Then, the model coefficients selecting a reasonable lambda number.
 
 ```{r, question-11}
 
 ```
 
-And finally, plot the cross-validation curve.
+And then plot the cross-validation curve.
 
 ```{r, question-12}
 
@@ -154,7 +157,7 @@ Then, the model coefficients.
 
 ```
 
-And finally, plot the cross-validation curve.
+And finally, plot the cross-validation curve. 
 
 ```{r, question-16}
 

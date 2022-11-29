@@ -93,7 +93,7 @@ model <- anno %>%
 You can see the impact of the ngrams in the model coefficients:
 
 ```{r, message = FALSE}
-dsst_coef(model)
+dsst_coef(model$model, lambda_num = 30)
 ```
 
 An extension of this approach are called **skip-grams**. They work similarly
@@ -137,7 +137,7 @@ model <- anno %>%
 You can see the effect of this change here:
 
 ```{r, message = FALSE}
-dsst_coef(model)
+dsst_coef(model$model, lambda_num = 50)
 ```
 
 Some more advice about how to use these techniques are included below, but as
@@ -157,11 +157,27 @@ model <- anno %>%
 Which results in a very different type of model:
 
 ```{r, message = FALSE}
-dsst_coef(model)
+dsst_coef(model$model)
 ```
 
 We will see models like this more as we turn to authorship predict tasks in the
 next few projects.
+
+## Keywords in Context
+
+As a final tool for today, we can also go back and identify the use of
+particular terms within the documents using a method called keywords in
+context, or KWiC. The function works by passing it a term to search for
+as well as the docs table and the number of items to return. Here, for
+example, we can see the ways that the term "read" are used in the texts:
+
+```{r, message = FALSE}
+dsst_kwic(anno, terms = "read")
+```
+
+This will be useful when we start working with datasets where it is not
+immediately clear why a particular term is being associated with a label
+type.
 
 ## Advice Summary
 
@@ -175,7 +191,7 @@ notes and the first project. I find that first filtering on the five most common
 parts of speech and fixing the pronoun issue to be a good first pass to my first
 model. I sometimes also tag with the part of speech code for interpretability,
 but otherwise leave things as the defaults. This is the model I most often use
-for negative exampels, maximum probability examples, and coefficient tables.
+for negative examples, maximum probability examples, and coefficient tables.
 Then, depending on the application, I may try other techniques such as n-grams
 with `n=2` or `n=3` with `n_min=1`. If there is a noticeable improvement I will
 try to understand why and otherwise not bother with it much.

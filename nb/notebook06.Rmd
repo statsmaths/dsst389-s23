@@ -104,7 +104,7 @@ trees:
 ```
 
 How do the two lists compare to one another? Is there a lot of overlap? Is there
-any  particular pattern to the differences?
+any particular pattern to the differences?
 
 ### Comparison of POS grams
 

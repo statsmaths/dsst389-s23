@@ -520,11 +520,7 @@ classification task. We will read in the <code>docs</code> and
 <p>Today, we are going to derive a different type of local model called
 a gradient boosted trees (GBTs) or gradient boosted machine (GBMs).
 [Confusingly, the first term is far more common whereas the second
-abbreviation is more far more popularion.] I have some prose notes
-below, but in the class we will mostly follow these slides:</p>
-<ul>
-<li><a href="../extra/gbm.pdf">slides</a></li>
-</ul>
+abbreviation is more far more popularion.]</p>
 <div id="decision-trees" class="section level2">
 <h2>Decision Trees</h2>
 <p>Before we get to the main model today, we need to understand an
@@ -554,7 +550,7 @@ are a variety of tricks to speed up the process.</p>
 <p>It is an adaptive form of KNN. In affect, we are using the training
 data to decided how to measure which points are close to one another
 rather than using Euclidean distance directly.</p>
-<p>If you want to see a longer visualisation of decision trees, I
+<p>If you want to see a longer visualization of decision trees, I
 suggest checking out <a href="http://www.r2d3.us/visual-intro-to-machine-learning-part-1/">A
 visual introduction to machine learning</a>. It has the benefit of
 giving great visual intuition for the model as well as reviewing some
@@ -567,8 +563,8 @@ model for complex prediction tasks. A clever way to increase the
 predictive power of a decision tree is to build a large collection of
 trees; prediction is then done by predicting on each individual tree and
 taking the majority class across the whole set. One such model is called
-a <em>random forest</em>. The one that we will look at here is a
-<em>gradient boosted tree</em>, or <em>gradient boosted machine</em>
+a <em>random forest</em>. The one that we will look at more closely is a
+<em>gradient boosted tree</em>, o <em>gradient boosted machine</em>
 (GBM). The algorithm works like this:</p>
 <ul>
 <li>select a random subset of the training data</li>
@@ -590,25 +586,27 @@ updates to the probabilities from this model</li>
 learning algorithm. I have wrapped up the package’s functions in a
 consistent way so that we can call it using the function
 <code>dsst_gbm_build</code>. The key parameters to set are the number of
-rounds (or trees) and the learning rate. As always, some trial and error
-is needed to get a good result. Note that in general, more trees are
-needed for a smaller learning rate.</p>
+rounds (or trees) and the learning rate (call <code>eta</code>). As
+always, some trial and error is needed to get a good result. Note that
+in general, more trees are needed for a smaller learning rate.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">dsst_gbm_build</span>(anno, docs, <span class="at">nrounds =</span> <span class="dv">300</span>, <span class="at">eta =</span> <span class="fl">0.01</span>)</span></code></pre></div>
-<pre><code>## as(&lt;dgCMatrix&gt;, &quot;dgTMatrix&quot;) is deprecated since Matrix 1.5-0; do as(., &quot;TsparseMatrix&quot;) instead</code></pre>
 <p>Let’s see how well this model predicts the classes in our data (in
 RStudio, the error rates will print out as you build the model):</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_erate</span>(model)</span></code></pre></div>
-<pre><code>## # A tibble: 1 × 2
-##    train  valid
-##    &lt;dbl&gt;  &lt;dbl&gt;
-## 1 0.0841 0.0966</code></pre>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(train_id) <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">erate =</span> <span class="fu">mean</span>(label <span class="sc">!=</span> pred_label))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 2
+##   train_id  erate
+##   &lt;chr&gt;     &lt;dbl&gt;
+## 1 train    0.0841
+## 2 valid    0.0966</code></pre>
 <p>It manages about 10%, significantly better than the KNN model we
 built in the previous class and only slightly worse than the penalized
 regression model.</p>
 <p>In addition to generally being faster and making better predictions,
 one benefit of the gradient boosted trees over KNN is that it provides
 variable importance scores:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_gbm_imp</span>(model)</span></code></pre></div>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_gbm_imp</span>(model<span class="sc">$</span>model)</span></code></pre></div>
 <pre><code>## # A tibble: 95 × 4
 ##    feature   gain  cover frequency
 ##    &lt;chr&gt;    &lt;dbl&gt;  &lt;dbl&gt;     &lt;dbl&gt;
@@ -642,14 +640,17 @@ and increasing the number of trees until the model <em>saturates</em>
 (no longer improves).</p>
 <p>Here is an example in which I tuned the model to have a much lower
 learning rate and larger number of trees:</p>
-<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">dsst_gbm_build</span>(anno, docs, <span class="at">nrounds =</span> <span class="dv">2000</span>, <span class="at">eta =</span> <span class="fl">0.005</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">dsst_gbm_build</span>(anno, docs, <span class="at">nrounds =</span> <span class="dv">2000</span>, <span class="at">eta =</span> <span class="fl">0.005</span>)</span></code></pre></div>
 <p>It ends up being slightly more predictive than the model we had for
 the best elastic net model:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_erate</span>(model)</span></code></pre></div>
-<pre><code>## # A tibble: 1 × 2
-##    train  valid
-##    &lt;dbl&gt;  &lt;dbl&gt;
-## 1 0.0447 0.0638</code></pre>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(train_id) <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">erate =</span> <span class="fu">mean</span>(label <span class="sc">!=</span> pred_label))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 2
+##   train_id  erate
+##   &lt;chr&gt;     &lt;dbl&gt;
+## 1 train    0.0447
+## 2 valid    0.0638</code></pre>
 <p>Though, practically speaking, the differences are fairly minor they
 can be quite different when working with other prediction tasks and
 feature sets.</p>

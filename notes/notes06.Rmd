@@ -25,10 +25,7 @@ anno <- read_csv("../data/amazon_product_class_token.csv.gz")
 Today, we are going to derive a different type of local model called a gradient
 boosted trees (GBTs) or gradient boosted machine (GBMs). [Confusingly, the first
 term is far more common whereas the second abbreviation is more far more
-popularion.] I have some prose notes below, but in the class we will mostly
-follow these slides:
-
-- [slides](../extra/gbm.pdf)
+popularion.] 
 
 ## Decision Trees
 
@@ -63,7 +60,7 @@ It is an adaptive form of KNN. In affect, we are using the training data to
 decided how to measure which points are close to one another rather than using
 Euclidean distance directly.
 
-If you want to see a longer visualisation of decision trees, I suggest checking
+If you want to see a longer visualization of decision trees, I suggest checking
 out
 [A visual introduction to machine learning](http://www.r2d3.us/visual-intro-to-machine-learning-part-1/).
 It has the benefit of giving great visual intuition for the model as well as
@@ -76,8 +73,8 @@ complex prediction tasks. A clever way to increase the predictive power of
 a decision tree is to build a large collection of trees; prediction is then
 done by predicting on each individual tree and taking the majority class across
 the whole set. One such model is called a *random forest*. The one that we will
-look at here is a *gradient boosted tree*, or *gradient boosted machine* (GBM).
-The algorithm works like this:
+look at more closely is a *gradient boosted tree*, o
+*gradient boosted machine* (GBM). The algorithm works like this:
 
 - select a random subset of the training data
 - build a decision tree with the selected training data to predict the labels
@@ -95,9 +92,9 @@ To run gradient boosted trees, we will use the package **xgboost**, which has
 a very fast implementation of a learning algorithm. I have wrapped up the
 package's functions in a consistent way so that we can call it using the
 function `dsst_gbm_build`. The key parameters to set are the number of rounds
-(or trees) and the learning rate. As always, some trial and error is needed to
-get a good result. Note that in general, more trees are needed for a smaller
-learning rate.
+(or trees) and the learning rate (call `eta`). As always, some trial and error
+is needed to get a good result. Note that in general, more trees are needed for
+a smaller learning rate.
 
 ```{r}
 model <- dsst_gbm_build(anno, docs, nrounds = 300, eta = 0.01)
@@ -107,7 +104,9 @@ Let's see how well this model predicts the classes in our data (in RStudio, the
 error rates will print out as you build the model):
 
 ```{r}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 It manages about 10%, significantly better than the KNN model we built in the
@@ -118,7 +117,7 @@ benefit of the gradient boosted trees over KNN is that it provides variable
 importance scores:
 
 ```{r}
-dsst_gbm_imp(model)
+dsst_gbm_imp(model$model)
 ```
 
 Unlike global models, there is no clear concept of which class is associated
@@ -149,7 +148,9 @@ It ends up being slightly more predictive than the model we had for the best
 elastic net model:
 
 ```{r}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 Though, practically speaking, the differences are fairly minor they can be

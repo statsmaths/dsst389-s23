@@ -1,5 +1,5 @@
 ---
-title: "Notebook 04"
+title: "Notebook 04 -- Solutions"
 output:
   html_document:
     theme: cosmo
@@ -55,16 +55,20 @@ model <- anno %>%
 Now compute the error rate of the model.
 
 ```{r, question-02}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(category != pred_label))
 ```
 
-Then, the model coefficients.
+Then, the model coefficients. Select a smaller lambda number to only have a 
+small set of parameters.
 
 ```{r, question-03}
-dsst_coef(model)
+dsst_coef(model$model, lambda_num = 10)
 ```
 
-And finally, use the following code to see the cross-validation curve.
+And finally, use the command `plot` applied to the `model$model` object to
+obtain the cross-validation curve.
 
 ```{r, question-04}
 plot(model$model)
@@ -87,13 +91,16 @@ model <- anno %>%
 Now compute the error rate of the model.
 
 ```{r, question-06}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(category != pred_label))
 ```
 
-Then, the model coefficients.
+Then, the model coefficients. Again, select a lambda number to get a reasonable
+number of values.
 
 ```{r, question-07}
-dsst_coef(model)
+dsst_coef(model$model, lambda = 10)
 ```
 
 And finally, plot the cross-validation curve.
@@ -120,16 +127,18 @@ model <- anno %>%
 Now compute the error rate of the model.
 
 ```{r, question-10}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(category != pred_label))
 ```
 
-Then, the model coefficients.
+Then, the model coefficients selecting a reasonable lambda number.
 
 ```{r, question-11}
-dsst_coef(model)
+dsst_coef(model$model, lambda_num = 20)
 ```
 
-And finally, plot the cross-validation curve.
+And then plot the cross-validation curve.
 
 ```{r, question-12}
 plot(model$model)
@@ -151,16 +160,18 @@ model <- anno %>%
 Now compute the error rate of the model.
 
 ```{r, question-14}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(category != pred_label))
 ```
 
 Then, the model coefficients.
 
 ```{r, question-15}
-dsst_coef(model)
+dsst_coef(model$model)
 ```
 
-And finally, plot the cross-validation curve.
+And finally, plot the cross-validation curve. 
 
 ```{r, question-16}
 plot(model$model)

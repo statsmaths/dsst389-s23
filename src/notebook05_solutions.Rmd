@@ -1,5 +1,5 @@
 ---
-title: "Notebook 05"
+title: "Notebook 05 -- Solutions"
 output:
   html_document:
     theme: cosmo
@@ -52,14 +52,16 @@ model <- dsst_enet_build(anno, docs)
 Now, what is the overall error rate of this model?
 
 ```{r, question-02}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 In the code block below, look at the model coefficients. You may want to limit
 the number of results by setting `lambda_num` to something around 30
 
 ```{r, question-03}
-dsst_coef(model, lambda_num = 30)
+dsst_coef(model$model, lambda_num = 30)
 ```
 
 You should notice several interesting things about the model. What are the main
@@ -67,7 +69,7 @@ features that are being used here? Do you see any patterns about where the
 strongest coefficients are concentrated?
 
 Build another elastic net model but remove the proper nouns from the texts.
-Note, we can use `!=` to signal not equal to in R.
+Note, we can use `!=` to signal (not equal to) in R.
 
 ```{r, question-04}
 model <- anno %>%
@@ -78,14 +80,16 @@ model <- anno %>%
 What is the error rate of the model now? Note how it changes from above.
 
 ```{r, question-05}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 In the code block below, look at the model coefficients. You may want to limit
 the number of results by setting `lambda_num` to something around 40.
 
 ```{r, question-06}
-dsst_coef(model, lambda_num = 30)
+dsst_coef(model$model, lambda_num = 30)
 ```
 
 You should now notice that the types of words being used are very different.
@@ -102,7 +106,9 @@ model <- anno %>%
 Compute the error rate, comparing it to the previous error rates.
 
 ```{r, question-08}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 We can do a bit better using n-grams of xpos tags. Create a model using 3-grams
@@ -117,7 +123,9 @@ model <- anno %>%
 Finally, compute the error rate of this model:
 
 ```{r, question-10}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 How does it compare the word-based model above? It will likely be very close,
@@ -137,7 +145,9 @@ Now, print out the error rate of the model. Compare to the same model using
 the elastic net.
 
 ```{r, question-12}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 Now, fit a knn model using the 3-gram xpos features and k = 1.
@@ -151,7 +161,9 @@ model <- anno %>%
 Compute the error rate and compare the results using the elastic net.
 
 ```{r, question-14}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 Finally, fit a model using 3-gram xpos features and k = 10.
@@ -166,7 +178,9 @@ Compute the error rate and compare the previous results. Does setting k equal
 to 10 change the model?
 
 ```{r, question-16}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 You should have noticed that knn is significantly worse than the elastic net

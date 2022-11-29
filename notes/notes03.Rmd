@@ -15,9 +15,9 @@ options(dsst.traceit = FALSE)
 ## Load the Data
 
 The first step in doing predictive text analysis in R is to load some data
-to work with. In the final project you will see how to construct a dataset
+to work with. Later in the semester you will see how to construct a dataset
 directly yourself, but until then we will mostly used datasets that I have
-prepared for you. These datasets will be in a predicable format, with two
+prepared for you. These data sets will be in a standard format, with two
 different files.
 
 Today we will look at an example trying to predict the product category that
@@ -34,7 +34,7 @@ anno <- read_csv("../data/amazon_product_class_token.csv.gz")
 In each row of the `docs` table one we have one row for each product review.
 These correspond to the observations that we discussed in the previous notes.
 In text analysis, we use the term **document** to describe each observation;
-you will also see me call the entire set of documents a **corpus**. Let's
+you will also hear me call the entire set of documents a **corpus**. Let's
 take a look at the first few rows of the data:
 
 ```{r, message = FALSE}
@@ -52,7 +52,7 @@ the last column is called `text`; it contains the full text of the review.
 
 Our predictive modelling goal is to predict the label using the text. As we
 have discussed, we cannot directly fit a model using the text variable as a
-feature. Instead, we need to produce a set of numeric features that summarise
+feature. Instead, we need to produce a set of numeric features that summarize
 the text. One of the most common methods for doing this is to use features
 called **term frequencies**. These are features that count how many times
 words or other linguistic element occurs in the text. To do this, we will
@@ -62,7 +62,7 @@ The `anno` data table has been automatically created from the `docs` table
 using a set of predictive models called an NLP pipeline. This pipeline is
 not the direct subject of this course, but in later notes we will see how
 to apply it and create the annotations directly. For now, we will just use
-the ones that I precomputed. Here is what the first few rows of the table
+the ones that I pre-computed. Here is what the first few rows of the table
 look like:
 
 ```{r, message = FALSE}
@@ -80,8 +80,8 @@ For now, let's focus on just four of the columns. The first one contains the
 `doc_id` that can be used to associate each token with a document. We also
 see the `token` column that contains the token itself, which we can count
 up to create features for the prediction task. There is also a column called
-`lemma` which contains a standardised version of the token. For example,
-it remove start-of-sentence capitalisation and puts all verbs into the
+`lemma` which contains a standardized version of the token. For example,
+it remove start-of-sentence capitalization and puts all verbs into the
 infinitive. As the name suggests, this form is called a **lemma**. Usually
 we will use the lemmas rather than the tokens to construct a model. Finally,
 we see a column called `upos`, the universal part of speech code associated
@@ -98,60 +98,172 @@ the `docs` table that have `train_id` equal to "train".
 4. Evaluate the model on the rows of the `docs` table that have `train_id`
 equal to "valid".
 
-Conceptually, this is an accurate description of what we are going to do.
-However, rather than directly picking the lemmas to use and creating the new
-columns in `docs`, we will use an R function that I wrote to do all of this
-work for us.
+In the next section, I will show you how we can do these steps using low-level
+R code. You'll see that it's not too difficult but requires a lot of temporary
+variables and bookkeeping. In the following section, I will show you a wrapper
+functions  that make it so you don't need to copy and paste all of this code
+every time you want to run a model.
 
-As mentioned in class, if you are interested in more of the implementation
-details, the code for all of these functions is available in the the script
-called `funs.R` that is contained in the class materials. It can also be
-modified by creating a new version in the file `funs_custom.R`.
+## Building the Model (long way)
 
-## Build the Model
+Let's see how we can run an elastic net using the Amazon data we loaded above
+using low-level R functions. Note that in the code below I am using the code
+`dataset_name$variable_name` to extract a specific variable from a specific
+dataset. This is needed when working outside of verbs and ggplot commands.
+
+To start, let's get a vector of all the unique documents and lemmas
+(standardized words) from the data using the `unique()` function:
+
+```{r}
+document_set <- unique(anno$doc_id)
+vocab_set <- unique(anno$lemma)
+```
+
+Now, I will use the `match()` function to create an index to tell me with
+document and lemma every row of the `anno` data is associated with.
+
+```{r}
+dindex <- as.numeric(match(anno$doc_id, document_set))
+tindex <- as.numeric(match(anno$lemma, vocab_set))
+```
+
+Next, we will create a matrix, a square array of numbers. The matrix we will 
+create has one row for each document and one column for each unique term.
+The numbers count how often each term occurs in a given document. Since most
+terms do not occur in most documents, this matrix will have a large number of
+zeros. To account for this, we will create a sparse matrix object that only 
+stores the non-zero elements. Here's the code that creates such an object 
+and displays its dimensions:
+
+```{r}
+X <- Matrix::sparseMatrix(
+  i = dindex, j = tindex, x = 1,
+  dims = c(length(document_set), length(vocab_set)),
+  dimnames = list(document_set, vocab_set)
+)
+dim(X)
+```
+
+We can simplify things by removing any terms that have only a few occurrences. 
+Here, for example, is the code to only keep data with at least 20 instances
+in the data:
+
+```{r}
+X <- X[, colSums(X) >= 20]
+dim(X)
+```
+
+To illustrate where we are, here are the first 12 rows and 12 columns of the 
+data.
+
+```{r}
+X[1:12, 1:12]
+```
+
+Now, we need to split the matrix X into those rows in the training set and the
+validation set. We also need to make a pair of vectors `y` that store the
+variable that we are trying to predict.
+
+```{r}
+X_train <- X[docs$train_id == "train",]
+X_valid <- X[docs$train_id == "valid",]
+y_train <- docs$label[docs$train_id == "train"]
+y_valid <- docs$label[docs$train_id == "valid"]
+```
+
+Now that we have the data, we can run the elastic net module using the function
+`cv.glmnet` from the **glmnet** package. I will set a few options to different
+values to make the function run faster.
+
+```{r}
+model <- glmnet::cv.glmnet(
+  X_train, y_train, family = "multinomial", lambda_min_ratio = 0.1, nfolds = 3, 
+)
+```
+
+Finally, we can use the `predict` function to see what the model would predict
+for each observation on the validation data. I'll use the `table` function to
+show a confusion matrix of the predictions and the actual responses.
+
+```{r}
+y_valid_pred <- predict(model, newx = X_valid, type = "class")
+table(y_valid, y_valid_pred)
+```
+
+Note that the `cv.glmnet` function automatically performs cross validation and
+returns the results using the lambda with the best predictive power on the
+training data.
+
+## Build the Model (easy way)
+
+In the quick run through of the commands above, you can see that we can run 
+elastic net models on textual data with a few new commands and several
+intermediate steps. Understanding this process is important and useful. However,
+it becomes clunky if you have to do all of those steps every single time you
+want to fit a model. Copy and pasting code quickly becomes the focus rather
+than understanding the data and what it is telling us. As a solution to this
+problem, I have written some wrapper functions that take care of the bookkeeping
+of running certain models. These are all provided by the **dsst* package and
+are prefixed with the string "dsst_".
 
 The main function we will use to build a predictive model is called
 `dsst_enet_build`. We need to pass the function the `anno` table and the
-`docs` table. It has a number of options that we can modify, but for now
-let's just use the default values:
+`docs` table. It has a number of options that we can modify (these correspond
+to the options I selected above), but for now let's just use the default values:
 
 ```{r, message = FALSE}
 model <- dsst_enet_build(anno, docs)
 ```
 
-And that's it! Really. By default the function has created numeric features
-from the 10,000 most frequently used lemmas that are used in at least 0.1%
-of the documents. Let's take a look at some of the ways that we can evaluate
-the model. Next class we will look at more ways to modify the way the
-model itself is built.
+And that's it! Really. The model object has two elements that contain the glmnet
+model object (`model$model`) and the document table augmented with predictions
+from the cross-validated elastic net (`model$docs`). By default the function
+has created numeric features from the 10,000 most frequently used lemmas that
+are used in at least 0.1% of the documents. Let's take a look at some of the
+ways that we can evaluate the model. Next class we will look at more ways to 
+modify the way the model itself is built.
 
 ## Evaluate the Model Fit
 
 As a starting point, we want to see how well the model has done making
-predictions on the training and validation data. To do this, we use the
-function `dsst_erate`, passing it the model. The predictions have already
-been made and are stored in the model object. The lambda value used was
-selected using cross-validation.
+predictions on the training and validation data. We can do this using standard
+data verbs that we learned in 289 applied to the augmented docs data. Here's
+what the document table looks like:
+
+```{r}
+model$docs
+```
+
+And the error rates can be computed by grouping by the train id and summarizing
+the proportion of labels that match their predictions.
 
 ```{r, message = FALSE}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 We see that around 6% of the training data was mis-classified and 7% of the
 validation data was mis-classified. Not too bad as a first pass! We can
-select the `segmented` option to see how well the model does on each class:
+learn a bit more by using an error rate segmented by the real label:
 
 ```{r, message = FALSE}
-dsst_erate(model, segmented = TRUE)
+model$docs %>%
+  group_by(label, train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
 We see that books were the hardest to classify, with films being the next
 hardest, and food being the easiest. We can get a picture of what kind of
-errors are being made by using a confusion matrix with the function
-`dsst_confusion_matrix` (it reports on just the validation data):
+errors are being made by using a confusion matrix with the function `table`.
+This function will print the cross-tabulated counts of two or more variables.
+Be careful not to pass it the whole dataset and note that the order of the 
+variables matters.
 
 ```{r, message = FALSE}
-dsst_confusion_matrix(model)
+model$docs %>%
+  select(label, pred_label, train_id) %>%
+  table()
 ```
 
 Note that the actual labels are on the rows and the predicted labels are on
@@ -168,8 +280,8 @@ To do this, a key tool will be to look at the model coefficients. We can
 do this with the `dsst_coef` function. By default, the values are given
 based off of the best model from the cross-validation process:
 
-```{r, message = FALSE}
-dsst_coef(model)
+```{r, message = FALSE} 
+dsst_coef(model$model)
 ```
 
 Usually, this gives too many values to easily interpret. Instead, we want
@@ -180,99 +292,56 @@ to 100 (the smallest lambda). Looking at the 10th value here produces a
 very small model that is easy to interpret:
 
 ```{r, message = FALSE}
-dsst_coef(model, lambda_num = 10)
+dsst_coef(model$model, lambda_num = 10)
 ```
 
 Increasing to 20 includes more terms and a richer understanding of the
 classes:
 
 ```{r, message = FALSE}
-dsst_coef(model, lambda_num = 20)
+dsst_coef(model$model, lambda_num = 20)
 ```
 
-Usually you will need to look at several different version of the model
+Usually you will need to look at several different versions of the model
 to make interesting observations about the data.
 
 ## Negative Examples
 
 One of the most interesting things about working with text data is that
 we can go back to the model and manually read the text of interesting
-observations that are identified by the model. There are two types of
-interesting that we will often use.
-
-First, we will see what are called **negative examples**. These are
-records that are mis-classified by our predictive model. The function
-`dsst_neg_examples` returns a number of randomly identified negative
-examples.
+observations that are identified by the model. One thing that we can start 
+with are looking at some **negative examples**. These are records that are
+mis-classified by our predictive model. We can grab a subset of these using the
+filter command along with the function `slice_sample`. The latter takes a random
+selection of rows from the data (the results change each time you run it).
 
 ```{r, message = FALSE}
-dsst_neg_examples(model, n = 10)
+model$docs %>%
+  filter(label != pred_label) %>%
+  filter(train_id == "valid") %>%
+  slice_sample(n = 10)
 ```
 
 It can be difficult to read the text in the print out itself. I wrote
 a helper function called `dsst_print_text` that prints out the text in an
 easier-to-read format. We use it along with a pipe `%>%` to show all of
-the texts:
+the texts. It will also display all of the other metadata at the top of the
+record.
 
 ```{r, message = FALSE}
-dsst_neg_examples(model, n = 10) %>% dsst_print_text()
+model$docs %>%
+  filter(label != pred_label) %>%
+  filter(train_id == "valid") %>%
+  slice_sample(n = 10) %>%
+  dsst_print_text()
 ```
 
 At the top of each text is the real label followed by the predicted label
-with the predicted probability of the label in parentheses.
-Can you understand why some of these were mis-classified? Sometimes, we
-might want to look at only a specific label that was mis-classified. For
-example, in this case, what about those few food items that were not
-identified correctly? We can do this will the `real_label` option:
-
-```{r, message = FALSE}
-dsst_neg_examples(model, n = 10, real_label = "food") %>% dsst_print_text()
-```
-
-Again, can you understand where the errors are being made?
-
-## Maximum Probability
+with the predicted probability of the label in parentheses. Can you understand
+why some of these were mis-classified? 
 
 On the other end of the spectrum, we can try to understand the model and
 the data by looking at the texts that have the highest predicted
 probabilities for its label. These are often classified correctly, but
-there are sometimes errors as well. To identify these, we use the function
-`dsst_max_prob`; it has a similar format to the negative examples function
-and can also be paired with `dsst_print_text` (note that the latter tuncates
-to 500 characters by default, but this can be increased):
-
-```{r, message = FALSE}
-dsst_max_prob(model, n = 10) %>% dsst_print_text()
-```
-
-As with negative examples, there is an option called `real_label` that will
-just look at a specific category.
-
-```{r, message = FALSE}
-dsst_max_prob(model, n = 3, real_label = "food") %>% dsst_print_text()
-```
-
-Setting `real_label` to the special value "ALL" returns the desired number
-of examples for each label:
-
-```{r, message = FALSE}
-dsst_max_prob(model, n = 2, real_label = "ALL") %>% dsst_print_text()
-```
-
-The same option can be used with `dsst_neg_examples`.
-
-## Keywords in Context
-
-As a final tool for today, we can also go back and identify the use of
-particular terms within the documents using a method called keywords in
-context, or KWiC. The function works by passing it a term to search for
-as well as the docs table and the number of items to return. Here, for
-example, we can see the ways that the term "read" are used in the texts:
-
-```{r, message = FALSE}
-dsst_kwic("read", anno)
-```
-
-This will be useful when we start working with datasets where it is not
-immediately clear why a particular term is being associated with a label
-type.
+there are sometimes errors as well. We will look at these in the notebook for
+this class.

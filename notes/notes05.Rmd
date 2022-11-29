@@ -82,10 +82,10 @@ important than common words (with larger counts).
 The scaling that we will use results in a technique called TF-IDF (term
 frequency-inverse document frequency). It creates features which are a scaled
 version of the term frequencies divided by a scaled weight of how often the
-term is used in other documents. Mathematically, if
-`tf` are the number of times a term is used in a document, `df` are the
-number of documents that use the term at least once, and `N` are the total
-number of document, a TF-IDF score can be computed as:
+term is used in other documents. Mathematically, if `tf` are the number of
+times a term is used in a document, `df` are the number of documents that use
+the term at least once, and `N` are the total number of document, a TF-IDF
+score can be computed as:
 
 $$ \text{tfidf} = (1 + log_2(\text{tf})) \times log_2(\text{N} / \text{df}) $$
 
@@ -103,18 +103,17 @@ model <- dsst_knn_build(anno, docs)
 ```
 
 It can take a few minutes to finish. After it does, we can see how predictive
-the model is:
+the model is by using our data verbs. 
 
 ```{r}
-dsst_erate(model)
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
-This is not nearly as good as the global model. We will see that when we have
-a larger set of classes the model starts to become more competitive with the
-global model.
-
-By default, the function uses k equal to 1. We can manually set a different k
-by setting the argument `k` in the function call.
+This is not nearly as good as the global model on the validation data. We will
+see that when we have a larger set of classes the model starts to become more
+competitive with the global model.
 
 This is a nice example of a completely different model that can help show how
 well your other models are working. It has a very different approach and is

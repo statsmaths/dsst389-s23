@@ -67,7 +67,7 @@ features that are being used here? Do you see any patterns about where the
 strongest coefficients are concentrated?
 
 Build another elastic net model but remove the proper nouns from the texts.
-Note, we can use `!=` to signal not equal to in R.
+Note, we can use `!=` to signal (not equal to) in R.
 
 ```{r, question-04}
 

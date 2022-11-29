@@ -1,5 +1,5 @@
 ---
-title: "09. Unsupervised Learning I"
+title: "09. Unsupervised Learning II"
 output:
   html_document:
     theme: cosmo
@@ -22,194 +22,150 @@ docs <- read_csv("../data/amazon_cds.csv.bz2")
 anno <- read_csv("../data/amazon_cds_token.csv.bz2")
 ```
 
-Today we make a shift towards a different type of analysis. So far we
-have been mostly interested in a large collection of texts with the goal of
-associating textual features with one or more labels. Here, we start to
-consider the case where we are interested in understanding specific documents
-in a corpus.
+Today, we will continue are study of unsupervised learning by studying a few
+extensions of what we saw in the previous notes.
 
-As we talked about on the first day of class, there are three broad classes of
-model types. So far we have worked with supervised (i.e., predictive) learning,
-in which we have a relatively small set of categories, each with many examples.
-We wanted to find trends to predict the category based on common properties of
-the examples.
+## Clusters with K-means
 
-Now, we want to introduce methods for unsupervised learning. In unsupervised
-models, we are interested in each document individually and want to understand
-how it relates to all of the other documents. Often unsupervised learning is
-used as a first step in supervised learning, but it can be, and often is, used
-on its own.
+One thing that we often do when looking at plots of dimensionality reduction
+is to look for clumps of documents that co-occur. We can do this explicit
+by clustering the data using a clustering algorithm. Here, we will use a popular
+option called K-means (note, this is not the same as k-NN, but I suppose it is
+not entirely unrelated). It is an iterative algorithm that works as follows:
 
-**Note**: Please be patient with the notes today. I think the best approach to
-introducing the material starts by showing a few techniques in a way that does
-not have an immediate pay-off. We will get to them in a few minutes!
+1. Pick the number of clusters N that you want to detect.
+2. Randomly choose N data points as the starting centroids of each cluster.
+3. Compute the distance of every data point to the centroids of the current
+clusters.
+4. Assign each data point to the cluster whose centroids it is closest.
+5. Re-compute the cluster centroids as the average value of all the points in a
+cluster.
+6. Take the new cluster centroids, and repeat the process (compute distances,
+reassign to groups, and recompute the centroids) iteratively until convergence.
 
-## TF-IDF
+The algorithm is not entirely deterministic because of the random starting
+points. Typically, the algorithm is run several times and the "best" clustering
+is chosen. How do we define the "best" in the case of a clustering algorithm?
+A typical method is to measure the sum of squared distances to the cluster
+centroids, a quantity that a good clustering will minimise.
 
-Most of models that we have built so far use the term frequencies (TF) to make
-predictions. These are counts of how often individual terms (usually lemmas,
-but these could be counts of parts of speech or other things) are used in each
-document.
+- [visualisation of kmeans](https://www.naftaliharris.com/blog/visualizing-k-means-clustering/)
 
-As we move into unsupervised learning, we will see that it is important to
-consider modifying this object to scale the entries to account for the overall
-frequency of terms across the corpus. In other words, without the guidance of
-a predictive task to tell us how much to weight each term frequency, we need to
-apply a manually scaling method to help account for this.
+Usually, K-means is run on a set of PCA coordinates rather than the entire
+embedding itself. Often you will find that including a few dozen PCA components
+provides a better fit (though it is rarely useful to use the entire TF-IDF).
 
-The scaling that we will use results in a technique called TF-IDF (term
-frequency-inverse document frequency). It creates features which are a scaled
-version of the term frequencies divided by a scaled weight of how often the
-term is used in other documents. Mathematically, if
-`tf` are the number of times a term is used in a document, `df` are the
-number of documents that use the term at least once, and `N` are the total
-number of document, a TF-IDF score can be computed as:
-
-$$ \text{tfidf} = (1 + log_2(\text{tf})) \times log_2(\text{N} / \text{df}) $$
-
-The score gives a measurement of how important a term is in describing a
-document in the context of the other documents. Note that this is a popular
-choice for the scaling functions, but they are not universal and other choices
-are possible.
-
-In addition to using TF-IDF as the first step in other unsupervised algorithms,
-which we will see below, we can also TF-IDF to try to measure the most important
-words in each document by finding the terms that have the highest score. We
-can do this using the `dsst_tfidf` function:
-
-```{r, message = FALSE}
-dsst_tfidf(anno)
-```
-
-Note that we do not need to use this function itself any of the following
-applications. The TF-IDF code is already embedded into the implementations of
-other unsupervised tasks.
-
-Before moving on, if you recall, I mentioned that we used a scaled version of
-the term-frequencies in the KNN estimator and we would return to that concept.
-The TF-IDF matrix is what was being used to generate nearest neighbours. In the
-next section, we will again use the TF-IDF scores to compute distances, but in
-a slightly different way.
-
-## Principal component analysis (PCA)
-
-Now, let's consider one of the most important types of unsupervised learning:
-dimensionality reduction. Here, the goal is to take data that has a large
-number of features and map it into a much smaller set of features. We want
-as much structure as possible to be retained in the new set of features; in
-the process, however, we will lose the interpretability of the individual
-features.
-
-Principal component analysis (PCA) is a common method for taking a
-high-dimensional data set and converting it into a smaller set of dimensions
-that capture many of the most interesting aspects of the higher dimensional
-space. Specifically, it tries to preserve all of the (Euclidean) distances
-between pairs of points in a smaller dimensional space. For example, if we
-used a two-dimensional PCA, this would try to arrange the points in a plane in
-a way such that they have distances that are similar as possible to in the
-larger space.
-
-An interesting trait of PCA is that the best way to arrange points in K
-dimensions ends up being a linear subspace of the space that best arranges
-points in K-1 dimensions. Why is this important? It means that we can define
-specific quantities called **principal components** in a way such that the
-PCA mapping into K dimensional space is simply the first K principal components.
-
-We can compute principal components of the TF-IDF features using the function
-`dsst_pca`. By default we include only two components; more can be selected
-with the parameter `n_dims`.
-
-```{r, warning = FALSE}
-dsst_pca(anno)
-```
-
-What can we do with these components? One thing we can do is plot the
-first two components to show the relationship between the documents within
-the high dimensional space:
-
-```{r, warning = FALSE}
-dsst_pca(anno) %>% dsst_plot_dred()
-```
-
-Again, let's hold on one a moment and we will get to why this all matters in
-a moment.
-
-## UMAP
-
-A similar, slightly more complex, method for doing dimensionality reduction
-is called Uniform Manifold Approximation and Projection (UMAP). I will
-refer you to the [original paper](https://arxiv.org/abs/1802.03426) for a
-formal description; in short, it tries to preserve the nearest neighbours of
-points while not being concerned with their specific distances. We can compute
-the embedding with the `dsst_umap` function:
-
-```{r, warning = FALSE}
-anno %>%
-  filter(upos %in% c("NOUN", "ADJ", "VERB")) %>%
-  dsst_umap()
-```
-
-As with the principal components, the exact value are unimportant. It is the
-relationship between the documents that counts. For example, we can make a plot
-similar to the previous one:
-
-```{r, warning = FALSE}
-anno %>%
-  filter(upos %in% c("NOUN", "ADJ", "VERB")) %>%
-  dsst_umap() %>%
-  dsst_plot_dred()
-```
-
-Notice that shape of the dimensionality reduction results are noticeably
-different from those of the PCA analysis.
-
-## Visualise the Embedding
-
-The result of a dimensionality reduction algorithm such as PCA or UMAP analysis,
-are known as **embeddings**. The shapes can be interesting to look at but they
-do not immediately tell us much about the space. The key is that we need a new
-way of visualising the output in an interactive way beyond what is possible
-directly in R. Instead, let's save the results of the embedding as a json
-file and visualise it using a tool written in JavaScript.
-
-To create the data to load, run the following function (note the two options
-that control the output):
+To apply K-means, we will use the `dsst_kmeans` function. We need to set the
+number of clusters; it is also possible to change the number of PCA dimensions.
 
 ```{r}
-dsst_pca(anno) %>%
-  dsst_json_drep(docs, color_var = "label", title_vars = c("doc_id", "label"))
+anno %>%
+  filter(upos %in% c("NOUN", "ADJ", "VERB")) %>%
+  inner_join(select(docs, -text), by = "doc_id") %>%
+  dsst_pca(doc_var = "label", n_dims = 2) %>%
+  dsst_kmeans(n_clusters = 5L)
 ```
 
-By default, it saves the result as a file named "dim_reduction.json" contained
-in your class output directory. Now, go to the website
-[Text Embedding Visualizer](https://statsmaths.github.io/text-embed-explo/build/)
-and then upload the JSON file that we just produced. It should create an
-interactive visualisation for you to explore the dataset in.
+Notice that these closely compare to the clusters you would see by grouping
+nearby points in the PCA plot from last time.
 
-## What is a Document?
+This allows us to use the data to build other visualizations:
 
-In addition to making an interactive visualisation, another way that we can
-make the results of unsupervised learning more interesting is to change what
-we consider a document. The documents in this example by default are individual
-product reviews. However, we could collect the tokens across another metadata
-category. For example, we could consider all of a users reviews to collectively
-be a single "document". To change this, all we need to do is set the value of
-the `doc_id` variable in the respective functions.
-
-Let's see some results. When dimensionality reduction is plotted with fewer
-than 100 items, it also includes labels that help us understand the plot without
-using the JavaScript interface (though the latter is still available):
-
-```{r, warning = FALSE}
-dsst_pca(anno, docs, doc_var = "label") %>% dsst_plot_dred()
+```{r}
+anno %>%
+  filter(upos %in% c("NOUN", "ADJ", "VERB")) %>%
+  inner_join(select(docs, -text), by = "doc_id") %>%
+  dsst_pca(doc_var = "label", n_dims = 2) %>%
+  dsst_kmeans(n_clusters = 5) %>%
+  ggplot(aes(v1, v2, color = factor(cluster))) +
+    geom_point() +
+    geom_text_repel(aes(label = label), show.legend = FALSE) +
+    theme_void()
 ```
 
-We can, for example, understand the difference structure now between the PCA
-and UMAP embeddings by comparing them here:
+## Hierarchical Clustering
 
-```{r, warning = FALSE}
-dsst_umap(anno, docs, doc_var = "label") %>% dsst_plot_dred()
+Another method for clustering analysis is to use a hierarchical approach. We
+start by computing the nearest neighbor to each data point. Then, we combine
+the two points that are closest together into a single cluster. Next, we
+recompute the nearest neighbors using the center of the two combined points
+in place of the individual points. This continues until all of the data are
+in a single cluster.
+
+To run hierarchical clustering, we can use the `dsst_hclust` function:
+
+```{r}
+model <- anno %>%
+  filter(upos %in% c("NOUN", "ADJ", "VERB")) %>%
+  inner_join(select(docs, -text), by = "doc_id") %>%
+  dsst_pca(doc_var = "label", n_dims = 2) %>%
+  dsst_hclust()
 ```
 
-Notice that we start to see clusters of users in the output. How could these
-have been useful in your previous project?
+The hierarchy of clusters can be seen by plotting the model:
+
+```{r}
+plot(model)
+```
+
+We can create a concrete set of clusters by picking the number of clusters or
+the height of the tree to cut at:
+
+```{r}
+dsst_hclust_cut(model, nclust = 10)
+```
+
+Hierarchical clustering works well for a small number of documents but can
+become difficult to use when working with a larger set of documents.
+
+## Word Relationships
+
+In the preceding analyses, we have focused on the analysis of the
+document their usage of words. It turns out that it is also possible to apply
+dimensional reduction and distance metrics by swapping the words and the
+documents. All of the concepts work the same, but now we have term frequencies
+tell us how often each word is used in every document.
+
+I included an easy-to-use argument to the `dsst_pca` function to compute the
+PCA fit of this transposed analysis (as well as UMAP):
+
+```{r, warning=FALSE}
+dsst_pca(anno, invert = TRUE)
+```
+
+As well, we can compute clusters of words:
+
+```{r, warning=FALSE}
+anno %>%
+  filter(upos %in% c("NOUN")) %>%
+  dsst_pca(n_dims = 15L, invert = TRUE) %>%
+  dsst_kmeans(n_clusters = 5L) %>%
+  group_by(cluster) %>%
+  summarize(words = paste(doc_id, collapse = "; "))
+```
+
+Do you see any other interesting patterns here?
+
+Hopefully you are starting to see the possibilities of things that we can do
+with this kind of method. For example, let's cluster the nouns, verbs, and
+adjectives:
+
+```{r, warning=FALSE}
+df <- anno %>%
+  filter(upos %in% c("NOUN", "VERB", "ADJ")) %>%
+  mutate(lemma = stri_paste(lemma, upos, sep = "_")) %>%
+  dsst_pca(n_dims = 15L, invert = TRUE) %>%
+  dsst_kmeans(n_clusters = 5L)
+df
+```
+
+And then plot them according to the part of speech:
+
+```{r, warning=FALSE}
+df %>%
+  mutate(upos = stri_extract(doc_id, regex = "[^_][A-Z]+\\Z")) %>%
+  mutate(cluster = factor(cluster)) %>%
+  ggplot(aes(v1, v2, color = upos)) +
+    geom_text(aes(label = doc_id), show.legend = FALSE) +
+    theme_void()
+```

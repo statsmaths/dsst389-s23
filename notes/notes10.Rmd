@@ -1,5 +1,5 @@
 ---
-title: "10. Unsupervised Learning II"
+title: "10. EDA"
 output:
   html_document:
     theme: cosmo
@@ -22,143 +22,95 @@ docs <- read_csv("../data/amazon_cds.csv.bz2")
 anno <- read_csv("../data/amazon_cds_token.csv.bz2")
 ```
 
-Today, we will continue are study of unsupervised learning by studying a few
-extensions of what we saw in the previous notes.
+We are going to briefly redescribe the two clutsering algorithms from last time
+and show how they can be used in data analysis.
 
-## Clusters with K-means
+## Working with the Clusters
 
-One thing that we often do when looking at plots of dimensionality reduction
-is to look for clumps of documents that co-occur. We can do this explicit
-by clustering the data using a clustering algorithm. Here, we will use a popular
-option called K-means (note, this is not the same as k-NN, but I suppose it is
-not entirely unrelated). It is an iterative algorithm that works as follows:
-
-1. Pick the number of clusters N that you want to detect.
-2. Randomly choose N data points as the starting centroids of each cluster.
-3. Compute the distance of every data point to the centroids of the current
-clusters.
-4. Assign each data point to the cluster whose centroids it is closest.
-5. Re-compute the cluster centroids as the average value of all the points in a
-cluster.
-6. Take the new cluster centroids, and repeat the process (compute distances,
-reassign to groups, and recompute the centroids) iteratively until convergence.
-
-The algorithm is not entirely deterministic because of the random starting
-points. Typically, the algorithm is run several times and the "best" clustering
-is chosen. How do we define the "best" in the case of a clustering algorithm?
-A typical method is to measure the sum of squared distances to the cluster
-centroids, a quantity that a good clustering will minimise.
-
-Usually, K-means is run on a set of PCA coordinates rather than the entire
-embedding itself. Often you will find that including a few dozen PCA components
-provides a better fit (though it is rarely useful to use the entire TF-IDF).
-
-To apply K-means, we will use the `dsst_clusters` function. We need to set the
-number of clusters; it is also possible to change the number of PCA dimensions.
+I wanted to show a few things you can do with the cluster assignments. In
+general, I use them as artificially constructed labels for the documents.
 
 ```{r}
-dsst_kmeans(anno, docs, doc_var = "label", n_dims = 2, n_clusters = 5L)
-```
-
-Notice that these closely compare to the clusters you would see by grouping
-nearby points in the PCA plot from last time.
-
-The kmeans function has an option for returning the results as a data frame:
-
-```{r}
-df <- dsst_kmeans(anno, docs, doc_var = "label", n_dims = 2, n_clusters = 5L,
-                  output_type="df")
-df
-```
-
-This allows us to use the data to build other visualisations:
-
-```{r}
-library(ggrepel)
-
-df %>%
-  mutate(cluster = factor(cluster)) %>%
-  ggplot(aes(v1, v2, color = cluster)) +
-    geom_point() +
-    geom_text_repel(aes(label = label), show.legend = FALSE) +
-    theme_void()
-```
-
-## Hierarchical Clustering
-
-Another method for clustering analysis is to use a hierarchical approach. We
-start by computing the nearest neighbor to each data point. Then, we combine
-the two points that are closest together into a single cluster. Next, we
-recompute the nearest neighbors using the center of the two combined points
-in place of the individual points. This continues until all of the data are
-in a single cluster.
-
-To run hierarchical clustering, we can use the `dsst_hclust` function:
-
-```{r}
-model <- dsst_hclust(anno, docs, doc_var = "label")
-```
-
-The hierarchy of clusters can be seen by plotting the model:
-
-```{r}
-dsst_hclust_plot(model)
-```
-
-We can create a concrete set of clusters by picking the number of clusters or
-the height of the tree to cut at:
-
-```{r}
-dsst_hclust_cut(model, nclust = 10)
-```
-
-Hierarchical clustering works well for a small number of documents but can
-become difficult to use when working with a larger set of documents.
-
-## Word Relationships
-
-In the preceding analyses, we have focused on the analysis of the
-document their usage of words. It turns out that it is also possible to apply
-dimensionality reduction and distance metrics by swapping the words and the
-documents. All of the concepts work the same, but now we have term frequencies
-tell us how often each word is used in every document.
-
-I included an easy-to-use argument to the `dsst_pca` function to compute the
-PCA fit of this transposed analysis (as well as UMAP):
-
-```{r, warning=FALSE}
-dsst_pca(anno, invert = TRUE) %>% dsst_plot_dred()
-```
-
-As well, we can compute clusters of words:
-
-```{r, warning=FALSE}
-anno %>%
-  filter(upos %in% c("NOUN")) %>%
-  dsst_kmeans(invert = TRUE, n_clusters = 5L, n_dims = 15L)
-```
-
-Do you see any other interesting patterns here?
-
-Hopefully you are starting to see the possibilites of things that we can do
-with this kind of method. For example, let's cluster the nouns, verbs, and
-adjectives:
-
-```{r, warning=FALSE}
 df <- anno %>%
-  filter(upos %in% c("NOUN", "VERB", "ADJ")) %>%
-  mutate(lemma = stri_paste(lemma, upos, sep = "_")) %>%
-  dsst_kmeans(invert = TRUE, n_clusters = 5L, n_dims = 15L, output_type="df")
-df
+  filter(upos %in% c("NOUN", "VERB")) %>%
+  inner_join(select(docs, -text), by = "doc_id") %>%
+  dsst_pca(doc_var = "label", n_dims = 2) %>%
+  dsst_kmeans(n_clusters = 5L)
 ```
 
-And then plot them according to the part of speech:
 
-```{r, warning=FALSE}
+For example, we can see the average length of each cluster's documents:
+
+```{r}
+anno %>%
+  group_by(doc_id) %>%
+  summarise(n = n()) %>%
+  left_join(docs, by = "doc_id") %>%
+  left_join(df, by = "label") %>%
+  group_by(cluster) %>%
+  summarise(avg_tokens = mean(n)) %>%
+  ggplot(aes(factor(cluster), avg_tokens)) +
+    geom_col(aes(fill = factor(cluster)), show.legend = FALSE) +
+    labs(x = "Cluster", y = "Average Number of Tokens per Review")
+```
+
+Or compute the G-score metrics:
+
+```{r}
+anno %>%
+  filter(upos %in% c("NOUN", "VERB")) %>%
+  dsst_metrics(left_join(docs, df, by = "label"), label_var = "cluster")
+```
+
+Or even build a predictive model:
+
+```{r}
+model <- anno %>%
+  filter(upos %in% c("NOUN", "VERB")) %>%
+  dsst_enet_build(left_join(docs, df, by = "label"),
+                  label_var = "cluster")
+
+model$docs %>%
+  group_by(train_id) %>%
+  summarize(erate = mean(cluster != pred_label))
+```
+
+Does the confusion matrix show a similar structure to that of the heirarchical
+clustering?
+
+```{r}
+model$docs %>%
+  select(cluster, pred_label, train_id) %>%
+  table()
+```
+
+You can even do the clustering on all of the documents and analyse those.
+
+```{r}
+df <- anno %>%
+  dsst_pca(n_dims = 2L) %>%
+  dsst_kmeans(n_clusters = 20L)
+```
+
+Do the clusters of the documents correspond to particular users?
+
+```{r}
 df %>%
-  mutate(upos = stri_extract(doc_id, regex = "[^_][A-Z]+\\Z")) %>%
-  mutate(cluster = factor(cluster)) %>%
-  ggplot(aes(v1, v2, color = upos)) +
-    geom_text(aes(label = doc_id), show.legend = FALSE) +
-    theme_void()
+  left_join(docs, by = "doc_id") %>%
+  select(cluster, label) %>%
+  table()
+```
+
+And are there any patterns related to the length of each of the clusters?
+
+```{r}
+anno %>%
+  group_by(doc_id) %>%
+  summarise(n = n()) %>%
+  left_join(df, by = "doc_id") %>%
+  group_by(cluster) %>%
+  summarise(avg_tokens = mean(n)) %>%
+  ggplot(aes(factor(cluster), avg_tokens)) +
+    geom_col(aes(fill = factor(cluster)), show.legend = FALSE) +
+    labs(x = "Cluster", y = "Average Number of Tokens per Review")
 ```

@@ -16,7 +16,7 @@ should take the form of a paragraph or two. The entire document has a strict
 two-page limit. Unlike the projects, you will be doing the self-assessment on
 your own. The questions to respond to are:
 
-1. What did you hope to get out of the class? Have you met these goals?
+1. What did you hope to get out of the class? Have you met these goals? 
 2. Which project was your favorite? Why?
 3. If a friend asked you to describe the most significant thing you learned
 this semester, what would you say?

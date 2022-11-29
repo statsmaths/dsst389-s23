@@ -513,9 +513,9 @@ display: none;
 <div id="load-the-data" class="section level2">
 <h2>Load the Data</h2>
 <p>The first step in doing predictive text analysis in R is to load some
-data to work with. In the final project you will see how to construct a
+data to work with. Later in the semester you will see how to construct a
 dataset directly yourself, but until then we will mostly used datasets
-that I have prepared for you. These datasets will be in a predicable
+that I have prepared for you. These data sets will be in a standard
 format, with two different files.</p>
 <p>Today we will look at an example trying to predict the product
 category that an Amazon user review is associated with. Let’s read the
@@ -529,8 +529,8 @@ names for these two tables: <code>docs</code> and <code>anno</code>
 each product review. These correspond to the observations that we
 discussed in the previous notes. In text analysis, we use the term
 <strong>document</strong> to describe each observation; you will also
-see me call the entire set of documents a <strong>corpus</strong>. Let’s
-take a look at the first few rows of the data:</p>
+hear me call the entire set of documents a <strong>corpus</strong>.
+Let’s take a look at the first few rows of the data:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>docs</span></code></pre></div>
 <pre><code>## # A tibble: 8,823 × 4
 ##    doc_id   label train_id text                                             
@@ -559,7 +559,7 @@ full text of the review.</p>
 <p>Our predictive modelling goal is to predict the label using the text.
 As we have discussed, we cannot directly fit a model using the text
 variable as a feature. Instead, we need to produce a set of numeric
-features that summarise the text. One of the most common methods for
+features that summarize the text. One of the most common methods for
 doing this is to use features called <strong>term frequencies</strong>.
 These are features that count how many times words or other linguistic
 element occurs in the text. To do this, we will make use of the second
@@ -569,7 +569,8 @@ the <code>docs</code> table using a set of predictive models called an
 NLP pipeline. This pipeline is not the direct subject of this course,
 but in later notes we will see how to apply it and create the
 annotations directly. For now, we will just use the ones that I
-precomputed. Here is what the first few rows of the table look like:</p>
+pre-computed. Here is what the first few rows of the table look
+like:</p>
 <div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>anno</span></code></pre></div>
 <pre><code>## # A tibble: 1,548,904 × 10
 ##    doc_id     sid   tid token   token_wi…¹ lemma upos  xpos  tid_s…² relat…³
@@ -598,8 +599,8 @@ contains the <code>doc_id</code> that can be used to associate each
 token with a document. We also see the <code>token</code> column that
 contains the token itself, which we can count up to create features for
 the prediction task. There is also a column called <code>lemma</code>
-which contains a standardised version of the token. For example, it
-remove start-of-sentence capitalisation and puts all verbs into the
+which contains a standardized version of the token. For example, it
+remove start-of-sentence capitalization and puts all verbs into the
 infinitive. As the name suggests, this form is called a
 <strong>lemma</strong>. Usually we will use the lemmas rather than the
 tokens to construct a model. Finally, we see a column called
@@ -619,25 +620,118 @@ equal to “train”.</li>
 <li>Evaluate the model on the rows of the <code>docs</code> table that
 have <code>train_id</code> equal to “valid”.</li>
 </ol>
-<p>Conceptually, this is an accurate description of what we are going to
-do. However, rather than directly picking the lemmas to use and creating
-the new columns in <code>docs</code>, we will use an R function that I
-wrote to do all of this work for us.</p>
-<p>As mentioned in class, if you are interested in more of the
-implementation details, the code for all of these functions is available
-in the the script called <code>funs.R</code> that is contained in the
-class materials. It can also be modified by creating a new version in
-the file <code>funs_custom.R</code>.</p>
+<p>In the next section, I will show you how we can do these steps using
+low-level R code. You’ll see that it’s not too difficult but requires a
+lot of temporary variables and bookkeeping. In the following section, I
+will show you a wrapper functions that make it so you don’t need to copy
+and paste all of this code every time you want to run a model.</p>
 </div>
-<div id="build-the-model" class="section level2">
-<h2>Build the Model</h2>
+<div id="building-the-model-long-way" class="section level2">
+<h2>Building the Model (long way)</h2>
+<p>Let’s see how we can run an elastic net using the Amazon data we
+loaded above using low-level R functions. Note that in the code below I
+am using the code <code>dataset_name$variable_name</code> to extract a
+specific variable from a specific dataset. This is needed when working
+outside of verbs and ggplot commands.</p>
+<p>To start, let’s get a vector of all the unique documents and lemmas
+(standardized words) from the data using the <code>unique()</code>
+function:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>document_set <span class="ot">&lt;-</span> <span class="fu">unique</span>(anno<span class="sc">$</span>doc_id)</span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>vocab_set <span class="ot">&lt;-</span> <span class="fu">unique</span>(anno<span class="sc">$</span>lemma)</span></code></pre></div>
+<p>Now, I will use the <code>match()</code> function to create an index
+to tell me with document and lemma every row of the <code>anno</code>
+data is associated with.</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>dindex <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">match</span>(anno<span class="sc">$</span>doc_id, document_set))</span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>tindex <span class="ot">&lt;-</span> <span class="fu">as.numeric</span>(<span class="fu">match</span>(anno<span class="sc">$</span>lemma, vocab_set))</span></code></pre></div>
+<p>Next, we will create a matrix, a square array of numbers. The matrix
+we will create has one row for each document and one column for each
+unique term. The numbers count how often each term occurs in a given
+document. Since most terms do not occur in most documents, this matrix
+will have a large number of zeros. To account for this, we will create a
+sparse matrix object that only stores the non-zero elements. Here’s the
+code that creates such an object and displays its dimensions:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> Matrix<span class="sc">::</span><span class="fu">sparseMatrix</span>(</span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="at">i =</span> dindex, <span class="at">j =</span> tindex, <span class="at">x =</span> <span class="dv">1</span>,</span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">dims =</span> <span class="fu">c</span>(<span class="fu">length</span>(document_set), <span class="fu">length</span>(vocab_set)),</span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="at">dimnames =</span> <span class="fu">list</span>(document_set, vocab_set)</span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a>)</span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(X)</span></code></pre></div>
+<pre><code>## [1]  8823 53756</code></pre>
+<p>We can simplify things by removing any terms that have only a few
+occurrences. Here, for example, is the code to only keep data with at
+least 20 instances in the data:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a>X <span class="ot">&lt;-</span> X[, <span class="fu">colSums</span>(X) <span class="sc">&gt;=</span> <span class="dv">20</span>]</span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dim</span>(X)</span></code></pre></div>
+<pre><code>## [1] 8823 4405</code></pre>
+<p>To illustrate where we are, here are the first 12 rows and 12 columns
+of the data.</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>X[<span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>, <span class="dv">1</span><span class="sc">:</span><span class="dv">12</span>]</span></code></pre></div>
+<pre><code>## 12 x 12 sparse Matrix of class &quot;dgCMatrix&quot;
+##          at some point -PRON- would like to try &#39;s Red Mill  ,
+## doc00001  1    1     2      7     1    2  2   1  1   1    1  3
+## doc00002  1    .     .     19     .    1  6   .  .   .    . 24
+## doc00003  .    .     1      9     .    1  6   .  .   .    .  5
+## doc00004  .    2     .     12     .    .  6   .  2   .    . 11
+## doc00005  .    1     .      3     .    1  3   .  .   .    .  1
+## doc00006  .    .     .      2     .    .  1   .  .   .    .  1
+## doc00007  .    .     .      9     .    1  3   .  .   .    .  5
+## doc00008  2    .     .     20     .    3  8   .  2   .    . 33
+## doc00009  .    .     .      6     .    .  1   .  1   .    .  .
+## doc00010  .    .     .     14     1    .  1   .  .   .    . 12
+## doc00011  .    .     .     13     .    2  4   .  2   .    .  6
+## doc00012  .    .     .      4     .    .  1   .  .   .    .  4</code></pre>
+<p>Now, we need to split the matrix X into those rows in the training
+set and the validation set. We also need to make a pair of vectors
+<code>y</code> that store the variable that we are trying to
+predict.</p>
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a>X_train <span class="ot">&lt;-</span> X[docs<span class="sc">$</span>train_id <span class="sc">==</span> <span class="st">&quot;train&quot;</span>,]</span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>X_valid <span class="ot">&lt;-</span> X[docs<span class="sc">$</span>train_id <span class="sc">==</span> <span class="st">&quot;valid&quot;</span>,]</span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>y_train <span class="ot">&lt;-</span> docs<span class="sc">$</span>label[docs<span class="sc">$</span>train_id <span class="sc">==</span> <span class="st">&quot;train&quot;</span>]</span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>y_valid <span class="ot">&lt;-</span> docs<span class="sc">$</span>label[docs<span class="sc">$</span>train_id <span class="sc">==</span> <span class="st">&quot;valid&quot;</span>]</span></code></pre></div>
+<p>Now that we have the data, we can run the elastic net module using
+the function <code>cv.glmnet</code> from the <strong>glmnet</strong>
+package. I will set a few options to different values to make the
+function run faster.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> glmnet<span class="sc">::</span><span class="fu">cv.glmnet</span>(</span>
+<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  X_train, y_train, <span class="at">family =</span> <span class="st">&quot;multinomial&quot;</span>, <span class="at">lambda_min_ratio =</span> <span class="fl">0.1</span>, <span class="at">nfolds =</span> <span class="dv">3</span>, </span>
+<span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<p>Finally, we can use the <code>predict</code> function to see what the
+model would predict for each observation on the validation data. I’ll
+use the <code>table</code> function to show a confusion matrix of the
+predictions and the actual responses.</p>
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>y_valid_pred <span class="ot">&lt;-</span> <span class="fu">predict</span>(model, <span class="at">newx =</span> X_valid, <span class="at">type =</span> <span class="st">&quot;class&quot;</span>)</span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a><span class="fu">table</span>(y_valid, y_valid_pred)</span></code></pre></div>
+<pre><code>##        y_valid_pred
+## y_valid book film food
+##    book 1115   58   36
+##    film   29 1120   29
+##    food    6    2 1147</code></pre>
+<p>Note that the <code>cv.glmnet</code> function automatically performs
+cross validation and returns the results using the lambda with the best
+predictive power on the training data.</p>
+</div>
+<div id="build-the-model-easy-way" class="section level2">
+<h2>Build the Model (easy way)</h2>
+<p>In the quick run through of the commands above, you can see that we
+can run elastic net models on textual data with a few new commands and
+several intermediate steps. Understanding this process is important and
+useful. However, it becomes clunky if you have to do all of those steps
+every single time you want to fit a model. Copy and pasting code quickly
+becomes the focus rather than understanding the data and what it is
+telling us. As a solution to this problem, I have written some wrapper
+functions that take care of the bookkeeping of running certain models.
+These are all provided by the **dsst* package and are prefixed with the
+string “dsst_”.</p>
 <p>The main function we will use to build a predictive model is called
 <code>dsst_enet_build</code>. We need to pass the function the
 <code>anno</code> table and the <code>docs</code> table. It has a number
-of options that we can modify, but for now let’s just use the default
-values:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">dsst_enet_build</span>(anno, docs)</span></code></pre></div>
-<p>And that’s it! Really. By default the function has created numeric
+of options that we can modify (these correspond to the options I
+selected above), but for now let’s just use the default values:</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">dsst_enet_build</span>(anno, docs)</span></code></pre></div>
+<p>And that’s it! Really. The model object has two elements that contain
+the glmnet model object (<code>model$model</code>) and the document
+table augmented with predictions from the cross-validated elastic net
+(<code>model$docs</code>). By default the function has created numeric
 features from the 10,000 most frequently used lemmas that are used in at
 least 0.1% of the documents. Let’s take a look at some of the ways that
 we can evaluate the model. Next class we will look at more ways to
@@ -646,34 +740,74 @@ modify the way the model itself is built.</p>
 <div id="evaluate-the-model-fit" class="section level2">
 <h2>Evaluate the Model Fit</h2>
 <p>As a starting point, we want to see how well the model has done
-making predictions on the training and validation data. To do this, we
-use the function <code>dsst_erate</code>, passing it the model. The
-predictions have already been made and are stored in the model object.
-The lambda value used was selected using cross-validation.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_erate</span>(model)</span></code></pre></div>
-<pre><code>## # A tibble: 1 × 2
-##    train  valid
-##    &lt;dbl&gt;  &lt;dbl&gt;
-## 1 0.0598 0.0703</code></pre>
+making predictions on the training and validation data. We can do this
+using standard data verbs that we learned in 289 applied to the
+augmented docs data. Here’s what the document table looks like:</p>
+<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs</span></code></pre></div>
+<pre><code>## # A tibble: 8,823 × 6
+##    doc_id   label train_id text                              pred_…¹ pred_…²
+##    &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;                             &lt;chr&gt;     &lt;dbl&gt;
+##  1 doc00001 food  valid    &quot;At some point I would like to t… food      0.565
+##  2 doc00002 book  train    &quot;John Crowley wrote  \&quot;Little, B… book      0.998
+##  3 doc00003 book  valid    &quot;The New York Post is often cred… book      0.943
+##  4 doc00004 film  valid    &quot;INTO THIN AIR, based on Jon Kra… film      0.928
+##  5 doc00005 film  train    &quot;When the Wind Blows was based u… film      0.682
+##  6 doc00006 food  train    &quot;I have sent this basket a numbe… food      0.492
+##  7 doc00007 book  train    &quot;If you enjoy history, this book… book      0.504
+##  8 doc00008 film  valid    &quot;Though it holds up surprisingly… film      0.996
+##  9 doc00009 book  train    &quot;Agatha&#39;s written is amazing. Th… book      0.962
+## 10 doc00010 food  valid    &quot;Pecans are my favorite nut, ala… food      0.843
+## # … with 8,813 more rows, and abbreviated variable names ¹​pred_label,
+## #   ²​pred_value</code></pre>
+<p>And the error rates can be computed by grouping by the train id and
+summarizing the proportion of labels that match their predictions.</p>
+<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(train_id) <span class="sc">%&gt;%</span></span>
+<span id="cb21-3"><a href="#cb21-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">erate =</span> <span class="fu">mean</span>(label <span class="sc">!=</span> pred_label))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 2
+##   train_id  erate
+##   &lt;chr&gt;     &lt;dbl&gt;
+## 1 train    0.0598
+## 2 valid    0.0703</code></pre>
 <p>We see that around 6% of the training data was mis-classified and 7%
 of the validation data was mis-classified. Not too bad as a first pass!
-We can select the <code>segmented</code> option to see how well the
-model does on each class:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_erate</span>(model, <span class="at">segmented =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
-<pre><code>## # A tibble: 3 × 3
-##   real_label   train   valid
-##   &lt;chr&gt;        &lt;dbl&gt;   &lt;dbl&gt;
-## 1 book       0.102   0.120  
-## 2 film       0.0729  0.0789 
-## 3 food       0.00618 0.00952</code></pre>
+We can learn a bit more by using an error rate segmented by the real
+label:</p>
+<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(label, train_id) <span class="sc">%&gt;%</span></span>
+<span id="cb23-3"><a href="#cb23-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">erate =</span> <span class="fu">mean</span>(label <span class="sc">!=</span> pred_label))</span></code></pre></div>
+<pre><code>## # A tibble: 6 × 3
+## # Groups:   label [3]
+##   label train_id   erate
+##   &lt;chr&gt; &lt;chr&gt;      &lt;dbl&gt;
+## 1 book  train    0.102  
+## 2 book  valid    0.120  
+## 3 film  train    0.0729 
+## 4 film  valid    0.0789 
+## 5 food  train    0.00618
+## 6 food  valid    0.00952</code></pre>
 <p>We see that books were the hardest to classify, with films being the
 next hardest, and food being the easiest. We can get a picture of what
 kind of errors are being made by using a confusion matrix with the
-function <code>dsst_confusion_matrix</code> (it reports on just the
-validation data):</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_confusion_matrix</span>(model)</span></code></pre></div>
-<pre><code>##       
-##        book film food
+function <code>table</code>. This function will print the
+cross-tabulated counts of two or more variables. Be careful not to pass
+it the whole dataset and note that the order of the variables
+matters.</p>
+<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(label, pred_label, train_id) <span class="sc">%&gt;%</span></span>
+<span id="cb25-3"><a href="#cb25-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code></pre></div>
+<pre><code>## , , train_id = train
+## 
+##       pred_label
+## label  book film food
+##   book 1566   81   96
+##   film   31 1629   97
+##   food    6    5 1770
+## 
+## , , train_id = valid
+## 
+##       pred_label
+## label  book film food
 ##   book 1064   74   71
 ##   film   21 1085   72
 ##   food    7    4 1144</code></pre>
@@ -691,7 +825,7 @@ understand the data. To do this, a key tool will be to look at the model
 coefficients. We can do this with the <code>dsst_coef</code> function.
 By default, the values are given based off of the best model from the
 cross-validation process:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model)</span></code></pre></div>
+<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model)</span></code></pre></div>
 <pre><code>## 82 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                    book         film         food MLN
 ## (Intercept) -0.23710135 -0.005983007  0.243084361   .
@@ -783,7 +917,7 @@ which controls the lambda number that we use. The allowed values are
 from 1 (this is the largest lambda) down to 100 (the smallest lambda).
 Looking at the 10th value here produces a very small model that is easy
 to interpret:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model, <span class="at">lambda_num =</span> <span class="dv">10</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model, <span class="at">lambda_num =</span> <span class="dv">10</span>)</span></code></pre></div>
 <pre><code>## 3 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                    book        film       food MLN
 ## (Intercept) -0.08882645 0.036110762 0.05271569   .
@@ -791,7 +925,7 @@ to interpret:</p>
 ## movie        .          0.006710871 .           10</code></pre>
 <p>Increasing to 20 includes more terms and a richer understanding of
 the classes:</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model, <span class="at">lambda_num =</span> <span class="dv">20</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model, <span class="at">lambda_num =</span> <span class="dv">20</span>)</span></code></pre></div>
 <pre><code>## 7 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                   book       film        food MLN
 ## (Intercept) -0.1351490 0.04407419 0.091074811   .
@@ -801,412 +935,122 @@ the classes:</p>
 ## read         0.1161569 .          .            13
 ## film         .         0.02195760 .            18
 ## flavor       .         .          0.007651778  20</code></pre>
-<p>Usually you will need to look at several different version of the
+<p>Usually you will need to look at several different versions of the
 model to make interesting observations about the data.</p>
 </div>
 <div id="negative-examples" class="section level2">
 <h2>Negative Examples</h2>
 <p>One of the most interesting things about working with text data is
 that we can go back to the model and manually read the text of
-interesting observations that are identified by the model. There are two
-types of interesting that we will often use.</p>
-<p>First, we will see what are called <strong>negative
+interesting observations that are identified by the model. One thing
+that we can start with are looking at some <strong>negative
 examples</strong>. These are records that are mis-classified by our
-predictive model. The function <code>dsst_neg_examples</code> returns a
-number of randomly identified negative examples.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_neg_examples</span>(model, <span class="at">n =</span> <span class="dv">10</span>)</span></code></pre></div>
-<pre><code>## # A tibble: 10 × 8
-##    doc_id   label train_id text              pred_…¹ pred_…² pred_…³ real_…⁴
-##    &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;             &lt;chr&gt;     &lt;dbl&gt; &lt;chr&gt;   &lt;chr&gt;  
-##  1 doc08808 book  valid    &quot;&#39;Loose Diamonds… film      0.433 valid   book   
-##  2 doc02365 book  valid    &quot;Terri Griffith&#39;… food      0.878 valid   book   
-##  3 doc05553 book  valid    &quot;Daimler-Benz&#39;s … film      0.420 valid   book   
-##  4 doc04116 film  valid    &quot;Again as I have… food      0.392 valid   film   
-##  5 doc05314 film  valid    &quot;A disappointmen… food      0.415 valid   film   
-##  6 doc07212 book  valid    &quot;It was a gift, … food      0.417 valid   book   
-##  7 doc01614 film  valid    &quot;Anyone reading … book      0.996 valid   film   
-##  8 doc00483 food  valid    &quot;They are a bit … film      0.390 valid   food   
-##  9 doc07153 book  valid    &quot;It&#39;s no surpris… film      0.682 valid   book   
-## 10 doc06248 book  valid    &quot;Ekaterina `Katy… food      0.389 valid   book   
-## # … with abbreviated variable names ¹​pred_label, ²​pred_value, ³​pred_index,
-## #   ⁴​real_label</code></pre>
+predictive model. We can grab a subset of these using the filter command
+along with the function <code>slice_sample</code>. The latter takes a
+random selection of rows from the data (the results change each time you
+run it).</p>
+<div class="sourceCode" id="cb33"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb33-1"><a href="#cb33-1" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb33-2"><a href="#cb33-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(label <span class="sc">!=</span> pred_label) <span class="sc">%&gt;%</span></span>
+<span id="cb33-3"><a href="#cb33-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(train_id <span class="sc">==</span> <span class="st">&quot;valid&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb33-4"><a href="#cb33-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">10</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 10 × 6
+##    doc_id   label train_id text                              pred_…¹ pred_…²
+##    &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;    &lt;chr&gt;                             &lt;chr&gt;     &lt;dbl&gt;
+##  1 doc05099 film  valid    &quot;I didn&#39;t like this at all, it j… food      0.466
+##  2 doc04531 book  valid    &quot;Terence McKenna used to say tha… film      0.587
+##  3 doc01392 book  valid    &quot;Angelica Shelton Belanov has al… film      0.644
+##  4 doc01614 film  valid    &quot;Anyone reading my reviews on Pe… book      0.996
+##  5 doc06233 book  valid    &quot;I saw the first movie when I wa… film      0.975
+##  6 doc07839 book  valid    &quot;Though some of these are not to… food      0.707
+##  7 doc05187 book  valid    &quot;My very brief review:  Well wri… food      0.368
+##  8 doc02410 film  valid    &quot;In Benny Chan&#39;s Big Bullet, Lau… food      0.529
+##  9 doc01911 film  valid    &quot;I know that it&#39;s is no Grease b… food      0.412
+## 10 doc01115 book  valid    &quot;Great drawings and wonderful cl… food      0.399
+## # … with abbreviated variable names ¹​pred_label, ²​pred_value</code></pre>
 <p>It can be difficult to read the text in the print out itself. I wrote
 a helper function called <code>dsst_print_text</code> that prints out
 the text in an easier-to-read format. We use it along with a pipe
-<code>%&gt;%</code> to show all of the texts:</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_neg_examples</span>(model, <span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span> <span class="fu">dsst_print_text</span>()</span></code></pre></div>
-<pre><code>## book =&gt; film (0.432839)
-## &#39;Loose Diamonds&#39; by Amy Ephron is a gem, I just had to say that, but it is
-## true. She gives us 18 stories of her life and loves. She started her life
-## in LA and lives there now. In-between she talks about her life in other
-## places, Vermont, New York City and where ever she found herself.Amy was the
-## second of four girls and though there is no discussion of her life with her
-## sisters, she does mention one, but not by name. She led a privileged life,
-## had some interesting experiences when she was young.
+<code>%&gt;%</code> to show all of the texts. It will also display all
+of the other metadata at the top of the record.</p>
+<div class="sourceCode" id="cb35"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb35-1"><a href="#cb35-1" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb35-2"><a href="#cb35-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(label <span class="sc">!=</span> pred_label) <span class="sc">%&gt;%</span></span>
+<span id="cb35-3"><a href="#cb35-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(train_id <span class="sc">==</span> <span class="st">&quot;valid&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb35-4"><a href="#cb35-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb35-5"><a href="#cb35-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_print_text</span>()</span></code></pre></div>
+<pre><code>## doc05694; film; valid; food; 0.416980106952054
+## Dear weelchair Assassin: There IS a sequel to this, called &quot;Another 48
+## Hrs.&quot;, &amp; it&#39;s EQUALLY GREAT!!!
 ## 
-## book =&gt; food (0.877660)
-## Terri Griffith&#39;s July 2012 and Robert Morris&#39; October 2010 reviews are
-## very comprehensive and do a great job of describing the contents of this
-## book. Definitely worth reading to gain an edge in marketing to customers in
-## this Twitter and instant information age.A few interesting quotes. &quot;There
-## is a huge difference between brand loyalty, which is a genuine factor in
-## the motivation quadrant, and habits. Real brand loyalty is in play when
-## customers take the time and attention to think about competi
+## doc07086; book; valid; film; 0.388108907773896
+## this has some beautiful art in it. it also has some ugly art.... if
+## thats what you can call it. but it does show you each artist&#39;s technic
+## if not how they did each peice. so if you like anima and photoshop
+## look into it. oh, thats what you are doing? well i gave it 4 stars
+## didnt i. maybe three.... but i have had a good day.
 ## 
-## book =&gt; film (0.420413)
-## Daimler-Benz&#39;s $36 billion 1998 acquisition of Chrysler was the deal of the
-## year, in terms of size. It was also the worst deal ever, in terms of value
-## destroyed - years later Daimler unloaded Chrysler to Cerebus for about
-## $7 billion, fearing its estimated $20 billion in health care and pension
-## liabilities, and just prior to Chrysler&#39;s bankruptcy, government bailout,
-## and subsequent acquisition by Fiat. The main problem - lack of commonality
-## and failure to work together, problems that may reoccur
+## doc06872; film; valid; food; 0.476807298660379
+## Just realized that I reviewed this product under the Qi gong workout
+## which I also purchased. This is an intense workout and if you are
+## not in athletic condition you may want to start off with his Qi Gong
+## workout and work up to this one. It&#39;s a perfect fighting style and
+## he&#39;s a wonderful master teacher.
 ## 
-## film =&gt; food (0.391787)
-## Again as I have said, Alan Autry showed he can make any role work. Although
-## I thought, He should have been saved.
+## doc00071; book; valid; film; 0.395802657628196
+## The story starts with the main character, Wicket (Wick for short)
+## who is living with her little sister in a foster home after their
+## mother&#39;s suicide and their sociopathic father&#39;s imprisonment. Wick is
+## extremely protective of her you ger sister, Lily, and they have a good
+## relationship. One day Wick discovers the diary of her former friend,
+## who is now dead, with the words &amp;#34;Find Me&amp;#34; scribbled in it.Wick
+## is a very competent computer hacker who can use her talents both for
+## good and bad. She
 ## 
-## film =&gt; food (0.414686)
-## A disappointment for sure. With James Garner in it I thought Doris had a
-## sure hit. Except for a few funny moments the picture was one I&#39;m sure Doris
-## and James would like to forget, I will.
+## doc00848; book; valid; food; 0.701645258487129
+## It is hard to imagine less rewarding place to be a police officer
+## than notorious Aberdeen, Scotland. Horrendous weather, people out
+## of their minds, everything possible goes wrong at every opportunity.
+## Of course, in a fictional Aberdeen- I&#39;ve never been to a real one.
+## Stuart MacBride continues his terrific series, filled with picturesque
+## characters and heavily peppered with dark, crass humor. Just my taste.
+## Apology to the faint hearted or hopelessly prudish.
 ## 
-## book =&gt; food (0.416980)
-## It was a gift, arrived quickly was wrapped really well and in perfect
-## shape. My Aunt cried it made her so happy. I&#39;m thrilled with this purchase
-## and would do it again and again as a gift. It was truly a big hit!
+## doc01541; food; valid; book; 0.412296131391372
+## If you are a residential user like me and don&#39;t happen to read that
+## much, you will be surprised when two bags come to your door and
+## realize you will never have to buy Garlic Powder ever again.That being
+## said, it is a nice quality garlic powder and I definitely recommend
+## using this.
 ## 
-## film =&gt; book (0.996258)
-## Anyone reading my reviews on Peter Mayle&#39;s two novel&#39;s on Provence are well
-## aware of the admiration I have for those books. Having read each several
-## times over....and given many more away as gifts I was truly excited, yet
-## apprehensive about making these &amp;quot;jewels&amp;quot; into a mini-series.
-## Even with the BBC at the helm I was concerned about them maintaining the
-## integrity of Mr. Mayle&#39;s novel&#39;s. So when they were released on PBS I held
-## my breath... and waited for the worst.Well, I&#39;m now breathi
+## doc01472; film; valid; food; 0.391786581309792
+## If you like Hollywood musicals you can&#39;t beat this collection. Six
+## great shows for about five dollars each. And nobody can top Rodgers
+## and Hammerstein.
 ## 
-## food =&gt; film (0.390378)
-## They are a bit hard, in addition, so people should be aware of that. I&#39;d
-## say, &amp;#34;OK&amp;#34;, but I won&#39;t go out of my way to get them again. The
-## Brad&#39;s are difficult to find locally, and I saw a segment regarding them on
-## tv, so thought I would try.
+## doc00403; book; valid; food; 0.615121491879394
+## A must have book for Sondheim fans. However, many reasonably priced
+## hardcover copies in excellent condition are available at much lower
+## prices ($8-$20 range) than these ridiculous collector prices ($35
+## at time of this post) for the softcover here. The 1986 edition in
+## hardcover is the same content that is in the softcover with better
+## production. So why pay more for less? It covers Pacific Overtures,
+## Sweeny Todd, Merrily We Roll Along, Sunday in the Park With George,
+## Sondheim Evening, Follies C
 ## 
-## book =&gt; film (0.682018)
-## It&#39;s no surprise that Mr. Doyle is a former TV writer, or that this book
-## was made into a movie, because it reads just like a teen mis-adventure
-## movie, more Can&#39;t Hardly Wait or Dazed and Confused than The Breakfast
-## Club or Sixteen Candles (am I dating myself here?). I listened to this one
-## weekend while painting my bathroom, and it was the perfect choice.Denis and
-## Rich (sometimes known as &quot;Dick Munch and the Penis&quot;) are feeling fortunate
-## to have made it out of high school relatively unscathed. .
+## doc08128; book; valid; food; 0.401462881585185
+## This is a prime example of McManus at his best. It will keep you
+## laughing all the way to the end. Would recommend.
 ## 
-## book =&gt; food (0.388711)
-## Ekaterina `Katya&#39; Zhuvova thought she was coming to America to escape
-## the people that cast her out because of her uniqueness. Instead she finds
-## herself a sex slave; used and abused by many. Katya has a plan to get her
-## and the other girls away from their evil captors. Detective Nigel Ferris
-## has been undercover trying to bring down the largest prostitution ring in
-## Washington. He needs the help of one of the victims and thinks Katya is a
-## perfect informant. However, all rational thought goes aw</code></pre>
+## doc07973; book; valid; film; 0.365014737295158
+## It was a replay, and not a good one, of the horrible case in Fla of
+## who killed the Casey Anthony baby. Who abused whom, not good.</code></pre>
 <p>At the top of each text is the real label followed by the predicted
 label with the predicted probability of the label in parentheses. Can
-you understand why some of these were mis-classified? Sometimes, we
-might want to look at only a specific label that was mis-classified. For
-example, in this case, what about those few food items that were not
-identified correctly? We can do this will the <code>real_label</code>
-option:</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_neg_examples</span>(model, <span class="at">n =</span> <span class="dv">10</span>, <span class="at">real_label =</span> <span class="st">&quot;food&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">dsst_print_text</span>()</span></code></pre></div>
-<pre><code>## food =&gt; book (0.435090)
-## i normally buy Genova Tonno, but i wanted to try this tuna to see how it
-## compared. so far i&#39;ve only opened 3 of the 6 cans and i am not impressed.
-## it&#39;s mostly water with barely a little bit of oil mixed in, if i had
-## to guess i&#39;d say 80% water and 20% oil.. who adds water to olive oil?
-## apparently Chicken of the sea..i probably should of read the label a bit
-## more before buying as it clearly displays &amp;#34;water&amp;#34; in the ingredient
-## list.. still, the tuna itself was also not solid and more like sh
-## 
-## food =&gt; book (0.439531)
-## I needed three jars of peanut butter for the cookie exchange so I went
-## ahead and committed to the six jars. I love this stuff. Do bear in mind
-## that it says it&#39;s &amp;#34;natural&amp;#34; and some folks will take exception to
-## the fact that it contains ingredients other than just peanuts. All I can
-## say is that food shouldn&#39;t be punitive in nature; get over yourselves.
-## Peanut butter of all things should be fun. This is a delightful peanut
-## butter; just a little sweet and a little salty. It doesn&#39;t separ
-## 
-## food =&gt; film (0.390378)
-## Leave a jug of Mott&#39;s Apple juice right in your eyesight of your frig.
-## so&#39;sit&#39;s the first thing you see and grab to refresh your palate, yum......
-## 
-## food =&gt; book (0.529696)
-## This is great soy sauce, and like others have said, a little goes a long
-## way. My favorite thing about it, though, is its tiny footprint in my
-## kitchen cabinet. I live in an apartment and I buy in bulk, so kitchen space
-## is at a premium. Unlike the other bulk options for soy sauce on Amazon,
-## this one takes advantage of vertical space. Good design means big points in
-## my book.
-## 
-## food =&gt; book (0.412055)
-## My husband has tried them all, and when I read reviews on amazon about this
-## one, we decided to try it out. Its really good tasting, it just needs to be
-## packed better for shipping!
-## 
-## food =&gt; book (0.412296)
-## If you are a residential user like me and don&#39;t happen to read that much,
-## you will be surprised when two bags come to your door and realize you will
-## never have to buy Garlic Powder ever again.That being said, it is a nice
-## quality garlic powder and I definitely recommend using this.
-## 
-## food =&gt; film (0.390378)
-## They are a bit hard, in addition, so people should be aware of that. I&#39;d
-## say, &amp;#34;OK&amp;#34;, but I won&#39;t go out of my way to get them again. The
-## Brad&#39;s are difficult to find locally, and I saw a segment regarding them on
-## tv, so thought I would try.
-## 
-## food =&gt; book (0.573356)
-## If you find this stuff TOO delicious, and can&#39;t stop eating it, my
-## suggestion is to read: &quot;The Voice in the Night&quot;, a short-story by William
-## Hope Hodgeson. I can practically GUARANTEE you will NEVER want to eat Heinz
-## Spotted Dick Sponge Pudding, 10 ounce can, pack of 6, (or any other size),
-## after reading this story, ever in your life again!Instead, have something
-## healthy and wholesome - like Tuscan Milk! : )
-## 
-## food =&gt; film (0.382436)
-## This is a great substitute for corn starch and is better for you than our
-## corn starch made from dented corn. You should see the documentary &amp;#34;King
-## Corn&amp;#34;. The corn starch most is made of is from the inedible and deadly
-## dented corn.
-## 
-## food =&gt; film (0.606672)
-## My son loves these and says they are the best hot fries. They are a little
-## hot for me but I love the cheese ones. We just ordered those too and I ate
-## a bag already...uh-oh! Will order again with Prime and also on subscribe
-## and save..to save money.As a side note, we just realized we can get free
-## movie streaming having Prime membership on Amazon with our Roku and Netflix
-## 9.00 a month subscription. Saves LOTS of money on movies. Yeah!</code></pre>
-<p>Again, can you understand where the errors are being made?</p>
-</div>
-<div id="maximum-probability" class="section level2">
-<h2>Maximum Probability</h2>
+you understand why some of these were mis-classified?</p>
 <p>On the other end of the spectrum, we can try to understand the model
 and the data by looking at the texts that have the highest predicted
 probabilities for its label. These are often classified correctly, but
-there are sometimes errors as well. To identify these, we use the
-function <code>dsst_max_prob</code>; it has a similar format to the
-negative examples function and can also be paired with
-<code>dsst_print_text</code> (note that the latter tuncates to 500
-characters by default, but this can be increased):</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_max_prob</span>(model, <span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span> <span class="fu">dsst_print_text</span>()</span></code></pre></div>
-<pre><code>## book =&gt; book (1.000000)
-## Recommended to me: &quot;SO much love for this series! The first book is great,
-## but nowhere near as good as the rest. This series pretty much defines
-## political intrigue with all the schemes and secrets, riddles and mysteries.
-## The author does a fantastic job playing with different narrative styles and
-## the characters are wonderful. Recommended because you like Shadow and Bone,
-## Grave Mercy, and Graceling.&quot;Recommended for: fans of Kristin Cashore; Robin
-## LaFevers; Rachel Hartman; the Lumatere Chronicles;
-## 
-## film =&gt; film (1.000000)
-## &quot;Strangers When We Meet&quot; (1960) is simply a magnificent movie. In this
-## reviewer&#39;s opinion, the acting performances from every single member of
-## this first-rate cast are brilliant -- from Kirk Douglas to Kim Novak to
-## Ernie Kovacs to Walter Matthau. They are each just perfect here. Also keep
-## an eye peeled for Sue Ane Langdon, who pops up in a brief cameo role.And
-## I certainly don&#39;t want to leave out Barbara Rush, who gives a knockout
-## portrayal of Douglas&#39; wife. Rush&#39;s final emotion-filled scenes in
-## 
-## food =&gt; food (1.000000)
-## EASY OF USEI&#39;ve used the Mellita Coffee System for about 40 years. I find
-## the system more convenient than coffee machines.&gt; If the power goes off,
-## you can still make coffee if you have a gas stove or a camp stove.&gt; It
-## is easy to brew exactly the amount of coffee you want, and exactly the
-## strength that you want---including adjusting to new roast and grinds. You
-## can even mix caffeinated and decaffeinated coffees if you wish.&gt; In a way,
-## the Mellita system is more &quot;sanitary&quot;. It is easy to forget a
-## 
-## book =&gt; book (1.000000)
-## I recently read Hume&#39;s famous bookA Treatise of Human Nature(first
-## published in 1738), and I thought I would follow it up by reading
-## Whitehead&#39;s famous bookProcess and Reality: An Essay in Cosmology(written
-## for the 1927-28 Gifford Lectures). I doubt that reading Whitehead&#39;s book
-## was the best use of my time (I was carried away by my curiosity), so
-## I&#39;ll write a little review that may help you decide if it&#39;s worth your
-## time.Whitehead says in the book&#39;s preface: &quot;These lectures are based upon a
-## recu
-## 
-## book =&gt; book (1.000000)
-## My Darling Caroline surprised the heck out of me. I thought I&#39;d be reading
-## an easy, simple book to get my mind off the drudgery of daily life. Instead
-## I found myself completely absorbed in a world of mystery and desire,
-## longing for the two main characters to air out their differences, to speak
-## freely. I nearly shouted at a few points in anger at a character in a book!
-## I KNEW it&#39;s a romance and should have a happy ending, yet I still found
-## myself, 40 pages from the end, worried that they woul
-## 
-## book =&gt; book (1.000000)
-## The book title and cover will make all David Gemmell fans nostalgic as
-## well as curious. My interest was also piqued when Andy Remic&#39;s book was
-## announced by Angry Robot &amp; I jumped at the opportunity to be able to read
-## it. Andy has dedicated this book to David Gemmell whom he considers one of
-## the finest fantasy writers [an assumption which I heartily agree with].Most
-## David Gemmell fans will instantaneously draw similarities in Andy Remic&#39;s
-## fantasy debut &amp; with David Gemmell&#39;s Drenai books. The 1st
-## 
-## book =&gt; book (1.000000)
-## but very, very good.I first came across this book while killing time in a
-## mall bookstore. I was intrigued by the information listed on the cover and
-## promptly came home to look up the author and the book. While Ms. Illes&#39;
-## website didn&#39;t contain as much information as I&#39;d hoped for, it did give
-## me enough insight into the author that I felt I could trust her work. The
-## reviews I found online were also helpful. I returned to the bookstore and
-## found a comfortable spot where I could sit and study the b
-## 
-## film =&gt; film (1.000000)
-## Words can&#39;t even describe how much I love this Phantom Of The Opera film!
-## When my mother borrowed it from the library back in 2003, I was a bit
-## skeptical to watch it because before watching this one, the only other
-## one I saw which was in the 90&#39;s, was some horror version which I think
-## was Dario Argento&#39;s version and it was so boring and the main storyline
-## bored me. I hated it so I wasn&#39;t jumping for joy when I saw that my mom had
-## borrowed this 1990 version. I know if I started with the Lon Chane
-## 
-## film =&gt; film (1.000000)
-## Back in 1998, Pixar Animation Studios and Disney released their second
-## film. Coming off the emotional high from &quot;TOY STORY&quot;, Directors John
-## Lasseter and Andrew Stanton began working on &quot;A BUG&#39;S LIFE&quot; which cost
-## around $45 million to make and brought in over $363 million worldwide.The
-## film received overwhelmingly positive reviews and featured an all star
-## cast starring Dave Foley (&quot;The Kids in the Hall&quot;, &quot;NewsRadio&quot;, etc.), Kevin
-## Spacey (&quot;The Usual Suspects&quot;, &quot;Se7en&quot;, &quot;L.A. Confidential&quot;), Julia
-## 
-## book =&gt; book (1.000000)
-## Book DescriptionShep Knacker has spent most of his adult life preparing
-## for &quot;The Afterlife&quot;--his shorthand for early retirement in a Third World
-## country where his nest egg will last longer. Numerous research trips with
-## his wife Glynis have narrowed down the options to an island off the coast
-## of Africa. Yet Glynis always finsa one reason or another to delay The
-## Afterlife. Impatient to pull the trigger (after all, he sold his handyman
-## company for $1 million a few years back and has been miserably</code></pre>
-<p>As with negative examples, there is an option called
-<code>real_label</code> that will just look at a specific category.</p>
-<div class="sourceCode" id="cb27"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb27-1"><a href="#cb27-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_max_prob</span>(model, <span class="at">n =</span> <span class="dv">3</span>, <span class="at">real_label =</span> <span class="st">&quot;food&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">dsst_print_text</span>()</span></code></pre></div>
-<pre><code>## food =&gt; food (1.000000)
-## EASY OF USEI&#39;ve used the Mellita Coffee System for about 40 years. I find
-## the system more convenient than coffee machines.&gt; If the power goes off,
-## you can still make coffee if you have a gas stove or a camp stove.&gt; It
-## is easy to brew exactly the amount of coffee you want, and exactly the
-## strength that you want---including adjusting to new roast and grinds. You
-## can even mix caffeinated and decaffeinated coffees if you wish.&gt; In a way,
-## the Mellita system is more &quot;sanitary&quot;. It is easy to forget a
-## 
-## food =&gt; food (1.000000)
-## Food items are always difficult to rate. In my opinion there are two
-## components to rate here. The first is the overall appearance - for that
-## I rate this 5 stars. The products come in a lovely gift basket tied with
-## a beautiful ribbon. The packaging is first rate. Your first impression is
-## that this is a very unique gift basket.Unfortunately when I started opening
-## the individual items, I found there was a disconnect between the packaging
-## and the contents. Part of that is probably attributable
-## 
-## food =&gt; food (0.999999)
-## Delicious olives, and lots of them, simply processed, without excess
-## favorings. No hot peppers, no excess garlic.The similar &quot;Byzantine Fresh
-## Olive Antipasto&quot;Byzantine Fresh Olive Antipasto, 5-Pound Bagis the same
-## product but with tasty capers, a few garlic cloves and a few peices of bell
-## peppers (for color), perhaps a slightly larger ratio of ripe olives, and
-## perhaps saltier. I like the flavor of the &quot;Byzantine Fresh Olive Antipasto&quot;
-## better, but the &quot;Country Olive Mix&quot; is even better, with my o</code></pre>
-<p>Setting <code>real_label</code> to the special value “ALL” returns
-the desired number of examples for each label:</p>
-<div class="sourceCode" id="cb29"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb29-1"><a href="#cb29-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_max_prob</span>(model, <span class="at">n =</span> <span class="dv">2</span>, <span class="at">real_label =</span> <span class="st">&quot;ALL&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">dsst_print_text</span>()</span></code></pre></div>
-<pre><code>## book =&gt; book (1.000000)
-## Recommended to me: &quot;SO much love for this series! The first book is great,
-## but nowhere near as good as the rest. This series pretty much defines
-## political intrigue with all the schemes and secrets, riddles and mysteries.
-## The author does a fantastic job playing with different narrative styles and
-## the characters are wonderful. Recommended because you like Shadow and Bone,
-## Grave Mercy, and Graceling.&quot;Recommended for: fans of Kristin Cashore; Robin
-## LaFevers; Rachel Hartman; the Lumatere Chronicles;
-## 
-## book =&gt; book (1.000000)
-## I recently read Hume&#39;s famous bookA Treatise of Human Nature(first
-## published in 1738), and I thought I would follow it up by reading
-## Whitehead&#39;s famous bookProcess and Reality: An Essay in Cosmology(written
-## for the 1927-28 Gifford Lectures). I doubt that reading Whitehead&#39;s book
-## was the best use of my time (I was carried away by my curiosity), so
-## I&#39;ll write a little review that may help you decide if it&#39;s worth your
-## time.Whitehead says in the book&#39;s preface: &quot;These lectures are based upon a
-## recu
-## 
-## film =&gt; film (1.000000)
-## &quot;Strangers When We Meet&quot; (1960) is simply a magnificent movie. In this
-## reviewer&#39;s opinion, the acting performances from every single member of
-## this first-rate cast are brilliant -- from Kirk Douglas to Kim Novak to
-## Ernie Kovacs to Walter Matthau. They are each just perfect here. Also keep
-## an eye peeled for Sue Ane Langdon, who pops up in a brief cameo role.And
-## I certainly don&#39;t want to leave out Barbara Rush, who gives a knockout
-## portrayal of Douglas&#39; wife. Rush&#39;s final emotion-filled scenes in
-## 
-## film =&gt; film (1.000000)
-## Words can&#39;t even describe how much I love this Phantom Of The Opera film!
-## When my mother borrowed it from the library back in 2003, I was a bit
-## skeptical to watch it because before watching this one, the only other
-## one I saw which was in the 90&#39;s, was some horror version which I think
-## was Dario Argento&#39;s version and it was so boring and the main storyline
-## bored me. I hated it so I wasn&#39;t jumping for joy when I saw that my mom had
-## borrowed this 1990 version. I know if I started with the Lon Chane
-## 
-## food =&gt; food (1.000000)
-## EASY OF USEI&#39;ve used the Mellita Coffee System for about 40 years. I find
-## the system more convenient than coffee machines.&gt; If the power goes off,
-## you can still make coffee if you have a gas stove or a camp stove.&gt; It
-## is easy to brew exactly the amount of coffee you want, and exactly the
-## strength that you want---including adjusting to new roast and grinds. You
-## can even mix caffeinated and decaffeinated coffees if you wish.&gt; In a way,
-## the Mellita system is more &quot;sanitary&quot;. It is easy to forget a
-## 
-## food =&gt; food (1.000000)
-## Food items are always difficult to rate. In my opinion there are two
-## components to rate here. The first is the overall appearance - for that
-## I rate this 5 stars. The products come in a lovely gift basket tied with
-## a beautiful ribbon. The packaging is first rate. Your first impression is
-## that this is a very unique gift basket.Unfortunately when I started opening
-## the individual items, I found there was a disconnect between the packaging
-## and the contents. Part of that is probably attributable</code></pre>
-<p>The same option can be used with <code>dsst_neg_examples</code>.</p>
-</div>
-<div id="keywords-in-context" class="section level2">
-<h2>Keywords in Context</h2>
-<p>As a final tool for today, we can also go back and identify the use
-of particular terms within the documents using a method called keywords
-in context, or KWiC. The function works by passing it a term to search
-for as well as the docs table and the number of items to return. Here,
-for example, we can see the ways that the term “read” are used in the
-texts:</p>
-<div class="sourceCode" id="cb31"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb31-1"><a href="#cb31-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_kwic</span>(<span class="st">&quot;read&quot;</span>, anno)</span></code></pre></div>
-<pre><code>## [doc00076] riting style kept me |reading| , and the simple ide
-## [doc00793] ast paced &amp; visceral |read   | .                   
-## [doc00988]               Having |read   | that Tom Cruise was 
-## [doc01427] its really not a bad |read   | , just disappointing
-## [doc01904]               Having |read   | the first three book
-## [doc02138] er and would like to |read   | more of his works . 
-## [doc02340]        Thank you for |reading| this                
-## [doc02782]  business book I &#39;ve |read   | sinceThe Culture Cod
-## [doc02949]       I always enjoy |reading| anything of Agatha C
-## [doc03237] eries before i began |reading|
-## [doc03535] th information after |reading| the first section , 
-## [doc03742]  guess I may as well |read   | the damned thing , n
-## [doc04005]  me that I needed to |read   | Aidan Donnelley Rowl
-## [doc04551]             You must |read   | the whole set of boo
-## [doc04818]        It &#39;s easy to |read   | &amp; filled to the brim
-## [doc05262]               I have |read   | the book and recomme
-## [doc05409]            Excellent |read   | ! !                 
-## [doc05897] ter that I only kept |reading| in hopes that the he
-## [doc06473]  was easy and fun to |read   | with her and for me 
-## [doc06903] book , while easy to |read   | , just does n&#39;t alwa</code></pre>
-<p>This will be useful when we start working with datasets where it is
-not immediately clear why a particular term is being associated with a
-label type.</p>
+there are sometimes errors as well. We will look at these in the
+notebook for this class.</p>
 </div>
 
 

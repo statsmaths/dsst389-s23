@@ -3,6 +3,9 @@ library(lubridate)
 library(stringi)
 library(xml2)
 
+args <- commandArgs(trailingOnly = TRUE)
+print(args)
+
 # read the HTML dataset
 obj <- read_html(file.path("dev.html"))
 
@@ -32,11 +35,15 @@ xml_remove(links[index])
 # after 13h15 (time of the last class) advance an extra day; also, remove
 # links that do not exist
 td <- as_date(now() + 60 * 60 * 13.25) + 0L
-index <- which(td < avail) 
-if (length(index)) { links <- links[index] }
-xml_set_name(links, "span")
-xml_set_attr(links, "href", NULL)
-xml_set_attr(links, "class", "futurelink")
+if (length(args) == 0 || (args[1] != "notime"))
+{
+  index <- which(td < avail) 
+  if (length(index)) { links <- links[index] }
+  xml_set_name(links, "span")
+  xml_set_attr(links, "href", NULL)
+  xml_set_attr(links, "class", "futurelink")  
+}
+
 
 index <- which(!file.exists(xml_attr(links, "href")))
 if (length(index)) { links <- links[index] }

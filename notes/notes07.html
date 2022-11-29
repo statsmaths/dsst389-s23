@@ -11,7 +11,7 @@
 
 
 
-<title>07. Naïve Bayes</title>
+<title>07. G-score</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -505,7 +505,7 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">07. Naïve Bayes</h1>
+<h1 class="title toc-ignore">07. G-score</h1>
 
 </div>
 
@@ -518,97 +518,75 @@ classification task. We will read in the <code>docs</code> and
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>docs <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/amazon_product_class.csv&quot;</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>anno <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/amazon_product_class_token.csv.gz&quot;</span>)</span></code></pre></div>
 <p>Today, we are going to derive a new metric for seeing how strongly a
-term is associated with a category as well as a related predictive
-algorithm called Naïve Bayes:</p>
-<ul>
-<li><a href="../extra/naive_bayes.pdf">slides</a></li>
-</ul>
+term is associated with a category.</p>
 <div id="g-score" class="section level2">
 <h2>G-Score</h2>
 <p>Here is a function that computes the G-scores for a set of terms
 related to each label in the data.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_metrics</span>(anno, docs)</span></code></pre></div>
-<pre><code>## [[1]]
-## # A tibble: 21,262 × 7
-##    label token  count expected count_word gscore  chi2
-##    &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;    &lt;dbl&gt;      &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;
-##  1 book  book    3789    1566.       3934  5909. 5266.
-##  2 book  read    1724     746.       1873  2292. 2138.
-##  3 book  film      35     971.       2439  2142. 1502.
-##  4 book  movie     87     926.       2327  1695. 1266.
-##  5 book  author   582     240.        602   918.  813.
-##  6 book  taste     31     398.       1000   765.  563.
-##  7 book  flavor    13     319.        801   691.  488.
-##  8 book  reader   355     143.        359   614.  523.
-##  9 book  write    571     283.        710   491.  489.
-## 10 book  tea       10     219.        550   467.  331.
-## # … with 21,252 more rows
-## 
-## [[2]]
-## # A tibble: 24,402 × 7
-##    label token  count expected count_word gscore  chi2
-##    &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;    &lt;dbl&gt;      &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;
-##  1 film  film    2404     996.       2439  3985. 3373.
-##  2 film  movie   2235     950.       2327  3332. 2943.
-##  3 film  book     139    1607.       3934  3040. 2276.
-##  4 film  read      98     765.       1873  1272.  985.
-##  5 film  -PRON- 21305   25088.      61435  1051. 1033.
-##  6 film  taste     20     408.       1000   869.  625.
-##  7 film  flavor     7     327.        801   766.  530.
-##  8 film  watch    649     303.        742   701.  668.
-##  9 film  dvd      392     162.        397   654.  551.
-## 10 film  tea        2     225.        550   553.  373.
-## # … with 24,392 more rows
-## 
-## [[3]]
-## # A tibble: 9,661 × 7
-##    label token   count expected count_word gscore  chi2
-##    &lt;chr&gt; &lt;chr&gt;   &lt;int&gt;    &lt;dbl&gt;      &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;
-##  1 food  taste     949    194.        1000  2739. 3659.
-##  2 food  flavor    781    155.         801  2389. 3136.
-##  3 food  tea       538    106.         550  1658. 2170.
-##  4 food  book        6    762.        3934  1624.  934.
-##  5 food  product   523    112.         580  1370. 1864.
-##  6 food  coffee    448     90.0        465  1334. 1766.
-##  7 food  these     880    315.        1629   967. 1256.
-##  8 food  movie       5    451.        2327   946.  548.
-##  9 food  eat       389     88.7        458   920. 1262.
-## 10 food  use       760    263.        1359   890. 1165.
-## # … with 9,651 more rows</code></pre>
-<p>By default a table is given for each category. If you want to copy
-these two another program, you’ll need to run something like this and
-then copy to the clipboard:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_metrics</span>(anno, docs) <span class="sc">%&gt;%</span> <span class="fu">bind_rows</span>() <span class="sc">%&gt;%</span> <span class="fu">group_by</span>(label) <span class="sc">%&gt;%</span> <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>)</span></code></pre></div>
-<pre><code>## # A tibble: 30 × 7
+<pre><code>## # A tibble: 98,899 × 8
+##    train_id label token  count expected count_word gscore   chi2
+##    &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;    &lt;dbl&gt;      &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+##  1 train    book  book    3789     939.       3934  9726. 11397.
+##  2 train    book  -PRON- 25401   14658.      61435  9557. 10769.
+##  3 train    book  the    16893    9993.      41882  5728.  6432.
+##  4 train    book  ,      14740    8713.      36517  4991.  5609.
+##  5 train    book  .      15492    9425.      39504  4714.  5263.
+##  6 train    book  read    1724     447.       1873  3988.  4799.
+##  7 train    book  to      8380    4470.      18736  3953.  4546.
+##  8 train    book  be     13890    8636.      36194  3868.  4300.
+##  9 train    book  of      8607    4703.      19713  3767.  4310.
+## 10 train    book  and     9811    5666.      23750  3576.  4043.
+## # … with 98,889 more rows</code></pre>
+<p>By default the table is ordered by category and then in ascending
+order by the gscore. You’ll probably want to select only the top scores
+for each label, which can be done as follows:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_metrics</span>(anno, docs) <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(label) <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">4</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 12 × 8
 ## # Groups:   label [3]
-##    label token  count expected count_word gscore  chi2
-##    &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;    &lt;dbl&gt;      &lt;int&gt;  &lt;dbl&gt; &lt;dbl&gt;
-##  1 book  book    3789    1566.       3934  5909. 5266.
-##  2 book  read    1724     746.       1873  2292. 2138.
-##  3 book  film      35     971.       2439  2142. 1502.
-##  4 book  movie     87     926.       2327  1695. 1266.
-##  5 book  author   582     240.        602   918.  813.
-##  6 book  taste     31     398.       1000   765.  563.
-##  7 book  flavor    13     319.        801   691.  488.
-##  8 book  reader   355     143.        359   614.  523.
-##  9 book  write    571     283.        710   491.  489.
-## 10 book  tea       10     219.        550   467.  331.
-## # … with 20 more rows</code></pre>
-</div>
-<div id="naïve-bayes" class="section level2">
-<h2>Naïve Bayes</h2>
-<p>To run the Naïve Bayes estimator, we use the following function:</p>
-<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">dsst_nb_build</span>(anno, docs)</span></code></pre></div>
-<p>It performs relatively well here, though not quite as good as the
-other models:</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_erate</span>(model)</span></code></pre></div>
-<pre><code>## # A tibble: 1 × 2
-##    train valid
-##    &lt;dbl&gt; &lt;dbl&gt;
-## 1 0.0843 0.113</code></pre>
-<p>Note that playing around with the parts of speech or other filters
-can have a larger positive effect compared to other models, so you may
-need to make some tweaks to get the best results.</p>
+##    train_id label token  count expected count_word gscore   chi2
+##    &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;    &lt;dbl&gt;      &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+##  1 train    book  book    3789    939.        3934  9726. 11397.
+##  2 train    book  -PRON- 25401  14658.       61435  9557. 10769.
+##  3 train    book  the    16893   9993.       41882  5728.  6432.
+##  4 train    book  ,      14740   8713.       36517  4991.  5609.
+##  5 train    film  the    18872  10252.       41882  8657.  9863.
+##  6 train    film  film    2404    597.        2439  6431.  7253.
+##  7 train    film  ,      15384   8939.       36517  5603.  6302.
+##  8 train    film  movie   2235    570.        2327  5578.  6457.
+##  9 train    food  -PRON- 14729   7130.       61435  7675.  9542.
+## 10 train    food  .       8860   4585.       39504  3789.  4629.
+## 11 train    food  taste    949    116.        1000  3702.  6768.
+## 12 train    food  flavor   781     93.0        801  3185.  5764.</code></pre>
+<p>And as with previous notes, we can modify and filter the initial
+dataset before running the metrics:</p>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>anno <span class="sc">%&gt;%</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lemma =</span> <span class="fu">if_else</span>(upos <span class="sc">==</span> <span class="st">&quot;PRON&quot;</span>, <span class="fu">tolower</span>(token), lemma)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lemma =</span> <span class="fu">if_else</span>(lemma <span class="sc">==</span> <span class="st">&quot;i&quot;</span>, <span class="st">&quot;I&quot;</span>, lemma)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(upos <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;ADJ&quot;</span>, <span class="st">&quot;ADV&quot;</span>, <span class="st">&quot;NOUN&quot;</span>, <span class="st">&quot;VERB&quot;</span>, <span class="st">&quot;PRON&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_metrics</span>(docs) <span class="sc">%&gt;%</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(label) <span class="sc">%&gt;%</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">4</span>)</span></code></pre></div>
+<pre><code>## # A tibble: 12 × 8
+## # Groups:   label [3]
+##    train_id label token  count expected count_word gscore   chi2
+##    &lt;chr&gt;    &lt;chr&gt; &lt;chr&gt;  &lt;int&gt;    &lt;dbl&gt;      &lt;int&gt;  &lt;dbl&gt;  &lt;dbl&gt;
+##  1 train    book  book    3786    950.        3931  9656. 11229.
+##  2 train    book  read    1723    452.        1872  3949.  4719.
+##  3 train    book  I       5874   3607.       14926  1724.  1920.
+##  4 train    book  author   582    145.         602  1490.  1729.
+##  5 train    film  film    2398    567.        2433  6666.  7739.
+##  6 train    film  movie   2234    542.        2326  5806.  6911.
+##  7 train    film  it      4662   2841.       12195  1383.  1548.
+##  8 train    film  watch    649    173.         742  1382.  1712.
+##  9 train    food  I       5376   1857.       14926  5603.  7779.
+## 10 train    food  taste    949    124.        1000  3575.  6250.
+## 11 train    food  flavor   776     99.0        796  3059.  5290.
+## 12 train    food  it      3440   1517.       12195  2204.  2831.</code></pre>
+<p>The last column is a measurement that we will talk about in the next
+set of notes.</p>
 </div>
 </div>
 

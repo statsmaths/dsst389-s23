@@ -579,399 +579,22 @@ example:</p>
 <span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_ngram</span>(<span class="at">n =</span> <span class="dv">2</span>, <span class="at">n_min =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
 <span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_enet_build</span>(docs)</span></code></pre></div>
 <p>You can see the impact of the ngrams in the model coefficients:</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model)</span></code></pre></div>
-<pre><code>## 390 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
-##                           book         film          food MLN
-## (Intercept)       -0.258308897 -0.024627780  0.2829366765   .
-## this book          1.803413670  .            .              2
-## this movie         .            1.529750401  .             13
-## the book           0.683735122  .            .             18
-## book .             1.228927170  .            .             20
-## this film          .            1.057990720  .             20
-## film be            .            0.705169904  .             22
-## the film           .            0.287616405  .             23
-## movie .            .            1.059100629  .             24
-## book be            0.861748116  .            .             25
-## to read            1.369453482  .            .             28
-## film .             .            0.849910676  .             28
-## of the             .            .           -0.1788799983  29
-## the flavor         .            .            1.2340195329  31
-## -PRON- taste       .            .            0.8335987212  31
-## the movie          .            0.285559730  .             31
-## flavor .           .            .            1.2816539949  32
-## this product       .            .            0.9641359333  32
-## the taste          .            .            1.0749974925  33
-## read .             1.428265203  .            .             34
-## -PRON- use         .            .            0.6755041690  37
-## these be           .            .            0.8537740329  38
-## movie be           .            0.792642374  .             38
-## the story          .            .           -0.5486427315  41
-## book ,             0.810554083  .            .             44
-## movie ,            .            0.791096701  .             45
-## film ,             .            0.319737061  .             45
-## one of             .            0.247925087  .             45
-## watch -PRON-       .            0.649993067  .             46
-## read -PRON-        0.714481599  .            .             47
-## flavor ,           .            .            1.1731224211  48
-## on DVD             .            1.011133719  .             48
-## taste like         .            .            0.7353335244  48
-## to watch           .            0.330749756  .             48
-## product .          .            .            0.8884386783  49
-## cup of             .            .            0.6544341857  49
-## the price          .            .            0.7908124417  50
-## the reader         0.972912967  .            .             51
-## be a               .            .           -0.0822059729  51
-## this dvd           .            1.098975494  .             52
-## try -PRON-         .            .            0.3125033869  52
-## watch this         .            0.760575446  .             53
-## coffee .           .            .            0.7106852435  53
-## this video         .            1.021866016  .             54
-## to eat             .            .            0.5765679177  54
-## have try           .            .            0.5706134918  54
-## taste .            .            .            0.4934011238  54
-## flavor be          .            .            0.4482895577  54
-## book for           1.086311033  .            .             55
-## flavor and         .            .            0.8415450930  55
-## be delicious       .            .            0.6394263612  56
-## eat -PRON-         .            .            0.3834098478  57
-## taste great        .            .            1.0279377966  58
-## have read          0.350798360  .            .             58
-## the acting         .            0.941940652  .             59
-## this brand         .            .            0.8224710199  59
-## book -PRON-        0.530304948  .            .             59
-## buy these          .            .            0.7369462659  60
-## of -PRON-          .            .           -0.0934430731  60
-## well write         1.033940634  .            .             61
-## see this           .            0.592557806  .             61
-## see -PRON-         .            0.305430582  .             61
-## movie that         .            0.638452155  .             62
-## the author         0.404093544  .            .             62
-## use -PRON-         .            .            0.2554129336  62
-## this tea           .            .            0.2275570790  62
-## . Harriet          1.096273996  .            .             63
-## Harriet Klausner   0.830400299  .            .             63
-## good movie         .            0.800403194  .             63
-## taste and          .            .            0.6726390979  63
-## and taste          .            .            0.4701935404  63
-## this episode       .            0.390408646  .             63
-## store .            .            .            0.3555305538  63
-## grocery store      .            .            0.2463563258  63
-## great movie        .            1.065278226  .             64
-## the dvd            .            0.989795471  .             64
-## love these         .            .            0.5796179410  64
-## the product        .            .            0.3578991823  64
-## this novel         0.293592342  .            .             64
-## and the            .            .           -0.0784383735  64
-## snack .            .            .            0.6086502876  65
-## novel ,            0.555393659  .            .             65
-## -PRON- eat         .            .            0.4900359725  65
-## -PRON- add         .            .            0.6401470313  66
-## novel be           0.601342748  .            .             66
-## taste ,            .            .            0.5464080202  66
-## the bag            .            .            0.3077166797  66
-## other brand        .            .            0.6043464925  67
-## delicious .        .            .            0.5742605225  67
-## watch .            .            0.568052201  .             67
-## box .              .            .            0.5045964190  67
-## these .            .            .            0.4210412951  67
-## -PRON- read        0.272866011  .            .             67
-## , the              .            .           -0.0082637122  67
-## episode ,          .            0.550532224  .             68
-## this story         0.533256825  .            .             68
-## brand .            .            .            0.4796713690  68
-## episode be         .            0.302029761  .             68
-## to see             .            0.091074571 -0.1693264467  68
-## to the             .            .           -0.1058668775  68
-## of coffee          .            .            0.2594137854  69
-## buy again          .            .            0.6249109552  70
-## &#39;s book            0.545404203  .            .             70
-## Amazon .           .            .            0.4903377829  71
-## -PRON- local       .            .            0.4880587018  71
-## tea be             .            .            0.4207024038  71
-## the video          .            0.332095359  .             71
-## cup .              .            .            0.2983626858  71
-## read ,             0.275889087  .            .             71
-## box of             .            .            0.2054443228  71
-## so -PRON-          .            .            0.1731776449  71
-## comedy .           .            0.966245566  .             72
-## taste good         .            .            0.6673002108  72
-## book and           0.609402735  .            .             72
-## milk .             .            .            0.4638352073  72
-## a movie            .            0.429277597  .             72
-## taste be           .            .            0.4265685196  72
-## product be         .            .            0.2595841383  72
-## on Amazon          .            .            0.1693935184  72
-## flick .            .            0.835896906  .             73
-## will order         .            .            0.7070279043  73
-## read and           0.682702238  .            .             73
-## be fresh           .            .            0.3632388081  73
-## read for           0.626860326  .            .             74
-## a snack            .            .            0.5180496840  74
-## tasty and          .            .            0.4809216280  74
-## series .           0.356763135  .           -0.1554434945  74
-## gluten free        .            .            0.3170762329  74
-## the show           .            0.306036715  .             74
-## this stuff         .            .            0.2542788829  74
-## fresh ,            .            .            0.1676146918  74
-## ) be               .            0.163902689  .             74
-## -PRON- like        .            .            0.1568699880  74
-## price .            .            .            0.1330947059  74
-## as the             .            0.111736640  .             74
-## actor and          .            0.598639710  .             75
-## healthy .          .            .            0.5702658578  75
-## a dvd              .            0.520889082  .             75
-## product ,          .            .            0.2557818475  75
-## very fresh         .            .            0.4855085569  76
-## good price         .            .            0.4437051946  76
-## K -                .            .            0.4425367330  76
-## drink -PRON-       .            .            0.4081746950  76
-## scene be           .            0.362622257  .             76
-## movie -PRON-       .            0.293100926  .             76
-## be great           .            .            0.2252856746  76
-## - free             .            .            0.2191749696  76
-## tea .              .            .            0.1975409483  76
-## peanut butter      .            .            0.1888301813  76
-## and tasty          .            .            0.7343928515  77
-## good book          0.499711908  .            .             77
-## video .            .            0.388486660  .             77
-## the store          .            .            0.3576506179  77
-## in bulk            .            .            0.3245086910  77
-## coffee ,           .            .            0.3212393897  77
-## book in            0.311371614  .            .             77
-## be organic         .            .            0.1809706292  77
-## be an              .            .           -0.1411981999  77
-## these for          .            .            0.4573774090  78
-## and delicious      .            .            0.3637077004  78
-## a book             0.313425254  .            .             79
-## delicious ,        .            .            0.0796414635  79
-## an easy            0.632225431  .            .             80
-## mix -PRON-         .            .            0.5087989485  80
-## flour .            .            .            0.5032880857  80
-## use this           .            .            0.2746908216  80
-## story .            0.230692604  .           -0.0124805252  80
-## not taste          .            .            0.2163825734  80
-## salt .             .            .            0.1789138818  80
-## play by            .            0.337820515  .             81
-## to add             .            .            0.2594249818  81
-## the music          .            0.191970013  .             81
-## again .            .            .            0.1612333973  81
-## -PRON- love        .           -0.131427856  .             81
-## in this            .            .           -0.0361424930  81
-## the tape           .            0.662850443  .             82
-## great book         0.427656756  .            .             82
-## good read          0.399961722  .            .             82
-## of chocolate       .            .            0.3344561553  82
-## cereal .           .            .            0.3259880983  82
-## a classic          .            0.320686439  .             82
-## novel .            0.296495720  .            .             82
-## great product      .            .            0.2803137204  82
-## the label          .            .            0.2248297494  82
-## NA the             .            0.063613016  .             82
-## the can            .            .            0.0277928016  82
-## , a                .            .           -0.0273904022  82
-## tape .             .            0.506034387  .             83
-## good !             .            .            0.4636905570  83
-## -PRON- collection  .            0.451064310  .             83
-## great tasting      .            .            0.3809761846  83
-## taste the          .            .            0.2561317319  83
-## try this           .            .            0.2021638864  83
-## fresh and          .            .            0.1396351048  83
-## film about         .            0.413323872  .             84
-## good tasting       .            .            0.3747555010  84
-## the viewer         .            0.270961953  .             84
-## ever see           .            0.229946397  .             84
-## show .             .            0.197040372  .             84
-## the world          0.164587198  .            .             84
-## movie and          .            0.163691054  .             84
-## to cook            .            .            0.1580785784  84
-## -PRON- life        0.019058691  .            .             84
-## performance as     .            0.553737167  .             85
-## order these        .            .            0.4688990350  85
-## book of            0.373310511  .            .             85
-## cast .             .            0.347185021  .             85
-## tale that          0.312822499  .            .             85
-## will buy           .            .            0.2479109647  85
-## chocolate .        .            .            0.2473979264  85
-## read this          0.185201239  .            .             85
-## easy to            .           -0.100920151  0.0524121236  85
-## fun movie          .            0.502862482  .             86
-## but NA             .            0.362083573  .             86
-## character be       0.242880925  .            .             86
-## product and        .            .            0.1520828785  86
-## life .             0.147418082  .            .             86
-## tale be            0.657827383  .            .             87
-## the healthy        .            .            0.2721462356  87
-## cake .             .            .            0.2720043481  87
-## -PRON- mouth       .            .            0.2427423613  87
-## local store        .            .            0.2238556542  87
-## these in           .            .            0.0820293481  87
-## the page           0.338664771  .            .             88
-## the packaging      .            .            0.3007250505  88
-## music .            .            0.286994530  .             88
-## movie with         .            0.257935145  .             88
-## product that       .            .            0.2229159980  88
-## water ,            .            .            0.2185527550  88
-## the bottle         .            .            0.2115437844  88
-## forward to         0.170043511  .            .             88
-## delicious and      .            .            0.1332894275  88
-## win the            .            0.108808905  .             88
-## of information     0.567957060  .            .             89
-## bar be             .            .            0.2674542607  89
-## act .              .            0.257246909  .             89
-## great flavor       .            .            0.2349715619  89
-## drink .            .            .            0.2272003053  89
-## this pasta         .            .            0.1885427185  89
-## a healthy          .            .            0.1690522477  89
-## the episode        .            0.087561214  .             89
-## eat this           .            .            0.0793495731  89
-## novel that         0.057201924  .            .             89
-## . worth            .            0.392688549  .             90
-## song .             .            0.329110950  .             90
-## an author          0.321214081  .            .             90
-## -PRON- cook        .            .            0.2654585145  90
-## to order           .            .            0.2305713455  90
-## this author        0.213192918  .            .             90
-## a little           .            .            0.0742597262  90
-## 1930 &#39;s            .            0.451920158  .             91
-## snack on           .            .            0.3462931506  91
-## last a             .            .            0.3251504524  91
-## not put            0.305031735  .            .             91
-## the large          .            .            0.2791673390  91
-## - star             .            0.211278858  .             91
-## good performance   .            0.181257851  .             91
-## hot sauce          .            .            0.1651601575  91
-## taste well         .            .            0.1622906274  91
-## be order           .            .            0.1428537115  91
-## this soup          .            .            0.1244354060  91
-## tasty .            .            .            0.0856674071  91
-## series and         0.351536003  .            .             92
-## good taste         .            .            0.2613672888  92
-## book !             0.208251666  .            .             92
-## and healthy        .            .            0.1966176202  92
-## great taste        .            .            0.1839939484  92
-## the disc           .            0.175241505  .             92
-## actor .            .            0.160213509  .             92
-## film with          .            0.154091760  .             92
-## flesh out          0.118126245  .            .             92
-## -PRON- current     0.115131131  .            .             92
-## great for          .            .            0.0381121524  92
-## . the              .            0.009446595  .             92
-## mother and         0.288728313  .            .             93
-## insight into       0.260873240  .            .             93
-## these to           .            .            0.2433912102  93
-## -PRON- write       0.213262453  .            .             93
-## the spice          .            .            0.1856419274  93
-## healthy and        .            .            0.1728903050  93
-## must see           .            0.172647064  .             93
-## coffee -PRON-      .            .            0.1679232101  93
-## package in         .            .            0.1389577782  93
-## of how             0.123511932  .            .             93
-## coffee for         .            .            0.0923353176  93
-## the NA             .            0.073946946  .             93
-## this cereal        .            .            0.0539612808  93
-## this one           .            .           -0.0403208049  93
-## -PRON- buy         .            .            0.0262351365  93
-## the chocolate      .            .            0.0221621733  93
-## learn a            0.185478789  .            .             94
-## a gang             .            0.169689544  .             94
-## coffee be          .            .            0.1533229439  94
-## could have         .            0.105907341  .             94
-## dvd .              .            0.074734469  .             94
-## this set           .            0.074135895  .             94
-## workout .          .            0.072882103  .             94
-## -PRON- try         .            .            0.0611449298  94
-## science .          0.261639273  .            .             95
-## will watch         .            0.260461663  .             95
-## -PRON- final       .            0.223963452  .             95
-## movie but          .            0.191395205  .             95
-## these book         0.154870384  .            .             95
-## soup ,             .            .            0.1382168250  95
-## feature .          .            0.131769583  .             95
-## pack .             .            .            0.1287096165  95
-## ever have          .            .            0.1217639002  95
-## collection .       .            0.093246511  .             95
-## perfect for        .            .            0.0901998153  95
-## to live            0.077152417  .            .             95
-## a film             .            0.034417392  .             95
-## from the           .            .           -0.0300820801  95
-## too sweet          .            .            0.0167214673  95
-## the fun            .            0.222515275  .             96
-## portray the        .            0.208460060  .             96
-## series !           0.193551687  .            .             96
-## movie !            .            0.174350421  .             96
-## good acting        .            0.115585071  .             96
-## quality be         .            0.103527117  .             96
-## flavor but         .            .            0.1026904920  96
-## play -PRON-        .            0.083857236  .             96
-## will last          .            .            0.0676429928  96
-## to learn           0.061418822  .            .             96
-## direct by          .            0.054741889  .             96
-## of character       0.047259022  .            .             96
-## -PRON- prefer      .            .            0.0316509033  96
-## do -PRON-          .            .           -0.0283557807  96
-## to use             .            .            0.0203446568  96
-## the end            .            .           -0.0130060571  96
-## . excellent        .            0.216473223  .             97
-## dark and           0.147891801  .            .             97
-## flavor that        .            .            0.0959092457  97
-## for young          0.091387898  .            .             97
-## this flavor        .            .            0.0848405084  97
-## faithful to        .            0.084611446  .             97
-## look ,             .            0.072120798  .             97
-## cracker ,          .            .            0.0711687183  97
-## can ,              .            .            0.0681684426  97
-## old movie          .            0.059691843  .             97
-## -PRON- drink       .            .            0.0569777739  97
-## to drink           .            .            0.0442690534  97
-## play the           .            0.041118980  .             97
-## the screen         .            0.038488140  .             97
-## subscribe and      .            .            0.0380079820  97
-## deal with          0.027165551  .            .             97
-## buy -PRON-         .            .            0.0211050779  97
-## performance of     .            0.017422856  .             97
-## Bob &#39;s             .            .            0.0693803838  98
-## not bitter         .            .            0.0576089494  98
-## the market         .            .            0.0560858507  98
-## prefer the         .            .            0.0444008781  98
-## version be         .            0.043783475  .             98
-## funny !            .            0.070208873  .             99
-## the language       0.063692987  .            .             99
-## final scene        .            0.063075745  .             99
-## very entertaining  .            0.053797821  .             99
-## format .           .            0.042258676  .             99
-## -PRON- pay         .            .            0.0400555197  99
-## of old             .            0.034354800  .             99
-## the freezer        .            .            0.0342920511  99
-## book that          0.030877031  .            .             99
-## author ,           0.030381916  .            .             99
-## great snack        .            .            0.0284472242  99
-## the action         .            0.025821067  .             99
-## bottle .           .            .            0.0250365063  99
-## a nice             .            .            0.0213910389  99
-## texture .          .            .            0.0209803827  99
-## this show          .            0.018442384  .             99
-## good for           .            .            0.0118703729  99
-## story be           .            .           -0.0108348210  99
-## keep -PRON-        0.006645361  .            .             99
-## very tasty         .            .            0.0056674358  99
-## just add           .            .            0.0267060138 100
-## routine .          .            0.026060382  .            100
-## highlight of       .            0.021954524  .            100
-## war .              0.019015880  .            .            100
-## must read          0.015594252  .            .            100
-## heroine ,          0.014626428  .            .            100
-## collection of      0.014461455  .            .            100
-## and sound          .            0.010882905  .            100
-## the actor          .            0.010270987  .            100
-## fun read           0.008579891  .            .            100
-## a must             .            0.004979597  .            100
-## too salty          .            .            0.0048455392 100
-## -PRON- watch       .            0.004775921  .            100
-## free .             .            .            0.0037299670 100
-## reader ,           0.003350520  .            .            100
-## tale .             0.001902073  .            .            100
-## taste that         .            .            0.0007068598 100
-## sweet ,            .            .            0.0001066151 100</code></pre>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model, <span class="at">lambda_num =</span> <span class="dv">30</span>)</span></code></pre></div>
+<pre><code>## 13 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
+##                    book        film         food MLN
+## (Intercept) -0.15538849 0.006374181  0.149014308   .
+## this book    0.79035526 .            .             2
+## this movie   .          0.505010237  .            13
+## the book     0.17900509 .            .            18
+## this film    .          0.207687586  .            20
+## book .       0.19341191 .            .            20
+## film be      .          0.114304618  .            22
+## the film     .          0.078635352  .            23
+## movie .      .          0.172070238  .            24
+## book be      0.08036933 .            .            25
+## to read      0.09108604 .            .            28
+## film .       .          0.041923087  .            28
+## of the       .          .           -0.009114281  29</code></pre>
 <p>An extension of this approach are called <strong>skip-grams</strong>.
 They work similarly but allow combinations of N words to skip up to K
 terms. To implement these, we use the function
@@ -1001,102 +624,25 @@ rarely changes the model much but helps interpret the coefficients:</p>
 <span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lemma =</span> <span class="fu">paste0</span>(lemma, <span class="st">&quot;_&quot;</span>, upos)) <span class="sc">%&gt;%</span></span>
 <span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_enet_build</span>(docs)</span></code></pre></div>
 <p>You can see the effect of this change here:</p>
-<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model)</span></code></pre></div>
-<pre><code>## 93 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
-##                          book        film         food MLN
-## (Intercept)      -0.241718593 -0.01414789  0.255866481   .
-## book_NOUN         1.316703873  .           .             2
-## movie_NOUN        .            1.17903473  .            10
-## film_NOUN         .            0.61062419  .            18
-## flavor_NOUN       .            .           1.169911656  19
-## read_VERB         0.913240642  .           .            20
-## taste_NOUN        .            .           1.163379290  22
-## taste_VERB        .            .           1.125777930  22
-## product_NOUN      .            .           0.743845801  32
-## watch_VERB        .            0.56272509  .            37
-## dvd_NOUN          .            0.95042419  .            39
-## eat_VERB          .            .           0.500373768  41
-## story_NOUN        0.050646526  .          -0.358489578  43
-## read_NOUN         1.166643109  .           .            46
-## the_DET           .            .          -0.010320842  48
-## delicious_ADJ     .            .           0.689610183  50
-## tasty_ADJ         .            .           0.722507085  51
-## see_VERB          .            0.23356538  .            52
-## who_PRON          .            .          -0.106071899  52
-## brand_NOUN        .            .           0.550173038  53
-## these_DET         .            .           0.344038533  53
-## cup_NOUN          .            .           0.280215713  53
-## video_NOUN        .            0.49506048  .            54
-## price_NOUN        .            .           0.473587444  54
-## use_VERB          .            .           0.314337010  54
-## of_ADP            .            .          -0.046219259  54
-## snack_NOUN        .            .           0.391082729  55
-## novel_NOUN        0.291954787  .           .            56
-## reader_NOUN       0.575738353  .           .            57
-## episode_NOUN      .            0.35426881  .            57
-## coffee_NOUN       .            .           0.327795488  57
-## order_VERB        .            .           0.491852419  59
-## DVD_PROPN         .            0.45709854  .            62
-## performance_NOUN  .            0.31695336  .            63
-## write_VERB        0.336287985  .           .            64
-## an_DET            .            .          -0.070364722  64
-## &#39;s_PART           .            .          -0.031189281  66
-## acting_NOUN       .            0.49824209  .            67
-## author_NOUN       0.347893366  .           .            68
-## fresh_ADJ         .            .           0.335083487  69
-## store_NOUN        .            .           0.102292296  69
-## Klausner_PROPN    1.113862667  .           .            70
-## healthy_ADJ       .            .           0.407537228  70
-## scene_NOUN        .            0.20449881  .            71
-## tape_NOUN         .            0.21996118  .            72
-## bag_NOUN          .            .           0.190826650  73
-## workout_NOUN      .            0.21566216  .            74
-## buy_VERB          .            .           0.134830024  74
-## show_NOUN         .            0.24161107  .            75
-## add_VERB          .            .           0.151412353  75
-## actor_NOUN        .            0.27348913  .            76
-## Amazon_PROPN      .            .           0.177813889  76
-## package_NOUN      .            .           0.300983022  79
-## classic_NOUN      .            0.38296226  .            80
-## cook_VERB         .            .           0.153214575  80
-## free_ADJ          .            .           0.175494707  81
-## drink_VERB        .            .           0.170511240  81
-## by_ADP            .            .          -0.016657161  81
-## flavorful_ADJ     .            .           0.411179567  83
-## play_VERB         .            0.03232309  .            85
-## bottle_NOUN       .            .           0.181392864  86
-## comedy_NOUN       .            0.13888071  .            86
-## tasting_NOUN      .            .           0.228391949  87
-## tea_NOUN          .            .           0.040695620  87
-## flick_NOUN        .            0.16289887  .            88
-## box_NOUN          .            .           0.035675232  89
-## drink_NOUN        .            .           0.097781123  90
-## milk_NOUN         .            .           0.012612276  90
-## series_NOUN       .            .          -0.048005072  91
-## chocolate_NOUN    .            .           0.048229466  92
-## size_NOUN         .            .           0.038513839  92
-## almond_NOUN       .            .           0.094707085  93
-## soup_NOUN         .            .           0.087397623  93
-## mystery_NOUN      0.081689480  .           .            93
-## learn_VERB        0.040304337  .           .            93
-## music_NOUN        .            0.03591564  .            93
-## sweet_ADJ         .            .           0.021633875  93
-## faithful_ADJ      .            0.30020969  .            94
-## K_PROPN           .            .           0.057067287  94
-## romance_NOUN      0.051180159  .           .            94
-## baking_NOUN       .            .           0.049766378  94
-## classic_ADJ       .            0.04845705  .            94
-## cereal_NOUN       .            .           0.038721870  95
-## man_NOUN          .            .          -0.025402763  95
-## texture_NOUN      .            .           0.033733854  96
-## -PRON-_DET        0.002368923  .           .            96
-## tasting_ADJ       .            .           0.049102261  97
-## reading_NOUN      0.025715295  .           .            97
-## gluten_NOUN       .            .           0.024062664  97
-## bread_NOUN        .            .           0.020259289  97
-## spectacle_NOUN    .            0.04744423  .            98
-## butter_NOUN       .            .           0.004172132  98
-## how_ADV           0.002816510  .           .            98</code></pre>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model, <span class="at">lambda_num =</span> <span class="dv">50</span>)</span></code></pre></div>
+<pre><code>## 16 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
+##                     book       film         food MLN
+## (Intercept)   -0.2160591 0.01776748  0.198291615   .
+## book_NOUN      0.6925786 .           .             2
+## movie_NOUN     .         0.56825903  .            10
+## film_NOUN      .         0.24714900  .            18
+## flavor_NOUN    .         .           0.589105078  19
+## read_VERB      0.4231783 .           .            20
+## taste_VERB     .         .           0.599092119  22
+## taste_NOUN     .         .           0.596607517  22
+## product_NOUN   .         .           0.299008650  32
+## watch_VERB     .         0.16460704  .            37
+## dvd_NOUN       .         0.20163264  .            39
+## eat_VERB       .         .           0.133483895  41
+## story_NOUN     .         .          -0.067088477  43
+## read_NOUN      0.1294661 .           .            46
+## the_DET        .         .          -0.001927111  48
+## delicious_ADJ  .         .           0.011247454  50</code></pre>
 <p>Some more advice about how to use these techniques are included
 below, but as always some trial and error is needed.</p>
 </div>
@@ -1109,7 +655,7 @@ the <code>token_var</code> option. For example, we could use the
 <div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> anno <span class="sc">%&gt;%</span></span>
 <span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_enet_build</span>(docs, <span class="at">token_var =</span> <span class="st">&quot;upos&quot;</span>)</span></code></pre></div>
 <p>Which results in a very different type of model:</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model)</span></code></pre></div>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model)</span></code></pre></div>
 <pre><code>## 15 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                     book         film         food MLN
 ## (Intercept) -0.248980100 -0.222040273  0.471020373   .
@@ -1130,6 +676,39 @@ the <code>token_var</code> option. For example, we could use the
 <p>We will see models like this more as we turn to authorship predict
 tasks in the next few projects.</p>
 </div>
+<div id="keywords-in-context" class="section level2">
+<h2>Keywords in Context</h2>
+<p>As a final tool for today, we can also go back and identify the use
+of particular terms within the documents using a method called keywords
+in context, or KWiC. The function works by passing it a term to search
+for as well as the docs table and the number of items to return. Here,
+for example, we can see the ways that the term “read” are used in the
+texts:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_kwic</span>(anno, <span class="at">terms =</span> <span class="st">&quot;read&quot;</span>)</span></code></pre></div>
+<pre><code>## [doc00076] riting style kept me |reading| , and the simple ide
+## [doc00793] ast paced &amp; visceral |read   | .                   
+## [doc00988]               Having |read   | that Tom Cruise was 
+## [doc01427] its really not a bad |read   | , just disappointing
+## [doc01904]               Having |read   | the first three book
+## [doc02138] er and would like to |read   | more of his works . 
+## [doc02340]        Thank you for |reading| this                
+## [doc02782]  business book I &#39;ve |read   | sinceThe Culture Cod
+## [doc02949]       I always enjoy |reading| anything of Agatha C
+## [doc03237] eries before i began |reading|
+## [doc03535] th information after |reading| the first section , 
+## [doc03742]  guess I may as well |read   | the damned thing , n
+## [doc04005]  me that I needed to |read   | Aidan Donnelley Rowl
+## [doc04551]             You must |read   | the whole set of boo
+## [doc04818]        It &#39;s easy to |read   | &amp; filled to the brim
+## [doc05262]               I have |read   | the book and recomme
+## [doc05409]            Excellent |read   | ! !                 
+## [doc05897] ter that I only kept |reading| in hopes that the he
+## [doc06473]  was easy and fun to |read   | with her and for me 
+## [doc06903] book , while easy to |read   | , just does n&#39;t alwa</code></pre>
+<p>This will be useful when we start working with datasets where it is
+not immediately clear why a particular term is being associated with a
+label type.</p>
+</div>
 <div id="advice-summary" class="section level2">
 <h2>Advice Summary</h2>
 <p>There is no one best way to apply these techniques; you will
@@ -1142,7 +721,7 @@ next set of notes and the first project. I find that first filtering on
 the five most common parts of speech and fixing the pronoun issue to be
 a good first pass to my first model. I sometimes also tag with the part
 of speech code for interpretability, but otherwise leave things as the
-defaults. This is the model I most often use for negative exampels,
+defaults. This is the model I most often use for negative examples,
 maximum probability examples, and coefficient tables. Then, depending on
 the application, I may try other techniques such as n-grams with
 <code>n=2</code> or <code>n=3</code> with <code>n_min=1</code>. If there

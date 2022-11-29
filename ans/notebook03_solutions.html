@@ -11,7 +11,7 @@
 
 
 
-<title>Notebook 03</title>
+<title>Notebook 03 – Solutions</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -505,7 +505,7 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Notebook 03</h1>
+<h1 class="title toc-ignore">Notebook 03 – Solutions</h1>
 
 </div>
 
@@ -545,7 +545,6 @@ elastic net to predict whether a message is spam or not. Use all of the
 default values.</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 01</span></span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">dsst_enet_build</span>(anno, docs)</span></code></pre></div>
-<pre><code>## as(&lt;dgCMatrix&gt;, &quot;dgTMatrix&quot;) is deprecated since Matrix 1.5-0; do as(., &quot;TsparseMatrix&quot;) instead</code></pre>
 <pre><code>## Training
 ## 
   |                                                                        
@@ -1363,27 +1362,46 @@ default values.</p>
   |                                                                        
   |==================================================================| 100%</code></pre>
 <p>Now, compute the error rate for the training and validation sets.</p>
-<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 02</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_erate</span>(model)</span></code></pre></div>
-<pre><code>## # A tibble: 1 × 2
-##     train  valid
-##     &lt;dbl&gt;  &lt;dbl&gt;
-## 1 0.00525 0.0778</code></pre>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 02</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(train_id) <span class="sc">%&gt;%</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">erate =</span> <span class="fu">mean</span>(label <span class="sc">!=</span> pred_label))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 2
+##   train_id   erate
+##   &lt;chr&gt;      &lt;dbl&gt;
+## 1 train    0.00525
+## 2 valid    0.0778</code></pre>
 <p>Does the model do better on the training or the validation data?
 <strong>Answer:</strong> Better on the training data.</p>
 <p>In the next code block, compute the segmented error rate.</p>
-<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 03</span></span>
-<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_erate</span>(model, <span class="at">segmented =</span> <span class="cn">TRUE</span>)</span></code></pre></div>
-<pre><code>## # A tibble: 2 × 3
-##   real_label  train  valid
-##   &lt;chr&gt;       &lt;dbl&gt;  &lt;dbl&gt;
-## 1 ham        0      0.0491
-## 2 spam       0.0103 0.108</code></pre>
+<div class="sourceCode" id="cb6"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 03</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(train_id, label) <span class="sc">%&gt;%</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">erate =</span> <span class="fu">mean</span>(label <span class="sc">!=</span> pred_label))</span></code></pre></div>
+<pre><code>## # A tibble: 4 × 3
+## # Groups:   train_id [2]
+##   train_id label  erate
+##   &lt;chr&gt;    &lt;chr&gt;  &lt;dbl&gt;
+## 1 train    ham   0     
+## 2 train    spam  0.0103
+## 3 valid    ham   0.0491
+## 4 valid    spam  0.108</code></pre>
 <p>And next, compute the confusion matrix:</p>
-<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 04</span></span>
-<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_confusion_matrix</span>(model)</span></code></pre></div>
-<pre><code>##       
-##        ham spam
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 04</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">select</span>(label, pred_label, train_id) <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">table</span>()</span></code></pre></div>
+<pre><code>## , , train_id = train
+## 
+##       pred_label
+## label  ham spam
+##   ham  373    0
+##   spam   4  385
+## 
+## , , train_id = valid
+## 
+##       pred_label
+## label  ham spam
 ##   ham  252   13
 ##   spam  27  222</code></pre>
 <p>Is the model more likely to think that spam is ham, or ham is spam?
@@ -1394,8 +1412,8 @@ the model has fit a multinomial elastic net, but with only two classes.
 You should see that there are two columns with opposite signs. See
 question 4 on the first handout for an explanation of why this
 happens.</p>
-<div class="sourceCode" id="cb11"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb11-1"><a href="#cb11-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 05</span></span>
-<span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model)</span></code></pre></div>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 05</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model)</span></code></pre></div>
 <pre><code>## 204 x 3 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                                    ham          spam MLN
 ## (Intercept)               1.0084374502 -1.0084374502   .
@@ -1610,8 +1628,8 @@ imagine all of these featuring in a spam text message.</p>
 <p>Reproduce the coefficients, cutting off after a particular lambda
 number to get only a small number of results (about a dozen is
 good).</p>
-<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 06</span></span>
-<span id="cb13-2"><a href="#cb13-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model, <span class="at">lambda_num =</span> <span class="dv">27</span>)</span></code></pre></div>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 06</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model, <span class="at">lambda_num =</span> <span class="dv">27</span>)</span></code></pre></div>
 <pre><code>## 13 x 3 sparse Matrix of class &quot;dgCMatrix&quot;
 ##                      ham         spam MLN
 ## (Intercept)  0.249848248 -0.249848248   .
@@ -1630,223 +1648,204 @@ good).</p>
 <p>Next, print out 10 messages that have the highest probability of
 being spam. Use the function <code>dsst_print_text()</code> to print out
 the messages and take a moment to read them.</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 07</span></span>
-<span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_max_prob</span>(model, <span class="at">n =</span> <span class="dv">10</span>, <span class="at">real_label =</span> <span class="st">&quot;spam&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">dsst_print_text</span>()</span></code></pre></div>
-<pre><code>## spam =&gt; spam (0.999992)
-## Ur ringtone service has changed! 25 Free credits! Go to club4mobiles.com to
-## choose content now! Stop? txt CLUB STOP to 87070. 150p/wk Club4 PO Box1146
-## MK45 2WT
+<div class="sourceCode" id="cb14"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb14-1"><a href="#cb14-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 07</span></span>
+<span id="cb14-2"><a href="#cb14-2" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb14-3"><a href="#cb14-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(pred_label <span class="sc">==</span> <span class="st">&quot;spam&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-4"><a href="#cb14-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(pred_value))  <span class="sc">%&gt;%</span></span>
+<span id="cb14-5"><a href="#cb14-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb14-6"><a href="#cb14-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_print_text</span>()</span></code></pre></div>
+<pre><code>## doc00202; spam; valid; spam; 0.999992138321575
+## Ur ringtone service has changed! 25 Free credits! Go to
+## club4mobiles.com to choose content now! Stop? txt CLUB STOP to 87070.
+## 150p/wk Club4 PO Box1146 MK45 2WT
 ## 
-## spam =&gt; spam (0.999889)
-## Had your mobile 10 mths? Update to latest Orange camera/video phones for
-## FREE. Save £s with Free texts/weekend calls. Text YES for a callback orno
-## to opt out
+## doc00855; spam; train; spam; 0.999982353729283
+## Free-message: Jamster!Get the crazy frog sound now! For poly text
+## MAD1, for real text MAD2 to 88888. 6 crazy sounds for just 3 GBP/week!
+## 16+only! T&amp;C&#39;s apply
 ## 
-## spam =&gt; spam (0.999833)
-## January Male Sale! Hot Gay chat now cheaper, call 08709222922. National
-## rate from 1.5p/min cheap to 7.8p/min peak! To stop texts call 08712460324
-## (10p/min)
+## doc00661; spam; valid; spam; 0.999889171471002
+## Had your mobile 10 mths? Update to latest Orange camera/video phones
+## for FREE. Save £s with Free texts/weekend calls. Text YES for a
+## callback orno to opt out
 ## 
-## spam =&gt; spam (0.999652)
-## Freemsg: 1-month unlimited free calls! Activate SmartCall Txt: CALL to No:
-## 68866. Subscriptn3gbp/wk unlimited calls Help: 08448714184 Stop?txt stop
-## landlineonly
+## doc00214; spam; valid; spam; 0.999833415323564
+## January Male Sale! Hot Gay chat now cheaper, call 08709222922.
+## National rate from 1.5p/min cheap to 7.8p/min peak! To stop texts call
+## 08712460324 (10p/min)
 ## 
-## spam =&gt; ham (0.999615)
-## SMS. ac JSco: Energy is high, but u may not know where 2channel it. 2day ur
-## leadership skills r strong. Psychic? Reply ANS w/question. End? Reply END
-## JSCO
+## doc00250; spam; valid; spam; 0.999652384688644
+## Freemsg: 1-month unlimited free calls! Activate SmartCall Txt: CALL to
+## No: 68866. Subscriptn3gbp/wk unlimited calls Help: 08448714184 Stop?
+## txt stop landlineonly
 ## 
-## spam =&gt; spam (0.999400)
-## Great News! Call FREEFONE 08006344447 to claim your guaranteed £1000 CASH
-## or £2000 gift. Speak to a live operator NOW!
+## doc00057; spam; train; spam; 0.999578061304966
+## I want some cock! My hubby&#39;s away, I need a real man 2 satisfy me. Txt
+## WIFE to 89938 for no strings action. (Txt STOP 2 end, txt rec £1.50ea.
+## OTBox 731 LA1 7WS. )
 ## 
-## spam =&gt; spam (0.999219)
-## What do U want for Xmas? How about 100 free text messages &amp; a new video
-## phone with half price line rental? Call free now on 0800 0721072 to find
-## out more!
+## doc00710; spam; train; spam; 0.999548735734572
+## 3 FREE TAROT TEXTS! Find out about your love life now! TRY 3 FOR FREE!
+## Text CHANCE to 85555 16 only! After 3 Free, Msgs £1.50 each
 ## 
-## spam =&gt; spam (0.999217)
-## Hi there, 2nights ur lucky night! Uve been invited 2 XCHAT, the Uks wildest
-## chat! Txt CHAT to 86688 now! 150p/MsgrcvdHG/Suite342/2Lands/Row/W1J6HL LDN
-## 18yrs
+## doc00830; spam; train; spam; 0.99949402694429
+## Well done ENGLAND! Get the official poly ringtone or colour flag on
+## yer mobile! text TONE or FLAG to 84199 NOW! Opt-out txt ENG STOP.
+## Box39822 W111WX £1.50
 ## 
-## spam =&gt; spam (0.999185)
-## Had your mobile 10 mths? Update to the latest Camera/Video phones for FREE.
-## KEEP UR SAME NUMBER, Get extra free mins/texts. Text YES for a call
+## doc01134; spam; train; spam; 0.99949402694429
+## Well done ENGLAND! Get the official poly ringtone or colour flag on
+## yer mobile! text TONE or FLAG to 84199 NOW! Opt-out txt ENG STOP.
+## Box39822 W111WX £1.50
 ## 
-## spam =&gt; spam (0.999064)
-## Free entry in 2 a weekly comp for a chance to win an ipod. Txt POD to 80182
-## to get entry (std txt rate) T&amp;C&#39;s apply 08452810073 for details 18+</code></pre>
+## doc01099; spam; valid; spam; 0.99939969586009
+## Great News! Call FREEFONE 08006344447 to claim your guaranteed £1000
+## CASH or £2000 gift. Speak to a live operator NOW!</code></pre>
 <p>Repeat the last question, but select the ten messages most likely to
 be ham.</p>
-<div class="sourceCode" id="cb17"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb17-1"><a href="#cb17-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 08</span></span>
-<span id="cb17-2"><a href="#cb17-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_max_prob</span>(model, <span class="at">n =</span> <span class="dv">10</span>, <span class="at">real_label =</span> <span class="st">&quot;ham&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">dsst_print_text</span>()</span></code></pre></div>
-<pre><code>## ham =&gt; ham (0.997655)
-## Are you angry with me. What happen dear
+<div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 08</span></span>
+<span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb16-3"><a href="#cb16-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(pred_label <span class="sc">==</span> <span class="st">&quot;ham&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-4"><a href="#cb16-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">arrange</span>(<span class="fu">desc</span>(pred_value))  <span class="sc">%&gt;%</span></span>
+<span id="cb16-5"><a href="#cb16-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_head</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb16-6"><a href="#cb16-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_print_text</span>()</span></code></pre></div>
+<pre><code>## doc00734; ham; train; ham; 0.999995428135907
+## The last thing i ever wanted to do was hurt you. And i didn&#39;t think it
+## would have. You&#39;d laugh, be embarassed, delete the tag and keep going.
+## But as far as i knew, it wasn&#39;t even up. The fact that you even felt
+## like i would do it to hurt you shows you really don&#39;t know me at all.
+## It was messy wednesday, but it wasn&#39;t bad. The problem i have with it
+## is you HAVE the time to clean it, but you choose not to. You skype,
+## you take pictures, you sleep, you want to go out. I don&#39;t mind a few
+## things here
 ## 
-## ham =&gt; ham (0.997655)
-## I&#39;m aight. Wat&#39;s happening on your side.
+## doc00226; spam; valid; ham; 0.999615059207897
+## SMS. ac JSco: Energy is high, but u may not know where 2channel it.
+## 2day ur leadership skills r strong. Psychic? Reply ANS w/question.
+## End? Reply END JSCO
 ## 
-## ham =&gt; ham (0.995760)
-## Probably money worries. Things are coming due and i have several
-## outstanding invoices for work i did two and three months ago.
-## 
-## ham =&gt; ham (0.991784)
-## Okay lor... Will they still let us go a not ah? Coz they will not know
-## until later. We drop our cards into the box right?
-## 
-## ham =&gt; ham (0.990923)
-## Wow ... I love you sooo much, you know ? I can barely stand it ! I wonder
-## how your day goes and if you are well, my love ... I think of you and miss
-## you
-## 
-## ham =&gt; ham (0.989707)
-## Never y lei... I v lazy... Got wat? Dat day ü send me da url cant work
-## one...
-## 
-## ham =&gt; ham (0.988907)
-## I dun thk i&#39;ll quit yet... Hmmm, can go jazz ? Yogasana oso can... We can
-## go meet em after our lessons den...
-## 
-## ham =&gt; ham (0.988005)
-## There r many model..sony ericson also der.. &amp;lt;#&amp;gt; ..it luks good bt i
-## forgot modl no
-## 
-## ham =&gt; ham (0.987423)
-## Come to me, slave. Your doing it again ... Going into your shell and
-## unconsciously avoiding me ... You are making me unhappy :-(
-## 
-## ham =&gt; ham (0.986538)
-## Hey ! Don&#39;t forget ... You are MINE ... For ME ... My possession ... MY
-## property ... MMM ... *childish smile* ...</code></pre>
-<p>Next, print out ten spam messages that were mis-classified.</p>
-<div class="sourceCode" id="cb19"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb19-1"><a href="#cb19-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 09</span></span>
-<span id="cb19-2"><a href="#cb19-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_neg_examples</span>(model, <span class="at">n =</span> <span class="dv">10</span>, <span class="at">real_label =</span> <span class="st">&quot;spam&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">dsst_print_text</span>()</span></code></pre></div>
-<pre><code>## spam =&gt; ham (0.707243)
-## tddnewsletter@emc1.co.uk (More games from TheDailyDraw) Dear Helen, Dozens
-## of Free Games - with great prizesWith..
-## 
-## spam =&gt; ham (0.882557)
-## 2/2 146tf150p
-## 
-## spam =&gt; ham (0.999615)
-## SMS. ac JSco: Energy is high, but u may not know where 2channel it. 2day ur
-## leadership skills r strong. Psychic? Reply ANS w/question. End? Reply END
-## JSCO
-## 
-## spam =&gt; ham (0.998646)
+## doc00025; spam; valid; ham; 0.998646488829747
 ## SMS. ac Sptv: The New Jersey Devils and the Detroit Red Wings play Ice
 ## Hockey. Correct or Incorrect? End? Reply END SPTV
 ## 
-## spam =&gt; ham (0.513377)
-## Not heard from U4 a while. Call me now am here all night with just my
-## knickers on. Make me beg for it like U did last time 01223585236 XX Luv
-## Nikiyu4.net
+## doc00987; ham; train; ham; 0.998102983123443
+## Wow. I never realized that you were so embarassed by your
+## accomodations. I thought you liked it, since i was doing the best i
+## could and you always seemed so happy about &quot;the cave&quot;. I&#39;m sorry I
+## didn&#39;t and don&#39;t have more to give. I&#39;m sorry i offered. I&#39;m sorry
+## your room was so embarassing.
 ## 
-## spam =&gt; ham (0.572388)
-## Sorry! U can not unsubscribe yet. THE MOB offer package has a min term of
-## 54 weeks&gt; pls resubmit request after expiry. Reply THEMOB HELP 4 more info
+## doc00476; ham; valid; ham; 0.997655412518001
+## Are you angry with me. What happen dear
 ## 
-## spam =&gt; ham (0.816344)
-## TBS/PERSOLVO. been chasing us since Sept for£38 definitely not paying now
-## thanks to your information. We will ignore them. Kath. Manchester.
+## doc01252; ham; valid; ham; 0.997655412518001
+## I&#39;m aight. Wat&#39;s happening on your side.
 ## 
-## spam =&gt; ham (0.738154)
-## The current leading bid is 151. To pause this auction send OUT. Customer
-## Care: 08718726270
+## doc01035; ham; valid; ham; 0.995760396588148
+## Probably money worries. Things are coming due and i have several
+## outstanding invoices for work i did two and three months ago.
 ## 
-## spam =&gt; ham (0.903188)
+## doc00574; ham; train; ham; 0.992649102839132
+## Okay lor... Wah... like that def they wont let us go... Haha... What
+## did they say in the terms and conditions?
+## 
+## doc00519; ham; valid; ham; 0.991784016399156
+## Okay lor... Will they still let us go a not ah? Coz they will not know
+## until later. We drop our cards into the box right?
+## 
+## doc00495; ham; train; ham; 0.991052631029984
+## No dude, its not fake..my frnds got money, thts y i&#39;m reffering u..if
+## u member wit my mail link, u vl be credited &amp;lt;#&amp;gt; rs and il be
+## getiing &amp;lt;#&amp;gt; rs..i can draw my acc wen it is &amp;lt;#&amp;gt; rs..</code></pre>
+<p>Next, print out ten random spam messages that were
+mis-classified.</p>
+<div class="sourceCode" id="cb18"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb18-1"><a href="#cb18-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 09</span></span>
+<span id="cb18-2"><a href="#cb18-2" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb18-3"><a href="#cb18-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(label <span class="sc">==</span> <span class="st">&quot;spam&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-4"><a href="#cb18-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(label <span class="sc">!=</span> pred_label) <span class="sc">%&gt;%</span></span>
+<span id="cb18-5"><a href="#cb18-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb18-6"><a href="#cb18-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_print_text</span>()</span></code></pre></div>
+<pre><code>## doc00703; spam; valid; ham; 0.515106762048036
+## Get 3 Lions England tone, reply lionm 4 mono or lionp 4 poly. 4 more
+## go 2 www.ringtones.co.uk, the original n best. Tones 3GBP network
+## operator rates apply.
+## 
+## doc00336; spam; valid; ham; 0.805331623254029
+## A link to your picture has been sent. You can also use http://
+## alto18.co.uk/wave/wave.asp?o=44345
+## 
+## doc00801; spam; valid; ham; 0.903187750837926
 ## Check Out Choose Your Babe Videos @ sms.shsex.netUN fgkslpoPW fgkslpo
 ## 
-## spam =&gt; ham (0.924934)
-## Money i have won wining number 946 wot do i do next</code></pre>
-<p>Now, print out ten ham messages that were mis-classified.</p>
-<div class="sourceCode" id="cb21"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb21-1"><a href="#cb21-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 10</span></span>
-<span id="cb21-2"><a href="#cb21-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_neg_examples</span>(model, <span class="at">n =</span> <span class="dv">10</span>, <span class="at">real_label =</span> <span class="st">&quot;ham&quot;</span>) <span class="sc">%&gt;%</span> <span class="fu">dsst_print_text</span>()</span></code></pre></div>
-<pre><code>## ham =&gt; spam (0.864890)
-## Hey there! Glad u r better now. I hear u treated urself to a digi cam, is
-## it good? We r off at 9pm. Have a fab new year, c u in coupla wks!
+## doc00475; spam; train; ham; 0.5331847877818
+## Your credits have been topped up for http://www.bubbletext.com Your
+## renewal Pin is tgxxrz
 ## 
-## ham =&gt; spam (0.754700)
-## Hi! You just spoke to MANEESHA V. We&#39;d like to know if you were satisfied
-## with the experience. Reply Toll Free with Yes or No.
+## doc01108; spam; valid; ham; 0.707242898252999
+## tddnewsletter@emc1.co.uk (More games from TheDailyDraw) Dear Helen,
+## Dozens of Free Games - with great prizesWith..
 ## 
-## ham =&gt; spam (0.641227)
-## I‘ll have a look at the frying pan in case it‘s cheap or a book perhaps. No
-## that‘s silly a frying pan isn‘t likely to be a book
+## doc00887; spam; valid; ham; 0.705545996909835
+## 3. You have received your mobile content. Enjoy
 ## 
-## ham =&gt; spam (0.512751)
-## naughty little thought: &#39;its better to flirt, flirt n flirt, rather than
-## loving someone n gettin hurt, hurt n hurt...:-) Gud nyt
+## doc00617; spam; valid; ham; 0.515106762048036
+## Get 3 Lions England tone, reply lionm 4 mono or lionp 4 poly. 4 more
+## go 2 www.ringtones.co.uk, the original n best. Tones 3GBP network
+## operator rates apply
 ## 
-## ham =&gt; spam (0.877789)
-## Oh thats late! Well have a good night and i will give u a call tomorrow.
-## Iam now going to go to sleep night night
+## doc01034; spam; train; ham; 0.882557480301154
+## ringtoneking 84484
 ## 
-## ham =&gt; spam (0.590642)
-## Life spend with someone for a lifetime may be meaningless but a few moments
-## spent with someone who really love you means more than life itself..
+## doc00066; spam; valid; ham; 0.821765526679288
+## You will recieve your tone within the next 24hrs. For Terms and
+## conditions please see Channel U Teletext Pg 750
 ## 
-## ham =&gt; spam (0.614985)
-## How&#39;s it feel? Mr. Your not my real Valentine just my yo Valentine even tho
-## u hardly play!!
+## doc00265; spam; valid; ham; 0.582015539203516
+## Want explicit SEX in 30 secs? Ring 02073162414 now! Costs 20p/min</code></pre>
+<p>Now, print out ten random ham messages that were mis-classified.</p>
+<div class="sourceCode" id="cb20"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb20-1"><a href="#cb20-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 10</span></span>
+<span id="cb20-2"><a href="#cb20-2" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb20-3"><a href="#cb20-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(label <span class="sc">==</span> <span class="st">&quot;ham&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-4"><a href="#cb20-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(label <span class="sc">!=</span> pred_label) <span class="sc">%&gt;%</span></span>
+<span id="cb20-5"><a href="#cb20-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">slice_sample</span>(<span class="at">n =</span> <span class="dv">10</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb20-6"><a href="#cb20-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_print_text</span>()</span></code></pre></div>
+<pre><code>## doc00113; ham; valid; spam; 0.877789205952256
+## Oh thats late! Well have a good night and i will give u a call
+## tomorrow. Iam now going to go to sleep night night
 ## 
-## ham =&gt; spam (0.738511)
-## Hi its Kate how is your evening? I hope i can see you tomorrow for a bit
-## but i have to bloody babyjontet! Txt back if u can. :) xxx
+## doc00764; ham; valid; spam; 0.641227009753046
+## I‘ll have a look at the frying pan in case it‘s cheap or a book
+## perhaps. No that‘s silly a frying pan isn‘t likely to be a book
 ## 
-## ham =&gt; spam (0.559170)
-## My slave! I want you to take 2 or 3 pictures of yourself today in bright
-## light on your cell phone! Bright light!
+## doc01033; ham; valid; spam; 0.581212523413683
+## Nimbomsons. Yep phone knows that one. Obviously, cos thats a real word
 ## 
-## ham =&gt; spam (0.541083)
-## Sir Goodmorning, Once free call me.</code></pre>
-<p>In the next code block, select one of the coefficients from the model
-and use the keywords in context function to find examples of the lemma
-in the texts. If there is one, try to select a term that you had trouble
-understanding why it was significant. See if the KWiC method helps
-explain the significance of the term.</p>
-<div class="sourceCode" id="cb23"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb23-1"><a href="#cb23-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 11</span></span>
-<span id="cb23-2"><a href="#cb23-2" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_kwic</span>(<span class="st">&quot;150p&quot;</span>, anno)</span></code></pre></div>
-<pre><code>## [doc00032]                 only |150p| / msg .             
-## [doc00092]                 only |150p| / msg               
-## [doc00164] Future mgs billed at |150p| daily .             
-## [doc00197]                      |150p| / tone .            
-## [doc00202]                      |150p|
-## [doc00278]                 Cost |150p| / day , 6days , 16 +
-## [doc00280]    Txt CHAT to 86688 |150p| /                   
-## [doc00342]              LdnW15H |150p| / Mtmsgrcvd18       
-## [doc00400]     POBox 6 , LS15HB |150p|
-## [doc00422]                      |150p| / tone .            
-## [doc00482]   Boltblue tones for |150p| Reply POLY # or MONO
-## [doc00679]                      |150p| / msg , EXP .       
-## [doc00718]           4T&amp;Ctxt TC |150p|
-## [doc00894]    Text stop to stop |150p| / text              
-## [doc00912]            txt costs |150p| textoperator g696ga 
-## [doc00959] o.uk POBox36504W45WQ |150p|
-## [doc00978]       POBox 7 , S3XY |150p|
-## [doc00989]                      |150p|
-## [doc01066]      POBox36504W45WQ |150p| / msg rcd 16        
-## [doc01169] o.uk POBox36504W45WQ |150p|</code></pre>
-<p>Notice that the KWiC output gives us the document ids for the
-messages. If we want to learn more we can use the function
-<code>filter</code> to select the entire message. Below is an example
-for the message “doc00164”. Replace the id with one from your result
-above and read the entire text message.</p>
-<div class="sourceCode" id="cb25"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb25-1"><a href="#cb25-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Question 12</span></span>
-<span id="cb25-2"><a href="#cb25-2" aria-hidden="true" tabindex="-1"></a><span class="fu">filter</span>(docs, doc_id <span class="sc">==</span> <span class="st">&quot;doc00482&quot;</span>)<span class="sc">$</span>text</span></code></pre></div>
-<pre><code>## [1] &quot;Boltblue tones for 150p Reply POLY# or MONO# eg POLY3 1. Cha Cha Slide 2. Yeah 3. Slow Jamz 6. Toxic 8. Come With Me or STOP 4 more tones txt MORE&quot;</code></pre>
-<p>For a final step, take a moment to really think deeply about all of
-the results. Try to explain in a few sentences everything you’ve learned
-about the data. <strong>Answer:</strong> Here’s my takeaway: We can
-identify the spam messages with about a 7% error rate by identifying a
-few common terms that are associated with spam and ham. Spam terms are
-related to getting people to respond and often are related to money;
-there are fewer ham terms and these tend to be common function words and
-punctuation marks. Most of the model mistakes included messages with
-lots of misspellings as well as a few ham messages that seem to be
-mislabelled.</p>
+## doc00733; ham; valid; spam; 0.541082987032844
+## Sir Goodmorning, Once free call me.
+## 
+## doc00928; ham; valid; spam; 0.864890363509263
+## Hey there! Glad u r better now. I hear u treated urself to a digi cam,
+## is it good? We r off at 9pm. Have a fab new year, c u in coupla wks!
+## 
+## doc01127; ham; valid; spam; 0.611784957326342
+## Happy new years melody!
+## 
+## doc01256; ham; valid; spam; 0.559170267274495
+## My slave! I want you to take 2 or 3 pictures of yourself today in
+## bright light on your cell phone! Bright light!
+## 
+## doc01037; ham; valid; spam; 0.614985394011444
+## How&#39;s it feel? Mr. Your not my real Valentine just my yo Valentine
+## even tho u hardly play!!
+## 
+## doc00366; ham; valid; spam; 0.590642494406985
+## Life spend with someone for a lifetime may be meaningless but a few
+## moments spent with someone who really love you means more than life
+## itself..
+## 
+## doc00221; ham; valid; spam; 0.73851105629729
+## Hi its Kate how is your evening? I hope i can see you tomorrow for a
+## bit but i have to bloody babyjontet! Txt back if u can. :) xxx</code></pre>
 </div>
 
 

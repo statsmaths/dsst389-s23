@@ -112,42 +112,15 @@ Repeat the last question, but select the ten messages most likely to be ham.
 
 ```
 
-Next, print out ten spam messages that were mis-classified.
+Next, print out ten random spam messages that were mis-classified.
 
 ```{r, question-09}
 
 ```
 
-Now, print out ten ham messages that were mis-classified.
+Now, print out ten random ham messages that were mis-classified.
 
 ```{r, question-10}
 
 ```
 
-In the next code block, select one of the coefficients from the model and use
-the keywords in context function to find examples of the lemma in the texts.
-If there is one, try to select a term that you had trouble understanding why it
-was significant. See if the KWiC method helps explain the significance of the
-term.
-
-```{r, question-11}
-
-```
-
-Notice that the KWiC output gives us the document ids for the messages. If we
-want to learn more we can use the function `filter` to select the entire
-message. Below is an example for the message "doc00164". Replace the id with
-one from your result above and read the entire text message.
-
-```{r, question-12}
-
-```
-
-For a final step, take a moment to really think deeply about all of the results.
-Try to explain in a few sentences everything you've learned about the data.
-**Answer:** Here's my takeaway: We can identify the spam messages with about
-a 7% error rate by identifying a few common terms that are associated with spam
-and ham. Spam terms are related to getting people to respond and often are
-related to money; there are fewer ham terms and these tend to be common function
-words and punctuation marks. Most of the model mistakes included messages with
-lots of misspellings as well as a few ham messages that seem to be mislabelled.

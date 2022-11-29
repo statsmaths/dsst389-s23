@@ -592,20 +592,19 @@ when we get to unsupervised learning in a few weeks.</p>
 <p>To apply the k-nearest neighbors algorithm to our data, we use the
 function <code>dsst_knn_build</code>:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">dsst_knn_build</span>(anno, docs)</span></code></pre></div>
-<pre><code>## as(&lt;dgCMatrix&gt;, &quot;dgTMatrix&quot;) is deprecated since Matrix 1.5-0; do as(., &quot;TsparseMatrix&quot;) instead</code></pre>
 <p>It can take a few minutes to finish. After it does, we can see how
-predictive the model is:</p>
-<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_erate</span>(model)</span></code></pre></div>
-<pre><code>## # A tibble: 1 × 2
-##   train valid
-##   &lt;dbl&gt; &lt;dbl&gt;
-## 1     0 0.298</code></pre>
-<p>This is not nearly as good as the global model. We will see that when
-we have a larger set of classes the model starts to become more
-competitive with the global model.</p>
-<p>By default, the function uses k equal to 1. We can manually set a
-different k by setting the argument <code>k</code> in the function
-call.</p>
+predictive the model is by using our data verbs.</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>model<span class="sc">$</span>docs <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(train_id) <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">erate =</span> <span class="fu">mean</span>(label <span class="sc">!=</span> pred_label))</span></code></pre></div>
+<pre><code>## # A tibble: 2 × 2
+##   train_id erate
+##   &lt;chr&gt;    &lt;dbl&gt;
+## 1 train    0    
+## 2 valid    0.298</code></pre>
+<p>This is not nearly as good as the global model on the validation
+data. We will see that when we have a larger set of classes the model
+starts to become more competitive with the global model.</p>
 <p>This is a nice example of a completely different model that can help
 show how well your other models are working. It has a very different
 approach and is best when given a relatively dense matrix and

@@ -1,5 +1,5 @@
 ---
-title: "07. Naïve Bayes"
+title: "07. G-score"
 output:
   html_document:
     theme: cosmo
@@ -23,10 +23,7 @@ anno <- read_csv("../data/amazon_product_class_token.csv.gz")
 ```
 
 Today, we are going to derive a new metric for seeing how strongly a term is
-associated with a category as well as a related predictive algorithm called
-Naïve Bayes:
-
-- [slides](../extra/naive_bayes.pdf)
+associated with a category.
 
 ## G-Score
 
@@ -37,28 +34,28 @@ each label in the data.
 dsst_metrics(anno, docs)
 ```
 
-By default a table is given for each category. If you want to copy these two
-another program, you'll need to run something like this and then copy to the
-clipboard:
+By default the table is ordered by category and then in ascending order by the
+gscore. You'll probably want to select only the top scores for each label, which
+can be done as follows:
 
 ```{r}
-dsst_metrics(anno, docs) %>% bind_rows() %>% group_by(label) %>% slice_head(n = 10)
+dsst_metrics(anno, docs) %>%
+  group_by(label) %>%
+  slice_head(n = 4)
 ```
 
-## Naïve Bayes
-
-To run the Naïve Bayes estimator, we use the following function:
+And as with previous notes, we can modify and filter the initial dataset before
+running the metrics:
 
 ```{r}
-model <- dsst_nb_build(anno, docs)
+anno %>%
+  mutate(lemma = if_else(upos == "PRON", tolower(token), lemma)) %>%
+  mutate(lemma = if_else(lemma == "i", "I", lemma)) %>%
+  filter(upos %in% c("ADJ", "ADV", "NOUN", "VERB", "PRON")) %>%
+  dsst_metrics(docs) %>%
+  group_by(label) %>%
+  slice_head(n = 4)
 ```
 
-It performs relatively well here, though not quite as good as the other models:
-
-```{r}
-dsst_erate(model)
-```
-
-Note that playing around with the parts of speech or other filters can have a
-larger positive effect compared to other models, so you may need to make some
-tweaks to get the best results.
+The last column is a measurement that we will talk about in the next set of 
+notes.
