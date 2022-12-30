@@ -21,6 +21,7 @@ mkdir materials/nb
 cp nb/setup.Rmd materials/nb
 cp nb/notebook00.Rmd materials/nb
 cp funs/funs.R materials/funs
+cp funs/funs_custom.R materials/funs
 cp funs/update.R materials/funs
 
 rm -f materials.zip
