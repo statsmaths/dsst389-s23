@@ -1,0 +1,43 @@
+---
+title: "Groups"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, include=FALSE}
+Sys.setlocale("LC_TIME", "en_US.UTF-8")
+```
+
+Once created, this page will list the class groups for the projects.
+The first part of your group name gives your table and describes what
+subset of data you will be working with. The second part gives your
+actual group that you will prepare each project with. Please let me 
+know at any point if you have a concern about these groupings.
+
+### Section 1 (10h30 - 11h45)
+
+- **Group 1A**
+- **Group 1B**
+- **Group 2A**
+- **Group 3A**
+- **Group 4A**
+- **Group 5A**
+- **Group 6A**
+- **Group 7A**
+- **Group 8A**
+
+
+### Section 2 (12h00 - 13h15)
+
+- **Group 1A**
+- **Group 1B**
+- **Group 2A**
+- **Group 3A**
+- **Group 4A**
+- **Group 5A**
+- **Group 6A**
+- **Group 7A**
+- **Group 8A**
