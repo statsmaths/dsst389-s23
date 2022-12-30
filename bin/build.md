@@ -14,6 +14,7 @@ To build the materials zip file, do the following in a terminal:
 rm -rf materials
 mkdir materials
 mkdir materials/data
+mkdir materials/data_project
 mkdir materials/funs
 mkdir materials/nb
 

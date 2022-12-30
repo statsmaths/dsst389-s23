@@ -4,7 +4,7 @@ output:
   html_document:
     theme: cosmo
     highlight: zenburn
-    css: "note-style.css"
+    css: "../css/note-style.css"
 ---
 
 ```{r, include=FALSE, message =FALSE}
@@ -113,8 +113,6 @@ data directory, the package's function `read_json` can be used to read in
 the file without an additional setup.
 
 ```{r, message=FALSE, warning=FALSE}
-library(jsonlite)
-
 obj <- read_json("../data/apple.json")
 ```
 
@@ -298,34 +296,37 @@ this case we are asking for "pageviews".
 to 50 of these, seperated by pipes (`|`), but here we are requesting only a
 single page for "apple".
 
-To create a query string with these parameters, we can use the `stri_paste`
+To create a query string with these parameters, we can use the `modify_url`
 function. This will make it easier in the next section to modify the code
 to search for other pages.
 
 ```{r}
-base_url <- "https://en.wikipedia.org/w/api.php"
-options <- "?action=query&format=json&prop=pageviews&titles="
-url <- stri_paste(base_url, options, "apple")
+url <- modify_url(
+  "https://en.wikipedia.org/w/api.php",
+  query = list(
+    "action" = "query", format = "json", prop = "pageviews", titles = "apple"
+  )
+)
 url
 ```
 
-In order to request this data through the media wiki API, we will use
-the `read_lines` function. Typically JSON data is sent without an extra
-"newline" character at the end in order to save space.
+In order to request this data through the media wiki API, we could use
+the `GET` function from the package **httr**. This returns a special object 
+that contains HTML headers as well as the JSON data; we can grab and parse the
+data as an R list object with the function `content`.
 
 ```{r, echo=FALSE}
-json_text <- read_lines("../data/apple.json")
+res <- GET(url)
+obj <- content(res, type = "application/json")
 ```
 ```{r, eval=FALSE}
-json_text <- read_lines(url)
-json_text
+res <- dsst_cache_get(url, cache_dir = "cache")
+obj <- content(res, type = "application/json")
 ```
 
-The result is a string containing JSON data. We can parse this using `parse_json`
-and start looking through its contents.
+Let's start to look at the contents of this object.
 
 ```{r}
-obj <- parse_json(json_text)
 names(obj)
 ```
 
@@ -370,31 +371,17 @@ all_items <- food$wiki
 all_items
 ```
 
-Everytime that we request data from the MediaWiki API it puts a small strain
+Every time that we request data from the MediaWiki API it puts a small strain
 on the Wikipedia servers. It also takes a bit of time to send the request to
 their servers, wait for the response, and then load the results. For larger
 datasets it would be a bad idea to make a new request every time we want another
-field from our collection of data. A good practice is to split this process into
-two parts: first we download the JSON files and save them locally, then we
-read the local files and process them as needed.
+field from our collection of data. A good practice is to cache the results of 
+making a request to the API. We can do this by replacing the function `GET`
+with the function `dsst_cache_get`. It will appear to have the same behavior, 
+but unlike `GET`, the cache version saves the result of the request in a local
+directory and only calls the API if this URL has not been previously requested.
 
-The function `file.exists` can be used to check if a file exists locally,
-and download the file otherwise. It has arguments: `src` for the location of
-the URL and `dest` for the local location where the file is found. Here, we
-will use this function to store all of the json pageview files for our dataset
-in a directory called "pageview_cache".
-
-```{r}
-for (item in all_items)
-{
-  src_url <- paste0(base_url, options, item)
-  dest_path <- file.path("pageview_cache", paste0(item, ".json"))
-
-  if (file.exists(dest_path)) { download.file(src_url, dest_path) }
-}
-```
-
-With the pages downloaded, we now repeat the process in the previous section
+Using this function, we can now repeat the process in the previous section
 for each of the pages in our dataset using a for loop. The individual page
 view tables are combined using `bind_rows` into a larger table `page_views_all`
 containing all of the data
@@ -403,8 +390,14 @@ containing all of the data
 page_views_all <- NULL
 for (item in all_items)
 {
-  dest_path <- file.path("../output/pageview_cache", paste0(item, ".json"))
-  obj <- read_json(dest_path)
+  url <- modify_url(
+  "https://en.wikipedia.org/w/api.php",
+  query = list(
+    "action" = "query", format = "json", prop = "pageviews", titles = item
+  )
+)
+  res <- dsst_cache_get(url, cache_dir = "cache")
+  obj <- content(res, type = "application/json")
 
 	views <- unlist(obj$query$pages[[1]]$pageviews)
   page_views <- tibble(
@@ -417,7 +410,7 @@ for (item in all_items)
 ```
 
 Looking at the data, we see that there are now 60 rows for each of the items in
-the `foods` data.
+the `foods` data (a total of 60 * 61 = 3660 rows).
 
 ```{r}
 page_views_all
@@ -442,7 +435,3 @@ df %>%
     geom_text_repel(aes(label = item), color = "maroon") +
     geom_abline(slope = 1, intercept = 0, linetype = "dashed")
 ```
-
-Several additional applications using the page views dataset are shown in
-Chapter 11. Now, having following along with the notes here, it should now be
-clear how the data were constructed using the MediaWiki API.

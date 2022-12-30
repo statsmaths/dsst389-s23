@@ -1,0 +1,368 @@
+year,month,outcome,lon,lat,shark_type,shark_length,num_sharks,provoked,victim_activity,age,gender
+1945,2,injured,151.25,-33.95,wobbegong,1.3,1,provoked,fishing,24,male
+1946,2,injured,115.75,-31.93333333,white shark,4.2,1,unprovoked,swimming,18,male
+1946,8,fatal,145.6333333,-16.71666667,tiger shark,4.8,1,unprovoked,swimming,30,male
+1947,12,injured,152.75,-31.7,bull shark,2,1,provoked,fishing,9,male
+1948,2,fatal,151.8333333,-32.85,tiger shark,4,1,unprovoked,swimming,16,male
+1949,1,uninjured,151.3,-33.66666667,white shark,3,1,unprovoked,boarding,0,male
+1949,1,fatal,151.75,-32.93333333,white shark,4,1,unprovoked,swimming,20,male
+1949,4,fatal,145.6333333,-16.71666667,tiger shark,3.6,1,unprovoked,swimming,13,male
+1949,5,injured,122.1666667,-17.96666667,bull shark,2.7,1,unprovoked,swimming,22,female
+1949,11,injured,151.2,-34,wobbegong,2,2,provoked,swimming,36,male
+1950,11,injured,153.1,-28.1,bull shark,3.6,1,unprovoked,swimming,21,male
+1951,2,injured,151.2666667,-33.88333333,wobbegong,1.2,1,unprovoked,swimming,14,male
+1951,3,injured,151.3166667,-33.63333333,wobbegong,1.8,1,provoked,boarding,23,male
+1951,12,fatal,151.75,-32.93333333,white shark,2.4,1,unprovoked,swimming,21,male
+1951,12,uninjured,151.4333333,-33.36666667,white shark,3.7,1,unprovoked,boarding,32,male
+1952,11,injured,145.15,-38.38333333,white shark,1.8,1,unprovoked,swimming,23,male
+1952,12,injured,140.5666667,-38.01666667,white shark,2.5,1,provoked,fishing,25,male
+1953,2,injured,150.8666667,-34.56666667,wobbegong,1.8,1,provoked,spearfishing,25,male
+1953,3,injured,151.3,-33.73333333,tiger shark,4,1,provoked,spearfishing,23,male
+1953,12,uninjured,151.25,-33.93333333,white shark,3.7,1,unprovoked,swimming,26,male
+1953,12,injured,151.25,-33.93333333,white shark,3.7,1,unprovoked,swimming,26,male
+1954,6,injured,145.99445,-16.91666667,tiger shark,2.4,1,provoked,snorkelling,30,male
+1955,1,fatal,151.25,-33.81666667,bull shark,4,1,provoked,spearfishing,13,male
+1955,2,fatal,151.2166667,-33.78333333,bull shark,3.6,1,unprovoked,swimming,25,male
+1955,10,injured,145.9333333,-17.93333333,wobbegong,1.8,1,provoked,spearfishing,28,male
+1956,1,injured,146.4,-17.71666667,tiger shark,5,1,provoked,snorkelling,18,male
+1956,2,uninjured,145,-37.96666667,bronze whaler shark,3.6,1,provoked,spearfishing,19,male
+1956,3,fatal,144.7,-38.33333333,white shark,4,1,unprovoked,swimming,26,male
+1957,7,injured,142.2166667,-10.58333333,tiger shark,3,1,provoked,snorkelling,36,male
+1958,1,injured,150.55,-35.2,white shark,3,1,provoked,spearfishing,17,male
+1959,1,injured,115.85,-31.95,bull shark,1.5,1,provoked,fishing,20,male
+1959,1,injured,153.1166667,-26.66666667,wobbegong,1.8,1,unprovoked,swimming,18,male
+1959,11,injured,153.4333333,-28.01666667,tiger shark,4.5,1,provoked,swimming,19,male
+1959,11,injured,144.0833333,-38.45,white shark,4,1,unprovoked,swimming,19,male
+1960,1,fatal,151.2,-33.76666667,bull shark,3.3,1,unprovoked,snorkelling,13,male
+1960,4,injured,153.0333333,-30.86666667,white shark,3.7,1,unprovoked,swimming,17,male
+1960,11,injured,149.2,-21.13333333,whaler shark,0.9,1,unprovoked,swimming,44,male
+1960,12,injured,151.2833333,-33.78333333,whaler shark,3,1,unprovoked,swimming,27,female
+1960,12,injured,153.15,-27.36666667,bull shark,1,1,unprovoked,swimming,33,male
+1961,1,injured,153.1833333,-30.63333333,dogfish,1.3,1,provoked,swimming,40,male
+1961,3,injured,142.4833333,-38.38333333,white shark,3.1,1,unprovoked,swimming,21,male
+1961,3,injured,138.4333333,-35.28333333,white shark,3.6,1,provoked,spearfishing,21,male
+1961,4,uninjured,145.0166667,-38.46666667,dusky shark,2.7,1,provoked,spearfishing,24,male
+1961,12,fatal,153.0833333,-26.36666667,bull shark,3,1,unprovoked,boarding,22,male
+1961,12,injured,149.2166667,-21.06666667,tiger shark,3,1,unprovoked,swimming,24,male
+1961,12,fatal,149.2166667,-21.06666667,tiger shark,3,1,unprovoked,swimming,18,female
+1961,12,injured,142.2833333,-10.38333333,tiger shark,2,1,unprovoked,swimming,17,male
+1962,2,injured,153.5333333,-28.15,wobbegong,0.6,1,provoked,swimming,35,male
+1962,11,uninjured,151.3166667,-33.73333333,whaler shark,3,1,provoked,spearfishing,26,male
+1962,12,fatal,138.3166667,-35.4,white shark,3.6,1,provoked,spearfishing,16,male
+1963,1,fatal,151.2333333,-33.78333333,bull shark,3,1,unprovoked,other: standing in water,32,female
+1963,2,injured,150.9333333,-34.3,bronze whaler shark,3,1,provoked,spearfishing,18,male
+1963,4,injured,115,-33.63333333,white shark,2.3,1,unprovoked,boarding,25,male
+1963,12,injured,138.4333333,-35.28333333,white shark,5,1,provoked,spearfishing,23,male
+1964,11,injured,142,-38.41666667,white shark,4,1,provoked,snorkelling,25,male
+1965,11,injured,145.7666667,-16.91666667,tiger shark,2.4,1,unprovoked,boarding,24,male
+1965,12,injured,115.5333333,-31.98333333,wobbegong,2,1,provoked,spearfishing,40,male
+1966,2,injured,150.9333333,-34.28333333,white shark,2.5,1,unprovoked,swimming,13,male
+1966,12,injured,148.3,-41.86666667,white shark,1.8,1,provoked,swimming,30,male
+1967,4,injured,150.8833333,-34.41666667,bronze whaler shark,2,1,provoked,spearfishing,21,male
+1967,8,fatal,115.0166667,-30.25,white shark,4,1,provoked,spearfishing,23,male
+1968,2,uninjured,138.0833333,-35.6,bronze whaler shark,3,1,provoked,spearfishing,26,male
+1969,1,injured,150.8166667,-35,bronze whaler shark,2.4,1,provoked,snorkelling,21,male
+1969,6,injured,150.85,-34.66666667,wobbegong,3.5,1,provoked,spearfishing,37,male
+1969,11,injured,115.85,-31.95,bull shark,1.8,1,unprovoked,swimming,15,male
+1971,12,fatal,151.2,-23.48333333,tiger shark,3.6,1,unprovoked,swimming,19,male
+1972,8,injured,148,-43.23333333,white shark,3.6,1,provoked,diving,45,male
+1972,10,injured,150.4666667,-35.35,white shark,3,1,unprovoked,boarding,18,male
+1973,3,injured,146.35,-18.51666667,tiger shark,2,3,unprovoked,swimming,43,male
+1973,8,injured,153.5333333,-27.41666667,white shark,4.1,1,unprovoked,boarding,16,male
+1974,1,fatal,134.2,-32.76666667,white shark,3.2,1,provoked,diving,25,male
+1975,2,injured,146.2333333,-38.93333333,white shark,3.2,1,unprovoked,boarding,22,male
+1975,2,fatal,132.9666667,-32.08333333,white shark,3,1,provoked,snorkelling,12,male
+1975,2,injured,144.1833333,-38.4,wobbegong,2.4,1,provoked,snorkelling,45,male
+1975,7,injured,153.0833333,-26.65,white shark,3,1,unprovoked,boarding,21,male
+1975,11,injured,151.2833333,-33.78333333,wobbegong,2,1,provoked,spearfishing,20,male
+1976,9,injured,137.7833333,-32.98333333,white shark,2.7,1,provoked,spearfishing,17,male
+1977,2,injured,153.5666667,-28.23333333,tiger shark,4,1,unprovoked,boarding,24,male
+1977,3,fatal,153.25,-27.25,tiger shark,4,1,unprovoked,swimming,43,male
+1977,3,fatal,153.25,-27.25,tiger shark,4,1,unprovoked,swimming,74,male
+1978,8,uninjured,115.7166667,-31.76666667,white shark,2,1,unprovoked,boarding,15,male
+1979,9,injured,153.6166667,-28.63333333,whaler shark,2,1,unprovoked,swimming,18,male
+1980,3,injured,145.05,-38.41666667,bronze whaler shark,3,1,provoked,spearfishing,42,male
+1981,1,uninjured,153.6166667,-28.63333333,tiger shark,2.5,1,unprovoked,boarding,27,male
+1981,2,injured,115.5166667,-32,wobbegong,1.5,1,unprovoked,swimming,37,male
+1982,2,fatal,146.8833333,-43.56666667,white shark,6,1,provoked,spearfishing,32,male
+1983,7,uninjured,147.7333333,-18.9,tiger shark,4,1,unprovoked,swimming,33,male
+1983,7,fatal,147.1,-18.68333333,tiger shark,4,1,unprovoked,swimming,21,female
+1983,7,fatal,147.1,-18.68333333,tiger shark,4,1,unprovoked,swimming,24,male
+1984,10,uninjured,153.6166667,-28.68333333,white shark,2.5,1,unprovoked,boarding,25,male
+1984,11,fatal,149.1833333,-21.05,tiger shark,4,1,unprovoked,swimming,15,male
+1985,2,uninjured,144.3,-38.33333333,white shark,2,1,unprovoked,boarding,36,male
+1985,3,injured,115.75,-31.85,wobbegong,0.7,1,provoked,diving,20,female
+1985,3,fatal,136.0166667,-34.46666667,white shark,6,1,unprovoked,snorkelling,33,female
+1986,3,injured,130.8333333,-12.36666667,wobbegong,1,1,provoked,swimming,13,male
+1986,5,injured,151.3,-33.81666667,wobbegong,1.8,1,unprovoked,diving,41,male
+1986,10,uninjured,96.81666667,-12.15,tiger shark,3,1,unprovoked,boarding,39,male
+1987,1,injured,145.45,-14.66666667,tiger shark,2,1,unprovoked,swimming,38,male
+1987,2,injured,152.5166667,-32.16666667,wobbegong,1,1,provoked,diving,17,female
+1987,9,fatal,138.5833333,-34.91666667,white shark,4.5,1,unprovoked,diving,47,male
+1988,10,injured,145.2666667,-38.5,white shark,1.2,1,unprovoked,boarding,35,male
+1988,11,fatal,150.7333333,-23.11666667,tiger shark,4.5,3,unprovoked,swimming,17,male
+1988,11,fatal,150.7333333,-23.11666667,tiger shark,4.5,2,unprovoked,swimming,62,male
+1989,1,injured,151.2,-33.86666667,wobbegong,2,1,provoked,diving,19,male
+1989,1,uninjured,145.2666667,-38.5,white shark,4,1,unprovoked,boarding,30,male
+1989,1,injured,153.55,-28.88333333,white shark,3,1,unprovoked,boarding,17,male
+1989,3,injured,142.1333333,-10.11666667,whaler shark,2,1,provoked,spearfishing,32,male
+1989,8,uninjured,153.5833333,-28.78333333,white shark,3,1,unprovoked,boarding,17,male
+1989,10,uninjured,148.2666667,-41.43333333,white shark,2.1,1,unprovoked,boarding,17,male
+1989,10,injured,132.1833333,-14.16666667,bull shark,2,1,unprovoked,swimming,31,female
+1989,11,injured,145.4666667,-38.53333333,white shark,4.5,1,unprovoked,boarding,32,male
+1989,11,injured,153.4,-28.03333333,bull shark,2,1,unprovoked,swimming,10,male
+1989,12,injured,136.8166667,-12.28333333,tiger shark,2,1,provoked,swimming,17,male
+1990,4,uninjured,153.5333333,-28.15,tiger shark,4,1,unprovoked,boarding,31,male
+1990,4,uninjured,153.55,-28.18333333,white shark,3,1,unprovoked,boarding,29,male
+1990,5,injured,145.8833333,-16.21666667,hammerhead shark ,3,1,provoked,snorkelling,33,female
+1990,5,injured,145.8833333,-16.21666667,hammerhead shark ,3,1,provoked,snorkelling,44,male
+1990,9,injured,153.0833333,-25.9,wobbegong,0.6,1,unprovoked,other: standing in water,13,male
+1990,10,injured,153.4,-28.03333333,bull shark,1.8,1,unprovoked,swimming,26,male
+1990,10,injured,138.7666667,-35.51666667,white shark,1.1,1,unprovoked,boarding,20,male
+1990,11,injured,153.4166667,-28,bull shark,1.5,1,unprovoked,swimming,26,male
+1991,1,uninjured,144.65,-38.26666667,bronze whaler shark,3,1,provoked,spearfishing,14,male
+1991,1,uninjured,151.3666667,-33.51666667,dusky shark,1.2,1,unprovoked,snorkelling,45,male
+1991,1,injured,153.4,-28.03333333,bull shark,1.5,1,unprovoked,swimming,29,male
+1991,3,injured,150.8666667,-34.56666667,grey nurse shark,2,1,provoked,diving,18,male
+1991,9,fatal,138.4333333,-35.28333333,white shark,4,1,unprovoked,diving,19,male
+1991,11,injured,115.7,-32.51666667,white shark,1,1,unprovoked,boarding,14,male
+1992,1,injured,153.5333333,-28.16666667,white shark,2.8,1,unprovoked,boarding,19,male
+1992,2,uninjured,152.35,-24.86666667,tiger shark,3,1,unprovoked,boarding,22,male
+1992,3,injured,144.6,-38.28333333,white shark,2.7,1,unprovoked,boarding,17,male
+1992,8,injured,135.1666667,-34.25,white shark,3.5,1,unprovoked,boarding,16,male
+1992,10,fatal,153.4,-27.08333333,white shark,4.2,1,unprovoked,boarding,28,male
+1993,1,injured,148.8833333,-20.05,whitetip reef shark,1.5,1,provoked,spearfishing,21,male
+1993,4,uninjured,146.9833333,-40.93333333,white shark,3,1,provoked,spearfishing,32,male
+1993,6,fatal,146.9833333,-40.93333333,white shark,4,1,unprovoked,diving,35,female
+1993,6,fatal,153.6166667,-28.63333333,white shark,6,1,unprovoked,diving,31,male
+1993,11,fatal,122.2333333,-17.96666667,tiger shark,4,1,provoked,diving,28,male
+1993,12,uninjured,150.5,-23.36666667,whaler shark,2,1,unprovoked,boarding,13,male
+1994,1,injured,153.8333333,-27.53333333,bull shark,1.5,1,unprovoked,swimming,22,male
+1994,2,injured,139.8333333,-37.31666667,wobbegong,1.6,1,provoked,fishing,39,male
+1994,11,injured,144.8833333,-38.46666667,wobbegong,3,1,provoked,diving,23,male
+1995,2,uninjured,145.0833333,-38.51666667,sevengill shark,2.6,1,provoked,diving,34,male
+1995,3,injured,132.9666667,-32.08333333,white shark,2,1,unprovoked,boarding,35,male
+1995,3,uninjured,151.2333333,-33.85,bull shark,2.5,1,unprovoked,boarding,29,female
+1995,5,uninjured,113.1333333,-24.83333333,tiger shark,3,1,unprovoked,diving,49,male
+1995,9,fatal,120.6833333,-33.88333333,white shark,3,1,unprovoked,diving,29,male
+1995,11,injured,150.95,-23.16666667,tiger shark,1.8,1,unprovoked,swimming,19,male
+1995,12,injured,151.2666667,-33.55,bull shark,2.6,1,unprovoked,swimming,24,male
+1996,1,injured,117.6833333,-35.05,wobbegong,0.7,1,provoked,spearfishing,40,male
+1996,2,injured,151.2,-33.86666667,bull shark,2,1,unprovoked,swimming,24,male
+1996,6,uninjured,145.0666667,-38.41666667,white shark,3,1,unprovoked,boarding,47,male
+1997,1,injured,148.9666667,-20.25,tiger shark,2,1,unprovoked,snorkelling,27,male
+1997,1,injured,153.5333333,-28.15,bull shark,1,1,unprovoked,boarding,8,male
+1997,1,uninjured,145.0833333,-38.51666667,white shark,3,1,unprovoked,unmotorised boating,32,male
+1997,2,uninjured,151.2,-33.86666667,bull shark,2,1,unprovoked,unmotorised boating,49,female
+1997,7,injured,153.1,-26.65,tiger shark,1.5,1,unprovoked,boarding,18,male
+1997,11,uninjured,144.45,-38.28333333,white shark,2,1,unprovoked,boarding,21,male
+1997,11,injured,117.95,-35.13333333,white shark,5,1,unprovoked,diving,42,male
+1998,1,injured,115.0166667,-34.21666667,wobbegong,2.4,1,provoked,diving,34,male
+1998,1,uninjured,146.5,-18.66666667,tiger shark,3.3,1,unprovoked,snorkelling,45,male
+1998,6,fatal,136.1,-35.31666667,white shark,4,1,unprovoked,snorkelling,26,male
+1998,10,injured,153,-26.5,wobbegong,1.2,1,provoked,diving,37,male
+1999,12,uninjured,152.6,-32.21666667,bronze whaler shark,2.9,1,unprovoked,diving,34,male
+2000,2,injured,132.9833333,-32.08333333,white shark,3,1,unprovoked,boarding,26,male
+2000,2,injured,115.7333333,-31.81666667,wobbegong,1.2,1,unprovoked,swimming,51,male
+2000,3,injured,153.4166667,-27.96666667,white shark,2.6,1,unprovoked,swimming,26,male
+2000,3,injured,115.0666667,-31.95,white shark,1.7,1,unprovoked,boarding,20,male
+2000,3,uninjured,151.4166667,-33.48333333,white shark,3,1,unprovoked,boarding,38,male
+2000,3,injured,151.2,-33.86666667,bull shark,0.8,1,unprovoked,swimming,61,male
+2000,9,fatal,132.9666667,-32.08333333,white shark,4.5,1,unprovoked,boarding,25,male
+2000,11,uninjured,146.5,-18.66666667,tiger shark,4,1,provoked,diving,28,male
+2000,11,injured,115.75,-31.98333333,white shark,4,1,unprovoked,swimming,52,male
+2000,11,uninjured,150.3833333,-34.63333333,white shark,2.9,1,unprovoked,swimming,40,male
+2000,11,uninjured,134.65,-33.18333333,white shark,4,1,provoked,diving,27,male
+2000,11,fatal,115.75,-31.98333333,white shark,4,1,unprovoked,swimming,49,male
+2000,12,injured,151.9,-23.43333333,whaler shark,2.5,1,provoked,spearfishing,38,male
+2001,1,uninjured,153.05,-30.88333333,white shark,5,1,unprovoked,unmotorised boating,35,male
+2001,2,injured,153.3333333,-29.6,tiger shark,2.5,1,unprovoked,boarding,40,male
+2001,3,injured,114.9833333,-33.96666667,wobbegong,1.5,1,unprovoked,snorkelling,19,male
+2001,4,injured,151.2666667,-33.9,wobbegong,1,1,provoked,snorkelling,32,male
+2001,5,injured,151.5333333,-33.23333333,white shark,3,1,unprovoked,boarding,37,male
+2001,10,uninjured,153.4166667,-27.28333333,tiger shark,4,1,unprovoked,unmotorised boating,31,male
+2001,10,injured,149.25,-16.91666667,silvertip shark,1.5,1,provoked,snorkelling,20,female
+2001,11,injured,153.5333333,-28.81666667,white shark,2,1,unprovoked,boarding,49,male
+2001,12,uninjured,115,-33.63333333,white shark,2,1,unprovoked,boarding,36,male
+2002,1,injured,152.1833333,-32.73333333,bull shark,2.9,1,unprovoked,boarding,20,male
+2002,2,injured,153.0833333,-26.36666667,whaler shark,1.5,1,unprovoked,boarding,36,male
+2002,2,uninjured,151.2,-33.86666667,bull shark,2,1,unprovoked,unmotorised boating,35,male
+2002,4,fatal,133.9255802,-32.38422037,white shark,6,1,provoked,diving,23,male
+2002,8,uninjured,115.75,-31.96666667,white shark,3.5,1,unprovoked,boarding,34,male
+2002,12,injured,151.2833333,-33.78333333,wobbegong,0.5,1,unprovoked,diving,35,male
+2002,12,fatal,153.4166667,-28.05,bull shark,2,1,unprovoked,swimming,23,male
+2003,2,fatal,153.1,-28.1,bull shark,2.2,1,unprovoked,swimming,84,male
+2003,10,injured,153.1333333,-30.28333333,wobbegong,1.2,1,unprovoked,boarding,12,male
+2003,10,injured,152.5166667,-32.43333333,wobbegong,1.5,1,unprovoked,boarding,22,male
+2003,11,injured,114.9833333,-33.63333333,wobbegong,1.3,1,provoked,swimming,15,male
+2003,11,injured,114.9833333,-33.96666667,wobbegong,1.3,1,provoked,swimming,15,male
+2003,12,injured,114.9833333,-33.96666667,wobbegong,0.7,1,provoked,spearfishing,34,male
+2004,1,injured,115.6833333,-33.13333333,white shark,4.5,1,provoked,spearfishing,46,male
+2004,2,injured,151.65,-33.1,blind shark,0.6,1,provoked,spearfishing,22,male
+2004,2,injured,115.75,-31.85,wobbegong,0.4,1,unprovoked,snorkelling,7,female
+2004,2,injured,115.75,-31.85,wobbegong,0.4,1,unprovoked,snorkelling,38,male
+2004,3,injured,115.0166667,-30.25,bronze whaler shark,1.5,1,provoked,spearfishing,47,male
+2004,6,injured,115.6333333,-33.33333333,white shark,3,1,unprovoked,boarding,17,male
+2004,7,injured,115.5333333,-31.98333333,wobbegong,1,1,unprovoked,diving,33,male
+2004,7,fatal,114.9833333,-33.85,white shark,5,2,unprovoked,boarding,29,male
+2004,8,injured,153.6166667,-28.63333333,grey nurse shark,2.4,1,provoked,spearfishing,42,male
+2004,8,uninjured,145.0166667,-38.46666667,white shark,2,1,unprovoked,boarding,33,male
+2004,10,injured,151.8333333,-32.85,white shark,2.5,1,unprovoked,boarding,59,male
+2004,11,injured,152.5333333,-32.01666667,wobbegong,1.2,1,unprovoked,boarding,14,male
+2004,12,fatal,137,-34.9,white shark,5,1,unprovoked,boarding,18,male
+2005,2,injured,152.8166667,-27.55,bull shark,1.5,1,unprovoked,swimming,18,male
+2005,3,uninjured,151.4833333,-33.38333333,white shark,4,1,unprovoked,boarding,31,male
+2005,3,fatal,113.7833333,-28.71666667,white shark,6,1,unprovoked,snorkelling,26,male
+2005,4,injured,136.8,-12.11666667,whaler shark,2,1,provoked,spearfishing,20,male
+2005,4,uninjured,151.2666667,-33.9,white shark,1.5,1,unprovoked,boarding,40,male
+2005,8,fatal,138.5,-34.96666667,white shark,5,1,unprovoked,diving,23,male
+2005,9,uninjured,153.0833333,-30.88333333,tiger shark,3,1,unprovoked,boarding,28,male
+2005,9,injured,137.5333333,-35.08333333,white shark,5,1,unprovoked,boarding,26,male
+2005,11,injured,145.0166667,-38.46666667,white shark,1.8,1,unprovoked,boarding,18,male
+2005,11,uninjured,153.4,-27.18333333,bronze whaler shark,2.5,3,unprovoked,diving,57,male
+2005,12,injured,145.45,-16.48333333,whitetip reef shark,1.5,2,provoked,spearfishing,44,male
+2006,1,fatal,153.4333333,-27.4,bull shark,2,1,unprovoked,swimming,21,female
+2006,1,injured,115.75,-31.93333333,white shark,3.3,1,provoked,spearfishing,52,male
+2006,5,injured,153.1333333,-26.68333333,wobbegong,2,1,provoked,diving,46,male
+2006,12,injured,122.5833333,-33.91666667,white shark,5,1,unprovoked,boarding,15,male
+2006,12,injured,144.2666667,-38.36666667,white shark,3,1,unprovoked,boarding,25,male
+2007,1,uninjured,152.5166667,-32.38333333,white shark,2.8,1,unprovoked,boarding,44,male
+2007,1,injured,149.9666667,-37.5,white shark,3,1,provoked,diving,41,male
+2007,2,injured,153.6,-28.83333333,white shark,2,1,unprovoked,boarding,26,male
+2007,3,injured,153.55,-28.53333333,white shark,1.6,1,unprovoked,boarding,42,female
+2007,3,injured,152.2666667,-24.71666667,bull shark,2.3,1,unprovoked,swimming,59,female
+2007,5,injured,113.7666667,-23.13333333,whitetip reef shark,2.5,1,provoked,swimming,38,female
+2007,7,injured,151.2833333,-33.78333333,wobbegong,1,1,unprovoked,diving,30,male
+2007,7,uninjured,114.1166667,-21.95,white shark,2.8,1,unprovoked,boarding,48,male
+2007,7,injured,96.81666667,-12.15,wobbegong,1.5,1,provoked,swimming,15,male
+2007,10,injured,145.7666667,-16.91666667,whaler shark,1.8,1,provoked,spearfishing,31,male
+2007,10,injured,153.6166667,-28.63333333,white shark,2.5,1,unprovoked,boarding,52,female
+2007,12,injured,153.4166667,-27.93333333,whaler shark,0.6,1,unprovoked,swimming,13,male
+2008,1,injured,115.5333333,-31.98333333,wobbegong,1,1,unprovoked,swimming,42,male
+2008,2,injured,146.1666667,-38.83333333,wobbegong,0.6,1,unprovoked,swimming,66,female
+2008,4,fatal,153.5666667,-28.86666667,bull shark,2.8,1,unprovoked,boarding,16,male
+2008,5,injured,117.9166667,-35.01666667,white shark,4,1,unprovoked,swimming,37,male
+2008,8,uninjured,153.6166667,-28.63333333,white shark,4,1,unprovoked,boarding,30,male
+2008,9,uninjured,153.6166667,-28.63333333,white shark,2.8,1,unprovoked,boarding,51,male
+2008,12,uninjured,152.5166667,-32.43333333,whaler shark,2,1,unprovoked,boarding,10,male
+2008,12,fatal,115.7166667,-32.35,white shark,5.5,1,provoked,snorkelling,52,male
+2008,12,uninjured,151.3166667,-33.73333333,white shark,5,1,provoked,unmotorised boating,29,male
+2009,1,injured,153.55,-28.18333333,white shark,2,1,unprovoked,boarding,31,male
+2009,1,injured,148.3,-41.23333333,white shark,5,1,unprovoked,boarding,13,female
+2009,2,uninjured,152.9166667,-31.45,white shark,3,1,unprovoked,boarding,24,male
+2009,2,injured,151.2166667,-33.85,bull shark,2.7,1,unprovoked,diving,31,male
+2009,2,injured,151.2666667,-33.88333333,white shark,2.5,1,unprovoked,boarding,33,male
+2009,2,uninjured,152.5166667,-32.38333333,white shark,4,1,unprovoked,boarding,41,male
+2009,3,injured,151.3166667,-33.63333333,white shark,3,1,unprovoked,boarding,15,male
+2009,3,uninjured,150.1666667,-35.85,whaler shark,1.9,1,unprovoked,boarding,47,female
+2009,3,injured,115.7,-32.5,white shark,2,1,unprovoked,boarding,17,male
+2009,3,injured,115.5333333,-31.98333333,wobbegong,0.6,1,provoked,swimming,21,male
+2009,4,uninjured,152.1833333,-32.73333333,bull shark,3,1,unprovoked,boarding,40,male
+2009,6,injured,150.85,-34.66666667,wobbegong,2,1,unprovoked,boarding,52,male
+2009,7,injured,153.6166667,-28.63333333,whaler shark,1.5,1,unprovoked,boarding,14,male
+2009,8,uninjured,115.45,-32,white shark,6,1,provoked,spearfishing,42,male
+2009,9,injured,96.81666667,-12.15,whaler shark,1.8,1,unprovoked,boarding,35,male
+2009,10,uninjured,141.6,-38.33333333,white shark,4,1,unprovoked,unmotorised boating,27,male
+2009,11,injured,138.2333333,-35.5,white shark,3,1,provoked,spearfishing,25,male
+2009,12,injured,151.9,-23.43333333,whaler shark,3,1,provoked,spearfishing,18,male
+2010,1,uninjured,152.45,-24.8,white shark,1.9,1,unprovoked,boarding,37,male
+2010,1,injured,142.2166667,-10.56666667,whitetip reef shark,1,1,unprovoked,snorkelling,9,female
+2010,2,uninjured,153.3666667,-29.41666667,white shark,2.4,1,unprovoked,boarding,18,male
+2010,2,injured,148.9333333,-20.35,bull shark,1.8,1,unprovoked,snorkelling,55,female
+2010,2,injured,151.3,-33.66666667,wobbegong,1.6,1,unprovoked,other: standing in water,46,male
+2010,8,injured,152.9666667,-31.18333333,white shark,2,1,unprovoked,boarding,47,male
+2010,8,fatal,114.9666667,-33.85,white shark,4,1,unprovoked,boarding,31,male
+2010,9,injured,153.3333333,-29.4,white shark,2,1,unprovoked,boarding,15,male
+2010,10,injured,153.2,-30.06666667,wobbegong,1.4,1,unprovoked,boarding,22,male
+2010,10,injured,115.6833333,-32.18333333,white shark,3,1,unprovoked,snorkelling,19,female
+2011,2,injured,114.1166667,-21.95,whaler shark,1.8,1,unprovoked,snorkelling,58,male
+2011,3,injured,152.7333333,-31.83333333,white shark,3,1,unprovoked,boarding,48,male
+2011,4,injured,113.4,-24.48333333,whaler shark,1.8,1,provoked,fishing,17,male
+2011,9,fatal,115.0333333,-33.53333333,white shark,4.5,1,unprovoked,boarding,21,male
+2011,10,fatal,115.45,-32,white shark,3,1,unprovoked,diving,32,male
+2011,10,uninjured,144.9833333,-37.88333333,port jackson shark,1,1,provoked,diving,49,male
+2011,11,injured,153.0833333,-26.46666667,wobbegong,1,1,provoked,swimming,10,male
+2011,12,injured,153.35,-29.48333333,white shark,2.5,1,unprovoked,boarding,50,male
+2012,1,injured,151.4333333,-33.45,white shark,2.2,1,unprovoked,boarding,28,male
+2012,1,injured,151.7166667,-33,white shark,2.6,1,unprovoked,boarding,44,male
+2012,1,injured,113.7666667,-23.13333333,tiger shark,3,1,unprovoked,snorkelling,26,male
+2012,3,fatal,115.5166667,-33.46666667,white shark,4,1,unprovoked,diving,32,male
+2012,4,injured,136.85,-35.18333333,white shark,6,1,unprovoked,unmotorised boating,27,male
+2012,5,injured,152.6,-32.21666667,wobbegong,1.8,1,provoked,diving,57,male
+2012,5,uninjured,151.7,-33,white shark,2,1,unprovoked,unmotorised boating,30,male
+2012,6,injured,142.9833333,-38.61666667,white shark,1.5,1,unprovoked,boarding,42,male
+2012,6,uninjured,115.7166667,-31.78333333,white shark,3.5,1,unprovoked,unmotorised boating,61,male
+2012,7,fatal,115.2666667,-30.83333333,white shark,3.6,1,unprovoked,boarding,24,male
+2012,8,injured,113.3833333,-24.38333333,tiger shark,3.5,1,unprovoked,boarding,34,male
+2012,10,uninjured,115.7166667,-31.76666667,white shark,1.3,1,unprovoked,boarding,11,male
+2012,12,injured,152.7833333,-31.73333333,bull shark,3,1,unprovoked,boarding,29,male
+2013,3,injured,114.6,-28.8,bronze whaler shark,2.5,1,provoked,spearfishing,28,male
+2013,5,injured,153.6,-28.63333333,wobbegong,1,1,provoked,swimming,65,male
+2013,7,injured,145.0166667,-38.46666667,white shark,1.7,1,unprovoked,swimming,29,male
+2013,10,injured,123.9166667,-33.95,white shark,5,1,provoked,diving,55,male
+2013,11,fatal,153.1333333,-30.26666667,tiger shark,3,1,unprovoked,boarding,19,male
+2013,11,fatal,114.9666667,-33.85,white shark,3,1,unprovoked,boarding,35,male
+2013,12,injured,153.4666667,-28.1,wobbegong,1.5,1,unprovoked,diving,33,female
+2013,12,injured,152.9166667,-31.45,wobbegong,1.7,1,unprovoked,boarding,26,male
+2014,2,uninjured,115.55,-32,white shark,4,1,provoked,spearfishing,70,male
+2014,3,uninjured,144.2666667,-38.36666667,white shark,1.4,1,unprovoked,boarding,42,male
+2014,3,injured,152.9166667,-31.46666667,wobbegong,1.8,1,provoked,swimming,40,male
+2014,4,fatal,149.9833333,-36.71666667,white shark,3.5,1,unprovoked,swimming,63,female
+2014,5,uninjured,134.8666667,-33.63333333,white shark,4.6,1,unprovoked,boarding,35,male
+2014,5,injured,153.4166667,-27.98333333,bull shark,1.3,1,unprovoked,swimming,29,female
+2014,6,injured,138.4666667,-35.63087083,white shark,1.5,1,unprovoked,boarding,39,male
+2014,6,injured,138.7166667,-35.5,white shark,2.8,1,unprovoked,boarding,15,male
+2014,9,fatal,153.6,-28.63333333,white shark,3.7,1,unprovoked,snorkelling,50,male
+2014,10,injured,151.4333333,-33.45,wobbegong,1,1,provoked,boarding,13,female
+2014,10,injured,121.9166667,-33.83333333,white shark,3.5,1,unprovoked,boarding,23,male
+2014,11,injured,115.6166667,-32.6,bronze whaler shark,2.3,1,unprovoked,boarding,13,male
+2014,12,fatal,118.404958,-34.88003124,white shark,5,1,provoked,spearfishing,17,male
+2014,12,fatal,145.75,-16.2,tiger shark,3.3,1,provoked,spearfishing,18,male
+2015,1,uninjured,153.45,-27.63333333,bull shark,1.3,1,unprovoked,unmotorised boating,57,male
+2015,1,injured,150.4666667,-35.33333333,bronze whaler shark,2.5,1,provoked,spearfishing,17,male
+2015,2,fatal,153.5833333,-28.85,white shark,3.5,1,unprovoked,boarding,41,male
+2015,3,injured,159.05,-31.51666667,galapagos shark,1.3,1,provoked,swimming,43,female
+2015,4,injured,159.05,-31.51666667,galapagos shark,1.5,1,provoked,swimming,8,male
+2015,4,injured,135.7666667,-34.86666667,white shark,6,1,unprovoked,boarding,26,male
+2015,6,injured,115.5333333,-31.98333333,wobbegong,1,1,provoked,swimming,19,male
+2015,6,uninjured,153.6,-28.63333333,white shark,3,1,unprovoked,boarding,71,male
+2015,6,injured,150.2833333,-35.65,tiger shark,3,1,provoked,spearfishing,21,male
+2015,7,fatal,147.9833333,-42.63333333,white shark,4.3,1,provoked,diving,47,male
+2015,7,injured,153.4333333,-29.1,white shark,3,1,unprovoked,boarding,51,male
+2015,7,injured,141.7833333,-38.25,white shark,1.8,1,unprovoked,boarding,40,male
+2015,7,injured,153.5833333,-28.86666667,white shark,3.5,1,unprovoked,boarding,32,male
+2015,8,injured,152.9166667,-31.46666667,white shark,2.7,1,unprovoked,boarding,38,male
+2015,9,injured,152.5333333,-32.06666667,white shark,2.5,1,unprovoked,boarding,65,male
+2016,1,injured,150.9,-23.15,tiger shark,3,1,provoked,spearfishing,31,male
+2016,4,injured,153.6,-28.63333333,wobbegong,0.8,1,provoked,swimming,12,male
+2016,6,fatal,115.6666667,-31.66666667,white shark,5,1,unprovoked,diving,60,female
+2016,6,injured,113.1294,-23.02411667,grey reef shark,1.8,1,provoked,spearfishing,19,male
+2016,7,uninjured,153.6044,-28.8377,white shark,3,1,unprovoked,boarding,18,male
+2016,10,injured,153.6,-28.83333333,white shark,3.5,1,unprovoked,boarding,20,male
+2016,10,injured,151.0587667,-33.08945,white shark,2.9,1,unprovoked,boarding,36,male
+2016,10,injured,148.95,-20.23333333,lemon shark,1,1,provoked,swimming,10,male
+2016,12,injured,152.52275,-32.30595,white shark,4,1,unprovoked,boarding,65,male
+2017,11,injured,151.435,-33.465,white shark,2.6,1,unprovoked,boarding,25,male
+2018,1,injured,150.893143,-34.425072,white shark,3.5,1,unprovoked,snorkelling,28,female
+2018,2,injured,150.84,-34.67,whaler shark,2,1,unprovoked,other: standing in water,35,male
+2018,2,injured,115.7326,-31.7789,wobbegong,0.4,1,unprovoked,swimming,17,female
+2018,2,injured,151.1753,-33.993,white shark,3,1,unprovoked,swimming,55,female
+2018,3,injured,144.28,-38.37,bronze whaler shark,2,1,unprovoked,boarding,18,male
+2018,4,injured,115.0221,-33.8416,white shark,3,1,unprovoked,boarding,41,male
+2018,4,injured,115.0221,-33.8416,white shark,4,1,unprovoked,boarding,37,male
+2018,4,uninjured,114.9922,-33.9825,white shark,3,1,unprovoked,boarding,60,male
+2018,11,injured,153.5944,-28.8632,white shark,2.6,1,unprovoked,boarding,43,male
+2018,12,injured,151.342224,-33.425018,wobbeogong,1,1,provoked,swimming,68,male
+2019,7,injured,153.0611,-26.7994,bull shark,1,1,unprovoked,boarding,43,male
+2019,10,uninjured,152.5279,-32.443600000000004,white shark,2.5,1,unprovoked,boarding,29,male
+2020,6,uninjured,150.91347,-34.33834,bronze whaler shark,2.5,1,provoked,spearfishing,16,female
+2020,6,uninjured,150.91347,-34.33834,bronze whaler shark,2.5,1,provoked,spearfishing,13,male
+2020,6,uninjured,150.91347,-34.33834,bronze whaler shark,2.5,1,provoked,spearfishing,13,male
+2020,9,uninjured,153.569698,-28.33362,white shark,3.5,1,provoked,boarding,43,male
+2020,10,injured,151.267,-33.95,white shark,4,1,unprovoked,scuba diving,45,male
+2020,10,uninjured,144.66193,-38.26789,whaler shark,1,1,unprovoked,boarding,28,male
+2021,4,injured,116.7081,-20.6564,blacktip reef shark,0.8,1,unprovoked,swimming,33,male
+2021,5,injured,122.1571,-17.5804,tiger shark ,3,1,provoked,spearfishing,48,male
+2021,6,injured,113.7723,-23.1423,tiger shark ,2,1,unprovoked,snorkelling,10,male
+2021,6,injured,114.9824,-29.9453,white shark,4,1,provoked,spearfishing,25,male
+2022,2,fatal,153.083,-30.883,white shark,4.5,1,unprovoked,swimming,35,male

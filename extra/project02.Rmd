@@ -90,7 +90,7 @@ program or (in some cases) directly into a presentation. For example:
 dsst_neg_examples(model) %>% dsst_clipboard()
 ```
 
-For visualisations, you can either use the function `dsst_save_plot` to store
+For visualisations, you can either use the function `ggsave` to store
 the most recent plot as a JPG or PNG file or right/ctrl click on a plot and
 save the file.
 

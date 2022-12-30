@@ -11,15 +11,21 @@ Click the two green play buttons to start the installation.
 ```{r}
 install.packages(
   pkgs = c(
-    "tidyverse", "ggrepel", "jsonlite", "lubridate", "readxl", "rnaturalearth",
-    "sf", "xml2", "lwgeom", "RcppRoll", "remotes", "knitr", "rmarkdown"
+    "tidyverse", "ggrepel", "jsonlite", "lubridate", "readxl", 
+    "xml2", "lwgeom", "remotes", "knitr", "rmarkdown",
+    "cleanNLP", "FNN", "glmnet", "irlba", "tidyr", "topicmodels",
+    "umap", "xgboost", "clipr", "roxygen2", "tokenizers", "udpipe"
   ),
-  quiet = TRUE,
   dependencies = TRUE,
   type = "binary"
 )
 ```
 
 There may be some red text that prints out, but you should not need to worry
-unless the screen says the word "Error".
+unless the screen says the word "Error". As a second step, you should install
+our class-specific package with the following:
+
+```{r}
+remotes::install_github("statsmaths/dsst")
+```
 

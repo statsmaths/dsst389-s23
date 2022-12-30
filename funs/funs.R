@@ -2,19 +2,20 @@
 # Settings and functions for working with the class notes and assignements
 # Note that this file will be overwritten. Do not modify directly!
 #
-# Date: 24 November 2022
+# Date: 30 December 2022
 
 #############################################################################
-# load a few required packages; others will be referenced with :: and :::
+# load a few required packages.
 suppressPackageStartupMessages(library(tidyverse))
+suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(jsonlite))
+suppressPackageStartupMessages(library(ggrepel))
 suppressPackageStartupMessages(library(stringi))
 suppressPackageStartupMessages(library(Matrix))
-suppressPackageStartupMessages(library(ggrepel))
-suppressPackageStartupMessages(library(dsst))
-suppressPackageStartupMessages(library(jsonlite))
-suppressPackageStartupMessages(library(xml2))
+suppressPackageStartupMessages(library(broom))
 suppressPackageStartupMessages(library(httr))
-suppressPackageStartupMessages(library(lubridate))
+suppressPackageStartupMessages(library(xml2))
+suppressPackageStartupMessages(library(dsst))
 
 #############################################################################
 # some standard settings
@@ -33,5 +34,3 @@ options(readr.show_col_types = FALSE)
 options(ggrepel.max.overlaps = Inf)
 options(sparse.colnames = TRUE)
 options(lubridate.week.start = 1)
-
-null_to_na <- function(x) { ifelse(is.null(x), NA, x) }

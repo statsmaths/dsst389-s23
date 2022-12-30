@@ -41,7 +41,7 @@ list `obj`.
 dt <- tibble(
   page = obj$query$pages[[1]]$title,
   date = ymd(names(obj$query$pages[[1]]$pageviews)),
-  views = map_int(obj$query$pages[[1]]$pageviews, ~ null_to_na(.x)),
+  views = map_int(obj$query$pages[[1]]$pageviews, ~ dsst_null_to_na(.x)),
 )
 dt
 ```
@@ -94,7 +94,7 @@ for (i in seq_along(food$item))
   output[[i]] <- tibble(
     page = obj$query$pages[[1]]$title,
     date = ymd(names(obj$query$pages[[1]]$pageviews)),
-    views = map_int(obj$query$pages[[1]]$pageviews, ~ null_to_na(.x)),
+    views = map_int(obj$query$pages[[1]]$pageviews, ~ dsst_null_to_na(.x)),
     wiki = food$wiki[i]
   )
 }
@@ -149,8 +149,8 @@ df <- tibble(
   contributor =  map_chr(obj$results, ~ .x$contributor[[1]] ),
   title = map_chr(obj$results, ~ .x$title),
   year = map_chr(obj$results, ~ .x$date),
-  state = map_chr(obj$results, ~ null_to_na(.x$location_state[[1]])),
-  city = map_chr(obj$results, ~ null_to_na(.x$location_city[[1]]))
+  state = map_chr(obj$results, ~ dsst_null_to_na(.x$location_state[[1]])),
+  city = map_chr(obj$results, ~ dsst_null_to_na(.x$location_city[[1]]))
 )
 df
 ```
@@ -202,11 +202,11 @@ while (!is.null(url_str))
 
   # parse the data
   df <- tibble(
-    contributor = map_chr(obj$results, ~ null_to_na(.x$contributor[[1]])),
+    contributor = map_chr(obj$results, ~ dsst_null_to_na(.x$contributor[[1]])),
     title = map_chr(obj$results, ~ .x$title),
-    year = map_chr(obj$results, ~ null_to_na(.x$date)),
-    state = map_chr(obj$results, ~ null_to_na(.x$location_state[[1]])),
-    city = map_chr(obj$results, ~ null_to_na(.x$location_city[[1]]))
+    year = map_chr(obj$results, ~ dsst_null_to_na(.x$date)),
+    state = map_chr(obj$results, ~ dsst_null_to_na(.x$location_state[[1]])),
+    city = map_chr(obj$results, ~ dsst_null_to_na(.x$location_city[[1]]))
   )
 
   # save the results by appending to the output list
