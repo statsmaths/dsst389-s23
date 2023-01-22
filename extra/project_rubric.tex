@@ -1,0 +1,131 @@
+\documentclass[10pt, a4paper]{article}
+
+\usepackage{fontspec}
+\usepackage{geometry}
+\usepackage{lastpage}
+\usepackage{fancyhdr}
+\usepackage{amsmath, amsthm, amssymb}
+\usepackage{url}
+\usepackage[hidelinks]{hyperref}
+\usepackage{changepage}
+\usepackage{quoting}
+\usepackage{xcolor}
+\usepackage{array}
+
+\quotingsetup{vskip=0pt}
+
+\definecolor{solarized@magenta}{HTML}{D33682}
+\newcommand{\magenta}[1]{\textcolor{solarized@magenta}{#1}}
+
+\usepackage[absolute]{textpos}
+\setlength{\TPHorizModule}{1in}
+\setlength{\TPVertModule}{1in}
+
+\newcommand{\minimize}{\mathop{\mathrm{minimize}}}
+\newcommand{\argmin}{\mathop{\mathrm{arg\,min}}}
+\newcommand{\argmax}{\mathop{\mathrm{arg\,max}}}
+\newcommand{\st}{\mathop{\mathrm{subject\,\,to}}}
+
+\geometry{
+  top=1.5cm, bottom=2cm, left=1.5cm, right=1.5cm, marginparsep=4pt, marginparwidth=1in
+}
+
+\renewcommand{\headrulewidth}{0pt}
+\pagestyle{fancyplain}
+\fancyhf{}
+\cfoot{}
+
+\setlength{\parindent}{0pt}
+\setlength{\parskip}{12pt}
+
+\usepackage{marginnote} % For margin years
+\newcommand{\years}[1]{\marginnote{\scriptsize #1}}
+\renewcommand*{\raggedleftmarginnote}{}
+\setlength{\marginparsep}{-16pt}
+\reversemarginpar
+
+\renewcommand\refname{}
+
+\setromanfont[
+ Ligatures={Common},
+ Numbers={OldStyle},
+ Variant=01,
+ BoldFont={LinLibertine_RB.otf},
+ ItalicFont={LinLibertine_RI.otf},
+ BoldItalicFont={LinLibertine_RBI.otf}
+]{LinLibertine_R.otf}
+
+\usepackage{xunicode}
+\defaultfontfeatures{Mapping=tex-text}
+\usepackage{changepage}
+
+
+\newcolumntype{C}{>{\raggedright\arraybackslash}p{0.13\linewidth}}
+\newcolumntype{E}{>{\centering\arraybackslash}p{0.06\linewidth}}
+\newcolumntype{L}{>{\centering\arraybackslash}m{0.13\linewidth}}
+
+\begin{document}
+
+\fontsize{8pt}{10pt}\selectfont
+
+\textbf{Project Number}: 1 \hspace{3cm} \textbf{Name(s)}: J. Doe 
+
+\begin{center}
+PROJECT RUBRIC
+\end{center}
+
+\begin{tabular}{C | L | L | L | L | L | E}
+  & & \textbf{Lacking} & \textbf{Transitional} & \textbf{Competent} & \textbf{Sophisticated} & \textbf{SCORE} \\ \hline
+ \textbf{Analysis} & \textit{Ability to correctly apply a range of ML methods to the data. Should include a mixture of big- picture results (i.e., error rates) and examples (i.e., negative examples)} &
+ Make major mistakes in applying or interpreting one or more models. Failure to use methods from the course for the analysis. & 
+ A small number of isolated errors that affect the analysis, with some correctly applied methods and conclusions. &
+ Generally correct application and understanding of the methods. May have a small number of minor issues in interpretation. &
+ Correct application and interpretation of the methods in a way that demonstrates deep understanding of the techniques. &
+ {\large \textbf{\magenta{30}}} \\
+&&\textbf{[0]}&\textbf{[20]}&\textbf{[25]}&\textbf{[30]}& \\
+ \hline
+ \textbf{Synthesis} & \textit{Produce a clear synthesis of the findings and big picture of what was learned from the data.} &
+ Presentation lacks a coherent synthesis or the synthesis is largely unsupported by the data. & 
+ A data-oriented synthesis was given, but it is overly specific, somewhat unclear, or only partially supported by the data. &
+ The synthesis of the
+analyses is generally supported by the data and captures a reasonable amount of the findings in the analysis. &
+ In addition to being clear and supported by the data, the synthesis shows a sophisticated understanding of the data and methods. &
+  {\large \textbf{\magenta{20}}}\\
+&&\textbf{[0]}&\textbf{[10]}&\textbf{[15]}&\textbf{[20]}& \\
+ \hline
+ \textbf{Creativity} & \textit{Show an original, thoughtful, and/or unique, way of presenting or understanding the data.} &
+ The analysis/slides are repetitive, fail to show the data in different ways, and do not try to tell a story. & 
+ There was a clear attempt at being creative or engaging with the presentation, but the scope or execution was lacking. &
+ A succesfully executed and interesting way of presenting or understanding the data (e.g., interesting plot, custom code, creative slides). &
+ There is a particularly creative element of the project that clearly extends our understanding of the data. &
+  {\large \textbf{\magenta{10}}} \\
+&&\textbf{[0]}&\textbf{[4]}&\textbf{[8]}&\textbf{[10]}& \\
+ \hline
+ \textbf{Slides} & \textit{Produce clean, professional-looking slides that balance simplicity with conveying information.} &
+ The slides are difficult to read, do not follow the instructions, or include too many typos and errors. & 
+ Slides generally follow the guidelines in the instructions but may contain too much/too little information, extensive typos, or not align well with the presentation. &
+ The slides follow the instructions, are clear and easy to read, and contain a good balance of information and simplicity.
+ &
+ --- &
+  {\large \textbf{\magenta{20}}} \\
+&&\textbf{[0]}&\textbf{[10]}&\textbf{[20]}&& \\
+ \hline
+ \textbf{Communication} & \textit{Give a presentation that clearly presents the material. It should align with the slides, be the correct length, and demonstrate that the presentation was practiced.} &
+ The presentation lacks coherence and is not particularly polished. May go significantly over or under the allotted time. & 
+ It was clear that there was an attempt to practice the presentation but the execution is lacking (i.e., timing is off, confusion on the slides, group members repeating each other). &
+ The presentation of the slides is clear and polished. The group members have dedicated time to practicing the material and are able to fluidly communicate their results to the class. &
+ --- &
+  {\large \textbf{\magenta{15}}} \\
+&&\textbf{[0]}&\textbf{[10]}&\textbf{[15]}&& \\
+ \hline
+\end{tabular}
+
+\hfill \textbf{Total:} {\large \textbf{\magenta{95}}}
+
+\textbf{Something I Liked:} Some nice things I will write about your work.
+
+\textbf{Something to work on:} Some suggestions for improvement on the next project.
+
+\textbf{Grading notes:} Any notes about where I took off points above, if unclear.
+
+\end{document}

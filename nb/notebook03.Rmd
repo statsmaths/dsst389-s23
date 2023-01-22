@@ -124,3 +124,13 @@ Now, print out ten random ham messages that were mis-classified.
 
 ```
 
+Try to reproduce the model you created in question 1 and produce another
+confusion matrix on the validation dataset. This time, however, do not
+use any of the `dsst_*` functions. Try to only include lines from the notes
+that are needed, avoiding those code lines that I only showed to illustrate
+the intermediate steps.
+
+```{r, question-11}
+
+```
+

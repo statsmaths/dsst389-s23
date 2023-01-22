@@ -146,3 +146,44 @@ model$docs %>%
   dsst_print_text()
 ```
 
+Try to reproduce the model you created in question 1 and produce another
+confusion matrix on the validation dataset. This time, however, do not
+use any of the `dsst_*` functions. Try to only include lines from the notes
+that are needed, avoiding those code lines that I only showed to illustrate
+the intermediate steps.
+
+```{r, question-11}
+# Find the set of documents and lemmas
+document_set <- unique(anno$doc_id)
+vocab_set <- unique(anno$lemma)
+
+# Match documents and lemmas to the sets above
+dindex <- as.numeric(match(anno$doc_id, document_set))
+tindex <- as.numeric(match(anno$lemma, vocab_set))
+
+# Create a model matrix
+X <- Matrix::sparseMatrix(
+  i = dindex, j = tindex, x = 1,
+  dims = c(length(document_set), length(vocab_set)),
+  dimnames = list(document_set, vocab_set)
+)
+
+# Filter model matrix and create train/validition sets
+X <- X[, colSums(X) >= 20]
+X_train <- X[docs$train_id == "train",]
+X_valid <- X[docs$train_id == "valid",]
+y_train <- docs$label[docs$train_id == "train"]
+y_valid <- docs$label[docs$train_id == "valid"]
+
+# Fit the cross-validated multinomial elastic net on the data; you
+# could do a logistic family instead, but it's easier to just always
+# do multinomial
+model <- glmnet::cv.glmnet(
+  X_train, y_train, family = "multinomial", lambda_min_ratio = 0.1, nfolds = 3, 
+)
+
+# Predict the output and look at the confusion matrix
+y_valid_pred <- predict(model, newx = X_valid, type = "class")
+table(y_valid, y_valid_pred)
+```
+

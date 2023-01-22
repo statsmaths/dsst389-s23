@@ -11,7 +11,7 @@
 
 
 
-<title>Project 01 – Instructions</title>
+<title>04. Text Analysis II</title>
 
 <script>// Pandoc 2.9 adds attributes on both header and div. We remove the former (to
 // be compatible with the behavior of Pandoc < 2.8).
@@ -505,105 +505,231 @@ display: none;
 
 
 
-<h1 class="title toc-ignore">Project 01 – Instructions</h1>
+<h1 class="title toc-ignore">04. Text Analysis II</h1>
 
 </div>
 
 
-<p><strong>Due Date</strong>: 01 February 2023</p>
-<div id="general-instructions" class="section level2">
-<h2>General Instructions</h2>
-<p>This page outlines the instructions for the first project. You should
-have a file <code>project01.Rmd</code> in your RStudio workspace where
-you can work on the project. I find that students prefer having a
-relatively consistent format for the projects, so I will attempt to keep
-the general format the same throughout the semester.</p>
-<p>On the due-date, you or your group is responsible for completing two
-elements:</p>
-<ol style="list-style-type: decimal">
-<li>Slides presenting your results, also submitted in your Box folder.
-If working in a group, have just one group member submit the slides with
-all names listed.</li>
-<li>A short presentation based on your slide show. This should be 3-5
-minutes in length.</li>
-</ol>
-<p>As described on the syllabus, the project will be graded using a
-rubric, which can be found <a href="../extra/project_rubric.pdf">here</a>.</p>
+<div id="load-the-data" class="section level2">
+<h2>Load the Data</h2>
+<p>For today’s notes we are going to look again at the Amazon product
+classification task. We will read in the <code>docs</code> and
+<code>anno</code> tables:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>docs <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/amazon_product_class.csv&quot;</span>)</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>anno <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/amazon_product_class_token.csv.gz&quot;</span>)</span></code></pre></div>
+<p>As a reminder from last time, the goal is to predict which product
+category a review of form based on a the user product review text.
+Today, we will focus on the ways that we can influence the construction
+of the elastic net model.</p>
 </div>
-<div id="instructions" class="section level2">
-<h2>Instructions</h2>
-<p>This project uses a collection of book reviews from the website Good
-Reads. The data have been taken from the following paper:</p>
-<blockquote>
-<p>Mengting Wan, Julian McAuley, “Item Recommendation on Monotonic
-Behavior Chains”, in RecSys’18.</p>
-</blockquote>
-<p>Groups will be assigned different genres to look at, so you will have
-a slightly different analysis compared to the rest of the class. You can
-read more about the collection as a whole <a href="https://sites.google.com/eng.ucsd.edu/ucsdbookgraph/home#h.p_VCP_qovwtnn1">here</a>.</p>
-<p>There are two different prediction tasks that you may look at. The
-first is to classify the score of the book on a scale from 1-5. The
-second is to predict the gender of the author of the book being
-described. Here are some things you might consider addressing:</p>
-<ul>
-<li>How accurately can you classify the groups based on the text on the
-validation data? What kinds of errors does the model tend to make?</li>
-<li>What terms most distinguish the groups? If you look at just verbs or
-adjectives does anything different pop up?</li>
-<li>Looking at negative example from your best model, do you find it
-easy to identify the correct class or not?</li>
-<li>If any of the most indicative terms seem surprising, apply KWiC to
-the data. Does that help explain why the term is predictive?</li>
-<li>Is there a difference in the parts of speech used between the
-groups?</li>
-<li>Create a confusion matrix and describe any patterns (interesting or
-not).</li>
-</ul>
-<p>At the end of the day, though, your task is an open-ended one. I want
-you to explore the data using the techniques we have learned so far and
-then produce a short presentation showing your results to the rest of
-the class.</p>
+<div id="selecting-the-features" class="section level2">
+<h2>Selecting the Features</h2>
+<p>By far the most important way that we can modify the model is by
+selecting the features that will be used in the model. By default, the
+model uses the lemma column to build features. It creates features from
+the 10,000 most frequent terms that are in at least 0.1% of the
+documents. Here is the function to build the elastic net model with all
+of those default made explicit:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> <span class="fu">dsst_enet_build</span>(anno, docs,</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>                         <span class="at">min_df =</span> <span class="fl">0.001</span>,</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>                         <span class="at">max_df =</span> <span class="fl">1.0</span>,</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>                         <span class="at">max_features =</span> <span class="dv">10000</span>)</span></code></pre></div>
+<p>We can change the model by modifying these value. For example,
+setting <code>max_df</code> to <code>0.5</code> will not include lemmas
+that are in more than half of the reviews. This can be useful if the
+model is including too many stylistic words, such as pronouns, that we
+do not want as part of our analysis. There is no clear rule about how to
+set these values. Experimentation is key and you will practice this in
+the class notes for today.</p>
 </div>
-<div id="presentation" class="section level2">
-<h2>Presentation</h2>
-<p>Your presentation should be in the form of a set of slides. You can
-build these in whatever software you would like, but please create a PDF
-version to submit on Box by the project deadline. I will not accept
-projects in other file formats.</p>
-<p>The exact format of the slides is up to you, however there should be
-a final slide titled “Synthesis” that summarises what you have learned
-about the data from your analysis. It should take a big picture view of
-the analysis and not be overly focused on the models.</p>
-<p>You will find that most (perhaps all) of the results you want to show
-are tables and example reviews. Do not use screen shots for these!
-Screen shots are messy and not ideal. Instead, I suggest using the
-function <code>dsst_clipboard()</code> to copy information to the
-clipboard. This can then be pasted into a spreadsheet program or (in
-some cases) directly into a presentation. For example:</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_neg_examples</span>(model) <span class="sc">%&gt;%</span> <span class="fu">dsst_clipboard</span>()</span></code></pre></div>
-<p>For visualisations, you should use the function <code>ggsave</code>
-to store the most recent plot as a JPG or PNG file.</p>
+<div id="filter-part-of-speech" class="section level2">
+<h2>Filter Part of Speech</h2>
+<p>Another way to change the predictive model that is being created is
+through filtering the annotations table before passing it to the
+<code>dsst_enet_build</code> function. This requires that we write a
+little bit of our own R code. One of the most common ways we will want
+to filter the data is through the column <code>upos</code>, the <a href="https://universaldependencies.org/u/pos/">Universal POS
+tags</a>.</p>
+<p>We can use the <code>upos</code> tags to select only certain parts of
+speech. This can be useful in a few ways, such as removing structural
+tokens (i.e., punctuation and determinants), or focusing on stylistic
+features such as adjectives in order to avoid content-specific terms.
+Here is a typical usage, where we include only the nouns, verbs,
+adjectives, adverbs, and pronouns:</p>
+<div class="sourceCode" id="cb3"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> anno <span class="sc">%&gt;%</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(upos <span class="sc">%in%</span> <span class="fu">c</span>(<span class="st">&quot;ADJ&quot;</span>, <span class="st">&quot;ADV&quot;</span>, <span class="st">&quot;NOUN&quot;</span>, <span class="st">&quot;VERB&quot;</span>, <span class="st">&quot;PRON&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_enet_build</span>(docs)</span></code></pre></div>
+<p>Often you will find that you want to build multiple models with
+different parts of speech to understand a dataset.</p>
 </div>
-<div id="groups" class="section level2">
-<h2>Groups</h2>
-<p>Groups are assigned different genres to look at in their project. You
-should be able to download your data set from within the
-<code>project01.Rmd</code> file.</p>
-<p><strong>Group 1</strong>: <code>children_b</code></p>
-<p><strong>Group 2</strong>: <code>comics_graphic_b</code></p>
-<p><strong>Group 3</strong>: <code>fantasy_paranormal_b</code></p>
-<p><strong>Group 4</strong>: <code>history_biography_b</code></p>
-<p><strong>Group 5</strong>: <code>mystery_thriller_crime_b</code></p>
-<p><strong>Group 6</strong>: <code>poetry_b</code></p>
-<p><strong>Group 7</strong>: <code>romance_b</code></p>
-<p><strong>Group 8</strong>: <code>young_adult_b</code></p>
+<div id="n-grams" class="section level2">
+<h2>N-grams</h2>
+<p>Another way to modify the model is to transform the lemmas found in
+the <code>anno</code> table. A popular way to do this is through the use
+of features called <strong>N-grams</strong>. These look at combinations
+of adjacent tokens rather than just individual tokens. The
+<strong>N</strong> refers to the number of tokens that are put
+together.</p>
+<p>The helper function <code>dsst_ngram</code> will produce N-gram
+features of various lengths. We can specify the maximum (<code>n</code>)
+and minimum (<code>n_min</code>) length of the tokens. The output of
+this can then we passed directly to <code>dsst_enet_build</code>. For
+example:</p>
+<div class="sourceCode" id="cb4"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> anno <span class="sc">%&gt;%</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_ngram</span>(<span class="at">n =</span> <span class="dv">2</span>, <span class="at">n_min =</span> <span class="dv">2</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_enet_build</span>(docs)</span></code></pre></div>
+<p>You can see the impact of the ngrams in the model coefficients:</p>
+<div class="sourceCode" id="cb5"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model, <span class="at">lambda_num =</span> <span class="dv">30</span>)</span></code></pre></div>
+<pre><code>## 13 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
+##                    book        film         food MLN
+## (Intercept) -0.15538849 0.006374181  0.149014308   .
+## this book    0.79035526 .            .             2
+## this movie   .          0.505010237  .            13
+## the book     0.17900509 .            .            18
+## this film    .          0.207687586  .            20
+## book .       0.19341191 .            .            20
+## film be      .          0.114304618  .            22
+## the film     .          0.078635352  .            23
+## movie .      .          0.172070238  .            24
+## book be      0.08036933 .            .            25
+## to read      0.09108604 .            .            28
+## film .       .          0.041923087  .            28
+## of the       .          .           -0.009114281  29</code></pre>
+<p>An extension of this approach are called <strong>skip-grams</strong>.
+They work similarly but allow combinations of N words to skip up to K
+terms. To implement these, we use the function
+<code>dsst_skip_gram</code>:</p>
+<div class="sourceCode" id="cb7"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> anno <span class="sc">%&gt;%</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_skip_gram</span>(<span class="at">n =</span> <span class="dv">2</span>, <span class="at">n_min =</span> <span class="dv">2</span>, <span class="at">k =</span> <span class="dv">1</span>)  <span class="sc">%&gt;%</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_enet_build</span>(docs)</span></code></pre></div>
+<p>It can be fun to experiment with different settings for these values,
+but keep in mind that setting the parameters too high will result in a
+very large dataset that may take a long time to finish running.</p>
 </div>
-<div id="notes" class="section level2">
-<h2>Notes</h2>
-<p>While working through the project, I typically find that many groups
-ask for help writing the same bits of code. Any notes that I want to
-share about how to do specific tasks will be added here as we work
-through the project.</p>
+<div id="more-parts-of-speech" class="section level2">
+<h2>More Parts of Speech</h2>
+<p>We can also use the <code>upos</code> values to change the
+annotations, rather than just filtering them. First of all, you will
+have noticed that the annotations create a lemmatised version of
+pronouns that maps every pronoun to the string “-PRON-”. You may want to
+put these back into the lemmas, which we can do with the following
+code:</p>
+<div class="sourceCode" id="cb8"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> anno <span class="sc">%&gt;%</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lemma =</span> <span class="fu">if_else</span>(upos <span class="sc">==</span> <span class="st">&quot;PRON&quot;</span>, <span class="fu">tolower</span>(token), lemma)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lemma =</span> <span class="fu">if_else</span>(lemma <span class="sc">==</span> <span class="st">&quot;i&quot;</span>, <span class="st">&quot;I&quot;</span>, lemma)) <span class="sc">%&gt;%</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_enet_build</span>(docs)</span></code></pre></div>
+<p>We can also add the part of speech tag to the end of the lemma. This
+rarely changes the model much but helps interpret the coefficients:</p>
+<div class="sourceCode" id="cb9"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> anno <span class="sc">%&gt;%</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">lemma =</span> <span class="fu">paste0</span>(lemma, <span class="st">&quot;_&quot;</span>, upos)) <span class="sc">%&gt;%</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_enet_build</span>(docs)</span></code></pre></div>
+<p>You can see the effect of this change here:</p>
+<div class="sourceCode" id="cb10"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model, <span class="at">lambda_num =</span> <span class="dv">50</span>)</span></code></pre></div>
+<pre><code>## 16 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
+##                     book       film         food MLN
+## (Intercept)   -0.2160591 0.01776748  0.198291615   .
+## book_NOUN      0.6925786 .           .             2
+## movie_NOUN     .         0.56825903  .            10
+## film_NOUN      .         0.24714900  .            18
+## flavor_NOUN    .         .           0.589105078  19
+## read_VERB      0.4231783 .           .            20
+## taste_VERB     .         .           0.599092119  22
+## taste_NOUN     .         .           0.596607517  22
+## product_NOUN   .         .           0.299008650  32
+## watch_VERB     .         0.16460704  .            37
+## dvd_NOUN       .         0.20163264  .            39
+## eat_VERB       .         .           0.133483895  41
+## story_NOUN     .         .          -0.067088477  43
+## read_NOUN      0.1294661 .           .            46
+## the_DET        .         .          -0.001927111  48
+## delicious_ADJ  .         .           0.011247454  50</code></pre>
+<p>Some more advice about how to use these techniques are included
+below, but as always some trial and error is needed.</p>
+</div>
+<div id="alternative-features" class="section level2">
+<h2>Alternative features</h2>
+<p>As a final tweak today, we can also use a completely different
+variable in the <code>anno</code> table to build the features by setting
+the <code>token_var</code> option. For example, we could use the
+<code>upos</code> tags themselves:</p>
+<div class="sourceCode" id="cb12"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb12-1"><a href="#cb12-1" aria-hidden="true" tabindex="-1"></a>model <span class="ot">&lt;-</span> anno <span class="sc">%&gt;%</span></span>
+<span id="cb12-2"><a href="#cb12-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">dsst_enet_build</span>(docs, <span class="at">token_var =</span> <span class="st">&quot;upos&quot;</span>)</span></code></pre></div>
+<p>Which results in a very different type of model:</p>
+<div class="sourceCode" id="cb13"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb13-1"><a href="#cb13-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model)</span></code></pre></div>
+<pre><code>## 15 x 4 sparse Matrix of class &quot;dgCMatrix&quot;
+##                     book         film         food MLN
+## (Intercept) -0.248980100 -0.222040273  0.471020373   .
+## DET          .            0.010528716 -0.037635805   2
+## ADP          0.020288105  .           -0.006273853  11
+## PROPN        .            0.030423746 -0.024555573  14
+## PART         0.037567756  .            .            31
+## VERB         0.008172884  .            .            40
+## INTJ        -0.150151789  0.023595291  .            55
+## SYM          .           -0.007301116  0.119941005  57
+## X            .           -0.169178788  0.102577676  61
+## NUM         -0.024592991  .            0.097530599  62
+## PRON         .           -0.012662239  0.023958537  63
+## SPACE        .            0.005668980  .            74
+## AUX         -0.008352086  .            .            87
+## ADV         -0.003825879  .            .            90
+## ADJ          .            .            0.005461118  93</code></pre>
+<p>We will see models like this more as we turn to authorship predict
+tasks in the next few projects.</p>
+</div>
+<div id="keywords-in-context" class="section level2">
+<h2>Keywords in Context</h2>
+<p>As a final tool for today, we can also go back and identify the use
+of particular terms within the documents using a method called keywords
+in context, or KWiC. The function works by passing it a term to search
+for as well as the docs table and the number of items to return. Here,
+for example, we can see the ways that the term “read” are used in the
+texts:</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_kwic</span>(anno, <span class="at">terms =</span> <span class="st">&quot;read&quot;</span>)</span></code></pre></div>
+<pre><code>## [doc00076] riting style kept me |reading| , and the simple ide
+## [doc00793] ast paced &amp; visceral |read   | .                   
+## [doc00988]               Having |read   | that Tom Cruise was 
+## [doc01427] its really not a bad |read   | , just disappointing
+## [doc01904]               Having |read   | the first three book
+## [doc02138] er and would like to |read   | more of his works . 
+## [doc02340]        Thank you for |reading| this                
+## [doc02782]  business book I &#39;ve |read   | sinceThe Culture Cod
+## [doc02949]       I always enjoy |reading| anything of Agatha C
+## [doc03237] eries before i began |reading|
+## [doc03535] th information after |reading| the first section , 
+## [doc03742]  guess I may as well |read   | the damned thing , n
+## [doc04005]  me that I needed to |read   | Aidan Donnelley Rowl
+## [doc04551]             You must |read   | the whole set of boo
+## [doc04818]        It &#39;s easy to |read   | &amp; filled to the brim
+## [doc05262]               I have |read   | the book and recomme
+## [doc05409]            Excellent |read   | ! !                 
+## [doc05897] ter that I only kept |reading| in hopes that the he
+## [doc06473]  was easy and fun to |read   | with her and for me 
+## [doc06903] book , while easy to |read   | , just does n&#39;t alwa</code></pre>
+<p>This will be useful when we start working with datasets where it is
+not immediately clear why a particular term is being associated with a
+label type.</p>
+</div>
+<div id="advice-summary" class="section level2">
+<h2>Advice Summary</h2>
+<p>There is no one best way to apply these techniques; you will
+generally need to experiment and often use multiple models in an
+analysis. Note that it is not always the most predictive model that is
+the best to use for your analysis. We are not just (or even primarily)
+focused on making predictions.</p>
+<p>I can offer a bit of general advice, though, as you work through the
+next set of notes and the first project. I find that first filtering on
+the five most common parts of speech and fixing the pronoun issue to be
+a good first pass to my first model. I sometimes also tag with the part
+of speech code for interpretability, but otherwise leave things as the
+defaults. This is the model I most often use for negative examples,
+maximum probability examples, and coefficient tables. Then, depending on
+the application, I may try other techniques such as n-grams with
+<code>n=2</code> or <code>n=3</code> with <code>n_min=1</code>. If there
+is a noticeable improvement I will try to understand why and otherwise
+not bother with it much.</p>
+<p>Using alternative features are useful for other tasks, but not so
+much for the ones we will see in the next few weeks. We will return to
+those with Project 2.</p>
 </div>
 
 

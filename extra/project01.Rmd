@@ -16,17 +16,18 @@ output:
 
 This page outlines the instructions for the first project. You should
 have a file `project01.Rmd` in your RStudio workspace where you can
-work on the project. I find that students prefer having a consistent
-format for the projects, so I will attempt to keep the format the same
-throughout the semester.
+work on the project. I find that students prefer having a relatively
+consistent format for the projects, so I will attempt to keep the general
+format the same throughout the semester.
 
-On the due-date, your group is responsible for completing two elements:
+On the due-date, you or your group is responsible for completing two elements:
 
-1. Slides presenting your results, also submitted in your Box folder.
-2. A presentation based on your slide show. This should be 5 minutes in length.
+1. Slides presenting your results, also submitted in your Box folder. If working in a
+group, have just one group member submit the slides with all names listed.
+2. A short presentation based on your slide show. This should be 3-5 minutes in length.
 
 As described on the syllabus, the project will be graded using a rubric, which
-can be found [here](../extra/project_rubric.pdf).
+can be found [here](../extra/project_rubric.pdf). 
 
 ## Instructions
 
@@ -64,7 +65,7 @@ a short presentation showing your results to the rest of the class.
 
 Your presentation should be in the form of a set of slides. You can build these
 in whatever software you would like, but please create a PDF version to submit
-on Box by the project deadline.
+on Box by the project deadline. I will not accept projects in other file formats.
 
 The exact format of the slides is up to you, however there should be a final
 slide titled "Synthesis" that summarises what you have learned about the data
@@ -95,7 +96,7 @@ should be able to download your data set from within the `project01.Rmd` file.
 
 **Group 3**: `fantasy_paranormal_b`
 
-**Group 4/9**: `history_biography_b`
+**Group 4**: `history_biography_b`
 
 **Group 5**: `mystery_thriller_crime_b`
 
