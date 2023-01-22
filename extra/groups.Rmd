@@ -23,7 +23,7 @@ know at any point if you have a concern about these groupings.
 - **Group 2** Elmer, Mads, Becca, Will
 - **Group 3** Acacia, Grace, Nikita
 - **Group 4** Shira, Kamryn
-- **Group 5** Scarlett, Lu, Pheebe
+- **Group 5** Jiayi, Lu, Pheebe
 - **Group 6** Josh, Thomas
 - **Group 7** Elliot, Ginny, Bailey
 - **Group 8** Yanran, Leyao, Kate, Kyle
@@ -33,7 +33,7 @@ know at any point if you have a concern about these groupings.
 
 - **Group 1** 
 - **Group 2** Travis, Juneseo, Andrew, Charles
-- **Group 3** Joel
+- **Group 3** Joel, Justin
 - **Group 4** Alex, Akhil
 - **Group 5** Domenic, Ivana, Sophie, Tolya
 - **Group 6** Rinki, Leah
