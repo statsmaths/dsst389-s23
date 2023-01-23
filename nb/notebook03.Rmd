@@ -59,7 +59,7 @@ Now, compute the error rate for the training and validation sets.
 ```
 
 Does the model do better on the training or the validation data?
-**Answer:** Better on the training data.
+**Answer**:
 
 In the next code block, compute the segmented error rate.
 
@@ -74,7 +74,7 @@ And next, compute the confusion matrix:
 ```
 
 Is the model more likely to think that spam is ham, or ham is spam?
-**Answer:** My model was more likely to think that spam was ham.
+**Answer**:
 
 In the next step, compute the coefficients of the model. Note that the model
 has fit a multinomial elastic net, but with only two classes. You should see
@@ -87,7 +87,7 @@ handout for an explanation of why this happens.
 
 Look at the first few values in the table above. Do the strongest features that
 the model found make sense to you as an indicator or spam?
-**Answer:** I found the strongest features to be "call", "£", "to" and "!". All
+**Answer**:
 the signs are positive for spam. I can certainly imagine all of these featuring
 in a spam text message.
 
