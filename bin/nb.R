@@ -11,6 +11,7 @@ for (j in seq_along(src_files))
 
   # replace the answers flags and the name in the header
   x[stri_sub(x, 1L, 11L) == "**Answer**:"] <- "**Answer**:"
+  x[stri_sub(x, 1L, 11L) == "**Answer:**"] <- "**Answer**:"
   x <- stri_replace_all(x, "", fixed = " -- Solutions")
 
   # find the start and end of the questions that need to be cleared
