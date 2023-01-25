@@ -14,7 +14,7 @@ The following block of code will load (and, the first time, download) all of
 the data for the project.
 
 ```{r, message=FALSE}
-sname <- "children_b"   # put the name of the dataset from the project page here
+sname <- "comics_graphic_b"   # put the name of the dataset from the project page here
 docs <- dsst_project_docs("goodreads", sname)
 anno <- dsst_project_anno("goodreads", sname)
 ```
