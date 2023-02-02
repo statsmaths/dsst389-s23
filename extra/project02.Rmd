@@ -24,7 +24,7 @@ throughout the semester.
 Your group is responsible for completing two elements:
 
 1. Slides presenting your results, also submitted in your Box folder.
-2. A presentation based on your slide show. This should be ~~10-15~~ 8-10
+2. A presentation based on your slide show. This should be 8-10
 minutes in length.
 
 The slides must be uploaded by the first day of presentations regardless of
@@ -117,6 +117,34 @@ We will have:
 
 **Group 8**: `pet_supplies`
 
+## General Feedback From Project 1
+
+To summarize my in-class feedback to everyone from Project 1,
+try to keep the following things in mind as you prepare 
+Project 2:
+
+- Make sure the slides are readable and understandable out
+of the context of your talk. But also, don't crowd them out
+with text. Try to find a good balance.
+- The slides should include your results and conclusions. A
+good way to do this is to show a larger part of a table, but
+then highlight the most important results. You could use several
+techniques, such as shapes, bold text, colors, or arrows. 
+- Remember to copy tables into a spreadsheet program rather
+than using screenshots. Format the numbers in a way that makes
+them easily readable by only including a reasonable number of
+significant digits.
+- Remember to use a mixture of different types of results,
+with specific examples mixed in with larger summaries such
+as a confusion matrix. 
+- This is not a discussion of your methods; we don't need to
+hear what you did that was not helpful for your analysis.  
+- For full marks, the next project requires you to do something
+that somehow goes beyond the straightforward application of
+techniques from class. I can help with this, but only if you
+are already far along when we do the project workshop in class.
+- The most important part of the presentation is your synthesis
+slide. This is not the same as a summary slide. 
 
 ## Notes
 
