@@ -50,7 +50,8 @@ such as `model_enet`:
 model_enet <- dsst_enet_build(anno, docs)
 ```
 
-Compute the error rate of the elastic net model:
+Compute the error rate of the elastic net model on the training and validation
+sets.
 
 ```{r, question-02}
 model_enet$docs %>%
@@ -79,10 +80,12 @@ a significantly larger set of trees. Create a new gradient boosted tree model
 using 1000 trees:
 
 ```{r, question-05}
-model_gbm <- dsst_gbm_build(anno, docs, eta = 0.05, nrounds = 1000)
+model_gbm <- dsst_gbm_build(anno, docs, nrounds = 1000)
 ```
 
-Compute the error rate now:
+Compute the error rate now for the training and validation sets. Do this below
+the normal way, but note that they should also be given in the output printed
+above.
 
 ```{r, question-06}
 model_gbm$docs %>%
@@ -112,50 +115,74 @@ dsst_gbm_imp(model_gbm$model)
 How do the two lists compare to one another? Is there a lot of overlap? Is there
 any particular pattern to the differences?
 
-### Comparison of POS grams
+### Data Visualization
 
-Finally, fit an elastic net model using the variable "xpos" to create the
-features. [Note: Not the n-grams; the tags themselves].
+For the first visualization in today's notebook, take the elastic net model
+you built above (`model_net`) and select the attached `docs` table. Filter to
+just include the validation set and arrange the data from the highest value of
+`pred_value` (the probability that the model thinks it is correct). Then, slice
+to include just the first 1000 rows and compute the error rate. Note that this
+should be much lower than the rate you had above. Play around with the number 
+of rows that are included in the summary and try to understand the pattern.
 
 ```{r, question-09}
-model_enet <- dsst_enet_build(anno, docs, token_var = "xpos")
+model_enet$docs %>%
+  filter(train_id == "valid") %>%
+  arrange(desc(pred_value)) %>%
+  slice(1:1000) %>%
+  summarize(erate = mean(label != pred_label))
 ```
 
-Compute the error rate for the elastic net model:
+Now, we want to create a plot that visualizes the number of points included in
+the summary. To do this, replace the summary command you have above with a 
+mutate verb, using the function `cummean` in place of `mean`. Also, create a
+variable with the command `prop = row_number() / n()`. Take the result and 
+plot the proportion of the corpus predicted on the x-axis and the error rate on
+the y-axis using a line geometry.
 
 ```{r, question-10}
 model_enet$docs %>%
-  group_by(train_id) %>%
-  summarize(erate = mean(label != pred_label))
+  filter(train_id == "valid") %>%
+  arrange(desc(pred_value)) %>%
+  mutate(erate = cummean(label != pred_label), prop = row_number() / n()) %>%
+  ggplot(aes(prop, erate)) +
+    geom_line()
 ```
 
-And look at the strongest coefficients:
+Now, take the predictions from the top 4500 most confident predictions in the
+validation data (it's about 75% of the values) and build a confusion matrix.
+Take a moment to understand what it's telling us, keeping in mind that the
+data are balanced between the labels.
 
 ```{r, question-11}
-dsst_coef(model_enet$model, lambda_num = 30)
+model_enet$docs %>%
+  filter(train_id == "valid") %>%
+  arrange(desc(pred_value)) %>%
+  slice(1:4500) %>%
+  select(label, pred_label) %>%
+  table()
 ```
 
-Now, fit a gradient boosted tree model using the variable "xpos" to create the
-features. Use 1000 trees and set eta equal to 0.2 and use 300 trees.
+Finally, repeat the last question on Notebook 5 using just the validation data
+from the dataset here. Order the authors from the highest proportion of verbs
+used to the lowest. 
 
 ```{r, question-12}
-model_gbm <- dsst_gbm_build(anno, docs, eta = 0.2, nrounds = 300, token_var = "xpos")
+anno %>%
+  group_by(doc_id, sid) %>%
+  summarize(n_verb = sum(upos == "VERB")) %>%
+  left_join(docs, by = "doc_id") %>%
+  filter(train_id == "valid") %>%
+  group_by(label) %>%
+  summarize(avg = mean(n_verb), s = sd(n_verb) / sqrt(n())) %>%
+  arrange(desc(avg)) %>%
+  mutate(label = fct_inorder(label)) %>%
+  ggplot(aes(label, avg)) +
+    geom_pointrange(aes(
+      ymin = avg - 2 * s,  ymax = avg + 2 * s
+    ))
 ```
 
-Compute the error rate of the gbm model and compate to the elastic net model
-above. You should see that this model work better. Any idea why the trees are
-better at this model?
-
-```{r, question-13}
-model_gbm$docs %>%
-  group_by(train_id) %>%
-  summarize(erate = mean(label != pred_label))
-```
-
-As a last step, look at the most important variables from the GBM model.
-
-```{r, question-14}
-dsst_gbm_imp(model_gbm$model)
-```
-
-How do the top terms compare to the elastic net model?
+Using the intersection of the confidence intervals (it's a rough measurement,
+but a reasonably accurate measurement of statistical significant), you should
+see that the authors fall into three rough buckets.

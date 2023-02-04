@@ -43,13 +43,15 @@ text.
 ### Authorship Detection with the Elastic Net
 
 To start, build an elastic net model using the default term-frequency features
-to predict the authorship of each text:
+to predict the authorship of each text. 
 
 ```{r, question-01}
 model <- dsst_enet_build(anno, docs)
 ```
 
-Now, what is the overall error rate of this model?
+Now, compute the overall error rate of this model for each of the training and 
+validations sets. You should see that the model is much better on the training
+set than it is on the validation set.
 
 ```{r, question-02}
 model$docs %>%
@@ -58,10 +60,10 @@ model$docs %>%
 ```
 
 In the code block below, look at the model coefficients. You may want to limit
-the number of results by setting `lambda_num` to something around 30
+the number of results by setting `lambda_num` to something around 25.
 
 ```{r, question-03}
-dsst_coef(model$model, lambda_num = 30)
+dsst_coef(model$model, lambda_num = 25)
 ```
 
 You should notice several interesting things about the model. What are the main
@@ -69,7 +71,6 @@ features that are being used here? Do you see any patterns about where the
 strongest coefficients are concentrated?
 
 Build another elastic net model but remove the proper nouns from the texts.
-Note, we can use `!=` to signal (not equal to) in R.
 
 ```{r, question-04}
 model <- anno %>%
@@ -86,7 +87,7 @@ model$docs %>%
 ```
 
 In the code block below, look at the model coefficients. You may want to limit
-the number of results by setting `lambda_num` to something around 40.
+the number of results by setting `lambda_num` to something around 30.
 
 ```{r, question-06}
 dsst_coef(model$model, lambda_num = 30)
@@ -95,8 +96,9 @@ dsst_coef(model$model, lambda_num = 30)
 You should now notice that the types of words being used are very different.
 What are the primary qualities of (most of) the terms now being selected?
 
-Now, build an elastic net model using the "xpos" column to build frequencies.
-These are a more granular way of describing parts of speech.
+Now, build an elastic net model using the "xpos" column to build frequencies
+(i.e., set "xpos" to the `token_var` parameter). These codes offer a more
+granular way of describing parts of speech.
 
 ```{r, question-07}
 model <- anno %>%
@@ -116,7 +118,7 @@ of xpos tags.
 
 ```{r, question-09}
 model <- anno %>%
-  dsst_ngram(token_var = "xpos") %>%
+  dsst_ngram(token_var = "xpos", n = 3, n_min = 1) %>%
   dsst_enet_build(docs)
 ```
 
@@ -150,39 +152,88 @@ model$docs %>%
   summarize(erate = mean(label != pred_label))
 ```
 
-Now, fit a knn model using the 3-gram xpos features and k = 1.
-
-```{r, question-13}
-model <- anno %>%
-  dsst_ngram(token_var = "xpos") %>%
-  dsst_knn_build(docs)
-```
-
-Compute the error rate and compare the results using the elastic net.
-
-```{r, question-14}
-model$docs %>%
-  group_by(train_id) %>%
-  summarize(erate = mean(label != pred_label))
-```
-
-Finally, fit a model using 3-gram xpos features and k = 10.
-
-```{r, question-15}
-model <- anno %>%
-  dsst_ngram(token_var = "xpos") %>%
-  dsst_knn_build(docs, k = 10)
-```
-
-Compute the error rate and compare the previous results. Does setting k equal
-to 10 change the model?
-
-```{r, question-16}
-model$docs %>%
-  group_by(train_id) %>%
-  summarize(erate = mean(label != pred_label))
-```
-
 You should have noticed that knn is significantly worse than the elastic net
 model. Take a few moments and think about what the difference between these
 models is and why knn is not particularly suitable to the prediction task here.
+
+### Data Visualization
+
+For the last few questions, we'll do some data visualization directly using the
+information in the `anno` and `docs` tables. The general pattern of how to do
+these is to first manipulate and summarize the annotations, then join to the
+documents table to get the labels, and finally summarize again and plot the
+results.
+
+For the first question, create a bar plot (remember, this needs `geom_col`) 
+that shows the average length of sentences in the data broken down by the 
+author and whether the data comes from the training or validation set. Use
+the fill color to distinguish the train/valid split (hint: you'll need to set
+position = "dodge" in the geometry).
+
+```{r, question-13}
+anno %>%
+  group_by(doc_id, sid) %>%
+  summarize(n = n()) %>%
+  left_join(docs, by = "doc_id") %>%
+  group_by(train_id, label) %>%
+  summarize(avg = mean(n)) %>%
+  ggplot(aes(label, avg)) +
+    geom_col(aes(fill = train_id), position = "dodge")
+```
+
+Now, for each combination of the train/valid set and author, compute the average
+number of verbs in each sentence and the average number of adjectives in each
+sentence. Plot these two measurements using a scatter plot, with color
+indicating the author and shape indicating the train/valid split.
+
+```{r, question-14}
+anno %>%
+  group_by(doc_id, sid) %>%
+  summarize(n_verb = sum(upos == "VERB"), n_adj = sum(upos == "ADJ")) %>%
+  left_join(docs, by = "doc_id") %>%
+  group_by(train_id, label) %>%
+  summarize(
+    avg_verb = mean(n_verb),
+    avg_adj = mean(n_adj)
+  ) %>%
+  ggplot(aes(avg_verb, avg_adj)) +
+    geom_point(aes(color = label, shape = train_id), size = 3)
+```
+
+Now, we will create a plot that shows the average number of verbs in a sentence
+for each combination of the author and train/valid set. In this plot, put the
+author on the x-axis and the average on the y-axis; use color to distinguish
+the train/valid split. In addition, compute what we call the *standard error*
+of the average number of verbs by dividing the standard deviation (the function
+`sd`) of the number of verbs by the square-root (`sqrt`) of the number of the
+number of sentences. Finally, plot the data using the geometry `geom_pointrange`;
+this requires setting the x-aesthetic, y-aesthetic, as well as ymin and ymax
+aesthetic. Set the values of these last two to be the average number of verbs
+minus and plus the standard error time two. 
+
+This sounds like a lot of work, but the code is actually not very long. What it
+does is produce confidence intervals for a measurement of where we would expect
+the average values to be if we re-sampled in a similar way from the same data.
+
+```{r, question-15}
+anno %>%
+  group_by(doc_id, sid) %>%
+  summarize(n_verb = sum(upos == "VERB")) %>%
+  left_join(docs, by = "doc_id") %>%
+  group_by(train_id, label) %>%
+  summarize(avg = mean(n_verb), s = sd(n_verb) / sqrt(n())) %>%
+  ggplot(aes(label, avg)) +
+    geom_pointrange(aes(
+      ymin = avg - 2 * s,  ymax = avg + 2 * s, color = train_id
+    ))
+```
+
+This is a tricky question if you've never worked with confidence intervals 
+before. Just take a look at the solutions and try to understand how to interpret
+the results. We will talk more about this model and others like it next week.
+
+A final note: in all of these visualizations, I had you split the training and
+validations datasets and look at them in relation to one another. This is 
+because of the special nature of the train/valid split (they are different 
+novels) in this example. In the project, I'd recommend replicating plots like
+these using only the validation data.
