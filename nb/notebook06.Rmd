@@ -62,7 +62,7 @@ sets.
 Now, fit a gradient boosted tree model using the default parameters:
 
 ```{r, question-03}
-
+dsst_gbm_build
 ```
 
 Compute the error rate of this model:
