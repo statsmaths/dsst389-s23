@@ -636,10 +636,37 @@ This is not the same as a summary slide.</li>
 </div>
 <div id="notes" class="section level2">
 <h2>Notes</h2>
-<p>While working through the project, I typically find that many groups
-ask for help writing the same bits of code. Any notes that I want to
-share about how to do specific tasks will be added here as we work
-through the project.</p>
+<p>You’ll likely find with this assignment that you want an alternative
+way of looking at the coefficients table. One approach is to make the
+table a tibble by setting the <code>to_tibble = TRUE</code> option, and
+then manipulating the results as in the following code, which assumes
+you already have a model called <code>model</code>:</p>
+<div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_coef</span>(model<span class="sc">$</span>model, <span class="at">lambda_num =</span> <span class="dv">40</span>, <span class="at">to_tibble =</span> <span class="cn">TRUE</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(term <span class="sc">!=</span> <span class="st">&quot;(Intercept)&quot;</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_longer</span>(<span class="at">names_to =</span> <span class="st">&quot;label&quot;</span>, <span class="at">values_to =</span> <span class="st">&quot;coef&quot;</span>, <span class="at">cols =</span> <span class="sc">-</span><span class="fu">c</span>(term, MLN)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>  <span class="fu">filter</span>(coef <span class="sc">!=</span> <span class="dv">0</span>) <span class="sc">%&gt;%</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>  <span class="fu">mutate</span>(<span class="at">direction =</span> <span class="fu">if_else</span>(<span class="fu">sign</span>(coef) <span class="sc">&gt;</span> <span class="dv">0</span>, <span class="st">&quot;positive&quot;</span>, <span class="st">&quot;negative&quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>  <span class="fu">group_by</span>(label, direction) <span class="sc">%&gt;%</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>  <span class="fu">summarize</span>(<span class="at">term =</span> <span class="fu">paste</span>(term, <span class="at">collapse =</span> <span class="st">&quot; | &quot;</span>)) <span class="sc">%&gt;%</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>  <span class="fu">pivot_wider</span>(</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="at">id_cols =</span> <span class="st">&quot;label&quot;</span>,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_from =</span> <span class="st">&quot;term&quot;</span>,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="at">names_from =</span> <span class="st">&quot;direction&quot;</span>,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">values_fill =</span> <span class="st">&quot;&quot;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>  )</span></code></pre></div>
+<pre><code>## # A tibble: 5 × 3
+## # Groups:   label [5]
+##   label     negative                                                 posit…¹
+##   &lt;chr&gt;     &lt;chr&gt;                                                    &lt;chr&gt;  
+## 1 Austen    &quot;man | hand | face&quot;                                      sister…
+## 2 Dickens   &quot;&quot;                                                       reply …
+## 3 Doyle     &quot;&quot;                                                       uncle …
+## 4 Stevenson &quot;&quot;                                                       sea | …
+## 5 Wells     &quot;good | dear | friend | should | can | will | own | you… shout …
+## # … with abbreviated variable name ¹​positive</code></pre>
+<p>It doesn’t look great in the website here, but if you do it in
+RStudio it will give a very nice view of the coefficents. You could
+further copy into a spreadsheet program to format.</p>
 </div>
 
 

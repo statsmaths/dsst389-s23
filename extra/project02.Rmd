@@ -148,6 +148,45 @@ slide. This is not the same as a summary slide.
 
 ## Notes
 
-While working through the project, I typically find that many groups ask for
-help writing the same bits of code. Any notes that I want to share about how
-to do specific tasks will be added here as we work through the project.
+```{r, message=FALSE, echo=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+docs <- read_csv("../data/stylo_uk.csv")
+anno <- read_csv("../data/stylo_uk_token.csv.gz")
+
+model <- anno %>%
+  filter(upos %in% c("NOUN", "VERB", "ADJ")) %>%
+  dsst_enet_build(docs, trace_it = FALSE)
+```
+
+You'll likely find with this assignment that you want an alternative way of
+looking at the coefficients table. One approach is to make the table a tibble
+by setting the `to_tibble = TRUE` option, and then manipulating the results
+as in the following code, which assumes you already have a model called `model`:
+
+```{r}
+dsst_coef(model$model, lambda_num = 40, to_tibble = TRUE) %>%
+  filter(term != "(Intercept)") %>%
+  pivot_longer(names_to = "label", values_to = "coef", cols = -c(term, MLN)) %>%
+  filter(coef != 0) %>%
+  mutate(direction = if_else(sign(coef) > 0, "positive", "negative")) %>%
+  group_by(label, direction) %>%
+  summarize(term = paste(term, collapse = " | ")) %>%
+  pivot_wider(
+    id_cols = "label",
+    values_from = "term",
+    names_from = "direction",
+    values_fill = ""
+  )
+```
+
+It doesn't look great in the website here, but if you do it in RStudio it
+will 
+give a very nice view of the coefficents. You could further copy into a
+spreadsheet program to format.
+
+
+
+
+
+
