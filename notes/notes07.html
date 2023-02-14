@@ -517,12 +517,27 @@ classification task. We will read in the <code>docs</code> and
 <code>anno</code> tables:</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>docs <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/amazon_product_class.csv&quot;</span>)</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>anno <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="st">&quot;../data/amazon_product_class_token.csv.gz&quot;</span>)</span></code></pre></div>
-<p>Today, we are going to derive a new metric for seeing how strongly a
-term is associated with a category.</p>
+<p>These notes will briefly introduce a new measurement for associating
+a term with a particular category.</p>
 <div id="g-score" class="section level2">
 <h2>G-Score</h2>
-<p>Here is a function that computes the G-scores for a set of terms
-related to each label in the data.</p>
+<p>So far, we have focused on building predictive models based on
+features composed on word counts. We’ve had the twin goals of
+identifying words that are strongly associated (negatively or
+positively) with each category and understanding how different the
+categories are from one another. Can we easily tell them apart? Can we
+tell some of the apart? Can we tell some of them apart some of the time?
+And so forth.</p>
+<p>If we are only interested in the first question of what terms are
+associated with each category, we can try to do this more directly
+measuring the strength of the relationship between the occurance of a
+word and the presence of a particular category. There are a few
+different such scores that are commonly used with textual data. The one
+I find the best is called the G-score; it provides a single number that
+tells how strongly a single term is associated with a given
+category.</p>
+<p>We will derive the G-score more fully through the slides in class.
+Here we’ll just look at a function to that computes the value:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="fu">dsst_metrics</span>(anno, docs)</span></code></pre></div>
 <pre><code>## # A tibble: 98,899 × 8
 ##    train_id label token  count expected count_word gscore   chi2
@@ -585,8 +600,11 @@ dataset before running the metrics:</p>
 ## 10 train    food  taste    949    124.        1000  3575.  6250.
 ## 11 train    food  flavor   776     99.0        796  3059.  5290.
 ## 12 train    food  it      3440   1517.       12195  2204.  2831.</code></pre>
-<p>The last column is a measurement that we will talk about in the next
-set of notes.</p>
+<p>The last column is another measurement called the chi-squared
+statistic. If you’ve had a previous statistics course, this corresponds
+to the classic chi-squared test for a 2-by-2 table. We won’t use it much
+here, but I included it just in case you want another measurment to
+compare the G-score to.</p>
 </div>
 </div>
 
