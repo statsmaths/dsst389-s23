@@ -12,6 +12,9 @@ source("../funs/funs.R")
 options(dsst.traceit = FALSE)
 ```
 
+*As mentioned in class, you do not need to read the notes for today ahead of
+time. We will discuss them together in class.*
+
 ## Load the Data
 
 For today's notes we will work with one of the data sets from Project 2,
