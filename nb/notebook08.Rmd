@@ -53,14 +53,17 @@ Take note of any commonly confused categories:
 
 ```
 
-Look at the coefficients from the model; perhaps use `lambda_num = 30`.
-Do the terms seem to correspond to the categories in an expected way?
+Look at the coefficients from the model; perhaps use `lambda_num = 30`. Use
+the code from Project 2 to look at the positive (and negative, if there are any)
+terms associated with each category. Do the terms seem to correspond to the
+categories in an expected way? Note: You can pipe the whole thing into the
+function `View()` if you want a better way to look at the output in RStudio.
 
 ```{r, question-03}
 
 ```
 
-Now, use the G-score metrics to find the terms that are most associated with
+Now, use the G-score metrics to find the 4 terms that are most associated with
 each category. Again, do these seem to match your intuition?
 
 ```{r, question-04}
@@ -76,8 +79,9 @@ the categories. Remember to set the document variable to "label".
 
 ```
 
-Plot (in R) the first two principal components of the categories. Try to find
-some of the document pairs in the PCA plot.
+Plot (in R) the first two principal components of the categories. Add labels
+using a text repel layer. Try to find some of the document pairs in the PCA
+plot.
 
 ```{r, question-06}
 
@@ -91,7 +95,7 @@ interpret?
 ```
 
 Next, produce the principal components for the messages themselves. Save the
-results as a JSON file and go to the link below to visualise the results. Color
+results as a JSON file and go to the link below to visualize the results. Color
 the points based on the labels.
 
 - https://statsmaths.github.io/text-embed-explo/build/
