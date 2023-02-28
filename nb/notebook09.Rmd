@@ -39,31 +39,84 @@ anno <- read_csv("../data/newsgroups_token.csv.bz2")
 
 ### Clustering
 
-Use K-means to cluster the categories with K equal to 5 (that's the default).
-Look at the clusters and see if they match the plots you made in the previous
-notebook.
+Use K-means to cluster the categories with K equal to 5 (that's the default)
+and 2 PCA dimensions (that's also the default).
 
 ```{r, question-01}
+
+```
+
+Now, plot these cluster using color on a plot with the first two principal
+components. Make sure to force R to treat the color as a categorical variable.
+Visually verify that the clusters make visual sense.
+
+```{r, question-02}
 
 ```
 
 Now, run hierarchical clustering on the categories. Save the model as an R
 object.
 
-```{r, question-02}
+```{r, question-03}
 
 ```
 
 Plot the hierarchical clustering and notice what additional information it
 gives compared to K-means.
 
-```{r, question-03}
+```{r, question-04}
 
 ```
 
-Cut the tree into 5 clusters and compare to the K-means clusters.
+Now, plot the colors of the hierarchical clusters on a plot with the first two
+principal components (this requires a bit more code) using 5 clusters. Take note
+of any differences in relation to the kmeans clustering.
 
-```{r, question-04}
+```{r, question-05}
+
+```
+
+Repeat the previous question, but this time use only 3 clusters. Take note of
+how the clusters are grouped together relative to the previous plot.
+
+```{r, question-06}
+
+```
+
+### Exploratory Analysis
+
+Now, let's do a few more involved tasks with the data using the clusters.
+In the code below, group the newsgroups into 5 clusters using kmeans, including
+only nouns and verbs. Save the result as a data frame called `clusters`.
+
+```{r, question-07}
+
+```
+
+Next, compute the 5 words most associated (according the G-scores) with the 
+validation set of each cluster. Again, only use nouns and verbs. Join these top
+terms together using the `paste` function.
+
+```{r, question-08}
+
+```
+
+Next, fit an elastic net model to predict the cluster from which each message
+come from. Again, only use nouns and verbs. Produce a confusion matrix of the
+validation data.
+
+```{r, question-09}
+
+```
+
+Finally, using the same model output, take the docs object returned by the model
+and create a new column called `new_label` that is equal to the `cluster` pasted
+together with the `label`. Build something similar to a confusion matrix for the
+validation data, with the `new_label` on the rows and the predicted cluster
+(its called `pred_label`) on the columns. Does this show that certain newsgroups
+are to blame for a large share of the confused terms? In what ways?
+
+```{r, question-10}
 
 ```
 
@@ -72,14 +125,14 @@ Cut the tree into 5 clusters and compare to the K-means clusters.
 Produce a PCA plot of the nouns, using the option invert = TRUE. You will want
 to adjust the parameter `min_df` to be `0.01`.
 
-```{r, question-05}
+```{r, question-11}
 
 ```
 
 Produce a PCA plot of the verbs, using the option invert = TRUE. You will want
 to adjust the parameter `min_df` to be `0.01`.
 
-```{r, question-06}
+```{r, question-12}
 
 ```
 
