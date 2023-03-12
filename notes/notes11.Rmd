@@ -12,6 +12,10 @@ source("../funs/funs.R")
 options(dsst.traceit = FALSE)
 ```
 
+*As mentioned in class, you do not need to read the notes for today ahead of
+time. We will discuss them together in class. Please spend the extra time 
+working on your Project 3.*
+
 ## Load Wikipedia Data
 
 We will start by looking at the sovereign states dataset that we
