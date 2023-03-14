@@ -25,175 +25,149 @@ source("../funs/funs_custom.R")
 I have set the options `message=FALSE` and `echo=FALSE` to avoid cluttering
 your solutions with all the output from this code.
 
-## Reading the Data
+## Associated Press 
 
-We are going to work briefly with the French Philosophers dataset. Let's read
-in the data I made last time:
-
-```{r, message = FALSE}
-docs <- read_csv(file.path("..", "data", "wiki_list_of_fr_philosophers.csv"))
-anno <- read_csv(file.path("..", "data", "wiki_list_of_fr_philosophers_anno.csv.gz"))
-```
-
-Here are some useful cleaning techniques that you should run on the data and
-may want to use on your own Project04 dataset.
+We are going to look at two different data sets today. The first is a set of
+news articles from the associated press. There is no predictive task. Our only
+goal is to apply unsupervised techniques to the data to understand the structure
+and themes of the collection. Start by loading the data:
 
 ```{r, message = FALSE}
-docs$train_id <- "train"
-docs <- filter(docs, stri_length(text) > 1000)
-anno <- semi_join(anno, docs, by = "doc_id")
+docs <- read_csv(file.path("..", "data", "ap.csv.bz2"))
+anno <- read_csv(file.path("..", "data", "ap_tokens.csv.bz2"))
 ```
 
-This makes sure we do not have documents that are too short and that there is
-a train id column (some of my code may assume it exists).
-
-## Questions
-
-### Unsupervised Learning I
-
-Start by creating and plotting the first two principal components for the data
-using all of the tokens.
+Now, create a dataset (give it a name, you'll need it later) that creates the
+first two principal components based on the nouns and verbs in the data. Set
+the `min_df` to be zero to avoid errors. Finally, add kmeans clustering with 20
+clusters, and add a column called `train_id` which is always equal to "train".
 
 ```{r, question-01}
 
 ```
 
-Now, use kmeans with 25 clusters and take a moment to look at the cluster
-assignments.
+Next, compute the size of each cluster. Notice that these are not equally sized,
+but the variation should be within an order of magnitude. 
 
 ```{r, question-02}
 
 ```
 
-Now, use the following code (yes, I have already written it for you) to compute
-the G-score metrics for each cluster. Take a look at some of the results and
-see how well you can understand what the algorithm is doing. Note any
-difficulties that might prevent these from representing the themes of the
-texts.
-
-```{r}
-docs_new <- anno %>%
-  filter(upos != "PROPN") %>%
-  dsst_pca() %>%
-  dsst_kmeans(n_clusters = 25) %>%
-  left_join(docs, by = "doc_id")
-
-anno %>%
-  filter(upos != "PROPN") %>%
-  dsst_metrics(docs_new, label_var = "cluster") %>%
-  group_by(label) %>%
-  slice_head(n = 4)
-```
-
-### Unsupervised Learning II
-
-Now, use the following code (keep it in mind, it may be helpful for your
-project) to produce a new version of the annotations dataset that includes only
-certain parts of speech, no capital letters, and no special characters.
-
-```{r}
-anno_new <- anno %>%
-  filter(upos %in% c("NOUN", "VERBS", "ADJ", "ADV")) %>%
-  filter(lemma == stri_trans_tolower(lemma)) %>%
-  filter(!stri_detect(lemma, regex = "\\W"))
-```
-
-Recreate the PCA plot from the previous set of questions using the newly created
-set of annotations. Notice that the shape of the plot changes considerably.
+Using the `dsst_metrics` function, compute the nouns and verbs most associated
+with each cluster. Print out the top 10 words for each cluster. Take a few
+moments to look at the results and try to make sense of them.
 
 ```{r, question-03}
 
 ```
 
-Now re-run the kmeans clustering using the new annotations:
+Next, use the function `slice_sample` with `n = 1` to randomly select one
+article from each cluster. Explore a few examples and see how they line up with
+the words above.
 
 ```{r, question-04}
 
 ```
 
-And finally, compute the metrics for the new annotations.
+Now, fit a topic model with the nouns and verbs from the data with 20 topics.
+As above, set `min_df = 0`.
 
 ```{r, question-05}
 
 ```
 
-In general, how do these compare to the original results?
-
-### Topic Models
-
-Now, build a topic model using 16 topics and the dataset `anno_new`. Save the
-model as an object in R.
+Modifying the code from the notes, compute the 10 words most associated with
+each topic. Do you see similar patterns fro the PCA + G-Score analysis? What
+are some notable differences? Do any topics line up well with clusters?
 
 ```{r, question-06}
 
 ```
 
-Print the top 5 documents associated with each topic:
+Export your topic model to a JSON file.
 
 ```{r, question-07}
 
 ```
 
-And then print out the top 5 terms associated with each topic:
+Load the file into the web interface and explore the data. Think about the
+kinds of things you can and cannot learn by this method and how it compares 
+to the clustering analysis.
+
+## Nematode Abstracts
+
+As a second task, we will look at a collection of abstract from the study of
+Nematodes. Read the data in with the following:
+
+```{r, message = FALSE, warning = FALSE}
+docs <- read_csv(file.path("..", "data", "nematode_abs.csv.bz2"))
+anno <- read_csv(file.path("..", "data", "nematode_abs_tokens.csv.bz2"))
+```
+
+The questions below here use the same code as the section above. It's the
+output that  will be different.
+
+Now, create a dataset (give it a name, you'll need it later) that creates the
+first two principal components based on the nouns and verbs in the data. Set
+the `min_df` to be zero to avoid errors. Finally, add kmeans clustering with 20
+clusters, and add a column called `train_id` which is always equal to "train".
 
 ```{r, question-08}
 
 ```
 
-To what extent can you understand what themes the topics are capturing? Are
-there any difficulties in interpreting the results? What kind of mixed effects
-exist in this data?
-
-### Word Frequencies
-
-The package **cleanNLP** contains a dataset describing the frequency of
-various terms in a large collection of English text on the internet. We can
-load the dataset using the following (the words are ordered from most to
-least frequent):
-
-```{r}
-data(word_frequency, package = "cleanNLP")
-word_frequency
-```
-
-You probably noticed some very common terms in the models above, such as "book".
-The code below can determine the frequency of any given term in the corpus:
-
-```{r}
-filter(word_frequency, word == "book")
-```
-
-Finally, the next set of code will remove all terms that are overly frequent.
-This might be helpful in understanding the topic model (though also not, this
-is not something you always want to do).
-
-```{r}
-anno_new %>%
-  semi_join(filter(word_frequency, frequency < 0.01), by = c("lemma" = "word"))
-```
-
-Recreate the topic model, this time using only those terms in `anno_new` that
-have a frequency of less than 0.01 in the `word_frequency` data.
+Next, compute the size of each cluster. Notice that these are not equally sized,
+but the variation should be within an order of magnitude. 
 
 ```{r, question-09}
 
 ```
 
-Again, print out the documents:
+Using the `dsst_metrics` function, compute the nouns and verbs most associated
+with each cluster. Print out the top 10 words for each cluster. Take a few
+moments to look at the results and try to make sense of them.
 
 ```{r, question-10}
 
 ```
 
-And the terms:
+Next, use the function `slice_sample` with `n = 1` to randomly select one
+article from each cluster. Explore a few examples and see how they line up with
+the words above.
 
 ```{r, question-11}
 
 ```
 
-How do these compare to the previous results? Are they better, worse, or just
-different in terms of undestanding the data?
+Now, fit a topic model with the nouns and verbs from the data with 20 topics.
+As above, set `min_df = 0`.
 
-If you have time, feel free to play with the frequency cut-off as well as the
-number of topics. You will likely find better results after trying several
-combinations.
+```{r, question-12}
+
+```
+
+Modifying the code from the notes, compute the 10 words most associated with
+each topic. Do you see similar patterns fro the PCA + G-Score analysis? What
+are some notable differences? Do any topics line up well with clusters?
+
+```{r, question-13}
+
+```
+
+Export your topic model to a JSON file.
+
+```{r, question-14}
+
+```
+
+Load the file into the web interface and explore the data. Think about the
+kinds of things you can and cannot learn by this method and how it compares 
+to the clustering analysis.
+
+## Further Exploration
+
+If you have remaining time, return to the Associated Press articles data. Use
+UMAP in place of PCA and take a much larger (50? 100?) number of clusters. How
+do the clusters compare in the previous results? Then, do a topic model with
+50 topics. Do these provide a better of worse understanding of the data? 
+
