@@ -18,16 +18,16 @@ working on your Project 3.*
 
 ## Load Wikipedia Data
 
-We will start by looking at the sovereign states dataset that we
-creating in the previous set of notes.
+We will start by looking at a collection of Wikipedia pages related to sovereign
+states (i.e., countries):
 
 ```{r, message=FALSE}
 docs <- read_csv(file.path("..", "data", "wiki_list_of_sovereign_states.csv"))
 anno <- read_csv(file.path("..", "data", "wiki_list_of_sovereign_states_anno.csv.gz"))
 ```
 
-Today we will investigate another unsupervised learning approach, this time one
-one specifically designed for modelling textual data.
+Today we will use these to illustrate a new technique for understanding a large
+collection of documents. 
 
 ## Latent Dirchlet Allocation: Method
 

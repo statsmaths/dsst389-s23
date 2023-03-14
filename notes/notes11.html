@@ -515,12 +515,12 @@ today ahead of time. We will discuss them together in class. Please
 spend the extra time working on your Project 3.</em></p>
 <div id="load-wikipedia-data" class="section level2">
 <h2>Load Wikipedia Data</h2>
-<p>We will start by looking at the sovereign states dataset that we
-creating in the previous set of notes.</p>
+<p>We will start by looking at a collection of Wikipedia pages related
+to sovereign states (i.e., countries):</p>
 <div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>docs <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">file.path</span>(<span class="st">&quot;..&quot;</span>, <span class="st">&quot;data&quot;</span>, <span class="st">&quot;wiki_list_of_sovereign_states.csv&quot;</span>))</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>anno <span class="ot">&lt;-</span> <span class="fu">read_csv</span>(<span class="fu">file.path</span>(<span class="st">&quot;..&quot;</span>, <span class="st">&quot;data&quot;</span>, <span class="st">&quot;wiki_list_of_sovereign_states_anno.csv.gz&quot;</span>))</span></code></pre></div>
-<p>Today we will investigate another unsupervised learning approach,
-this time one one specifically designed for modelling textual data.</p>
+<p>Today we will use these to illustrate a new technique for
+understanding a large collection of documents.</p>
 </div>
 <div id="latent-dirchlet-allocation-method" class="section level2">
 <h2>Latent Dirchlet Allocation: Method</h2>
