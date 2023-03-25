@@ -1,0 +1,125 @@
+---
+title: "Notebook 13 -- Solutions"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+## Getting Started
+
+Before running this notebook, select "Session > Restart R and Clear Output" in
+the menu above to start a new R session. This will clear any old data sets and
+give us a blank slate to start with.
+
+After starting a new session, run the following code chunk to load the
+libraries and data that we will be working with today.
+
+```{r, include=FALSE, message=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+```
+
+Note that the questions today are a bit more open ended than in previous
+notebooks.
+
+## Qu'ran Surah
+
+We are going to use an API today that gives information about the Qu'ran. The
+text is broken up into 114 surah (similar to Chapters). We can get metadata 
+about each of the surah by using an API defined as follows:
+
+- protocol:   **http**
+- authority:  **api.alquran.cloud**
+- path:       **v1/surah**
+
+There are no query parameters needed for this API call. In the block below,
+call this API using a cache directory and save the results of the parsed JSON
+data as an object named `obj`:
+
+```{r, question-01}
+url_base <- modify_url("http://api.alquran.cloud/v1/surah")
+res <- dsst_cache_get(url_base, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+```
+
+Now, in the next block, create a tabular dataset containing as much information
+as possible from the object. Use the techniques we saw today to figure out the
+returned objects structure:
+
+```{r, question-02}
+# obj$data[[1]]   # note: this is a helpful object to look at
+
+surah <- tibble(
+  number = map_int(obj$data, ~ .x$number),
+  name = map_chr(obj$data, ~ .x$name),
+  english_name = map_chr(obj$data, ~ .x$englishName),
+  english_trans = map_chr(obj$data, ~ .x$englishNameTranslation),
+  ayah_count = map_int(obj$data, ~ .x$numberOfAyahs),
+  rev_type = map_chr(obj$data, ~ .x$revelationType)
+)
+
+surah
+```
+
+Make a plot that shows the surah number on the x-axis and the ayah (verse)
+count on the y-axis. Color the points based on the revelation type (either
+Meccan or Medinian). Take note of any patterns in the way the surah are
+ordered.
+
+```{r, question-03}
+surah %>%
+  ggplot(aes(number, ayah_count)) +
+    geom_point(aes(color = rev_type))
+```
+
+## Qu'ran Surah Text
+
+The same service that we used above also provides the text of individual surah.
+This can be done with the HTTP API using the following parameter, where # is 
+replaced by the surah number.
+
+- protocol:   **http**
+- authority:  **api.alquran.cloud**
+- path:       **v1/surah/#/en.asad**
+
+In the code below, grab the data for of the 2nd surah ("The Cow") using this 
+API and save the result of the parsed JSON data as `obj`:
+
+```{r, question-04}
+url_base <- modify_url("http://api.alquran.cloud/v1/surah/2/en.asad")
+res <- dsst_cache_get(url_base, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+```
+
+Again, create a tabular dataset out of `obj`, storing as much information as
+possible.
+
+```{r, question-05}
+surah_txt <- tibble(
+  number = obj$data$number,
+  name = obj$data$name,
+  english_name = obj$data$englishName,
+  english_trans = obj$data$englishNameTranslation,
+  ayah_count = obj$data$numberOfAyahs,
+  rev_type = obj$data$revelationType,
+  edition_id = obj$data$edition$identifier,
+  ayah_num = map_int(obj$data$ayahs, ~ .x$number),
+  text = map_chr(obj$data$ayahs, ~ .x$text),
+  juz = map_int(obj$data$ayahs, ~ .x$juz),
+  manzil = map_int(obj$data$ayahs, ~ .x$manzil),
+  page = map_int(obj$data$ayahs, ~ .x$page),
+  ruku = map_int(obj$data$ayahs, ~ .x$ruku),
+  hizb_quarter = map_int(obj$data$ayahs, ~ .x$hizbQuarter),
+  sajda = map_lgl(obj$data$ayahs, ~ .x$sajda)
+)
+
+surah_txt %>%
+  select(number, text)
+```
+
+There is not, yet, much we can do in terms of analysis with the text directly.
+We will return to this task in the coming weeks.
+
+

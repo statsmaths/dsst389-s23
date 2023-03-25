@@ -1,0 +1,99 @@
+---
+title: "13. JSON and API Examples"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+```{r, include=FALSE, message=FALSE}
+source("../funs/funs.R")
+options(dsst.traceit = FALSE)
+```
+
+## Another JSON Example
+
+Now that you have seen some examples of JSON, let's again walk through some
+JSON data together to see how we can learn how to parse the data apart bit by
+bit.
+
+```{r}
+obj <- read_json("../data/address.json")
+```
+
+**I will put code live here during class to parse the data**
+
+## Example Cache
+
+Let's start with a relatively simple API that tells the current time in
+different time zones. This is probably not a good candidate for caching, but
+let's use it anyway as an example. To start, we specify the URL using the
+protocol, authority, path, and query parameters.
+
+```{r}
+url_str <- modify_url(
+  "https://www.timeapi.io/api/Time/current/zone",
+  query = list("timeZone" = "Europe/Amsterdam")
+)
+```
+
+Next, we call the HTTP GET method using our cache wrapper function. The result
+can be parsed as JSON using the `content` function and and appropriate type.
+
+```{r}
+res <- dsst_cache_get(url_str, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+```
+
+The object `obj` looks like the lists that we saw last time from parsed JSON
+data. Let's grab a few of the parts:
+
+```{r}
+df <- tibble(
+  timezone = obj$timeZone,
+  datetime = obj$dateTime,
+  dow = obj$dayOfWeek
+)
+df
+```
+
+If we wanted clear the cache of page, we can use this helper function:
+
+```{r, eval=FALSE}
+http_cache_clear(cache_dir = "cache")
+```
+
+## Wikipedia Page Views
+
+Next, let's grab the Wikipedia page views data that we worked with last time,
+but now using the API. Again, we will start with defining a base URL using the
+protocol, authority, path, and query parameters.
+
+```{r}
+url_base <- modify_url(
+  "https://en.wikipedia.org/w/api.php",
+  query = list(action = "query", format = "json", prop = "pageviews")
+)
+```
+
+To fetch a particular page, all we need to do is add an additional parameter
+called titles that contains the page title you want to grab.
+
+```{r}
+url_str <- modify_url(url_base, query = list(titles = "apple"))
+res <- dsst_cache_get(url_str, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+```
+
+And as before, we can turn this into a rectangular data set by parsing the
+list `obj`.
+
+```{r}
+dt <- tibble(
+  page = obj$query$pages[[1]]$title,
+  date = ymd(names(obj$query$pages[[1]]$pageviews)),
+  views = flatten_int(obj$query$pages[[1]]$pageviews)
+)
+dt
+```

@@ -1,5 +1,5 @@
 ---
-title: "13. JSON and API Examples"
+title: "13. JSON and Iteration"
 output:
   html_document:
     theme: cosmo
@@ -12,63 +12,23 @@ source("../funs/funs.R")
 options(dsst.traceit = FALSE)
 ```
 
-## Another JSON Example
+Today, we are going to run through a number of different examples of creating
+data sets through API calls. For the most part, these will make queries that 
+return JSON data and require some form of iteration to process them. I will
+show you two in the notes and two others in the notebook.
 
-Now that you have seen some examples of JSON, let's again walk through some
-JSON data together to see how we can learn how to parse the data apart bit by
-bit.
-
-```{r}
-obj <- read_json("../data/address.json")
-```
-
-**I will put code live here during class to parse the data**
-
-## Example Cache
-
-Let's start with a relatively simple API that tells the current time in
-different time zones. This is probably not a good candidate for caching, but
-let's use it anyway as an example. To start, we specify the URL using the
-protocol, authority, path, and query parameters.
-
-```{r}
-url_str <- modify_url(
-  "https://www.timeapi.io/api/Time/current/zone",
-  query = list("timeZone" = "Europe/Amsterdam")
-)
-```
-
-Next, we call the HTTP GET method using our cache wrapper function. The result
-can be parsed as JSON using the `content` function and and appropriate type.
-
-```{r}
-res <- dsst_cache_get(url_str, cache_dir = "cache")
-obj <- content(res, type = "application/json")
-```
-
-The object `obj` looks like the lists that we saw last time from parsed JSON
-data. Let's grab a few of the parts:
-
-```{r}
-df <- tibble(
-  timezone = obj$timeZone,
-  datetime = obj$dateTime,
-  dow = obj$dayOfWeek
-)
-df
-```
-
-If we wanted clear the cache of page, we can use this helper function:
-
-```{r, eval=FALSE}
-http_cache_clear(cache_dir = "cache")
-```
+If you have no prior programming experience, this may be a bit overwhelming,
+but  that's okay. I will make sure you have all of the API interface code you
+actually need for Project 4 already outlined for you.
 
 ## Wikipedia Page Views
 
-Next, let's grab the Wikipedia page views data that we worked with last time,
-but now using the API. Again, we will start with defining a base URL using the
-protocol, authority, path, and query parameters.
+Let start start by using an API provided by Wikipedia. We will use this more
+in the project, but here we focus just on using the API to see how many times
+a Wikipedia page has been viewed in the past month.
+
+We will start with defining a base URL using the protocol, authority, path, and
+query parameters.
 
 ```{r}
 url_base <- modify_url(
@@ -77,23 +37,99 @@ url_base <- modify_url(
 )
 ```
 
-To fetch a particular page, all we need to do is add an additional parameter
-called titles that contains the page title you want to grab.
+To fetch a particular page, we need add an additional parameter called titles
+that contains the page title you want to grab. We can then return and parse 
+the HTTP response as JSON.
 
 ```{r}
-url_str <- modify_url(url_base, query = list(titles = "apple"))
-res <- dsst_cache_get(url_str, cache_dir = "cache")
+url_str <- modify_url(url_base, query = list(titles = "ChatGPT"))
+res <- dsst_cache_get(url_str, cache_dir = "cache", force = FALSE)
 obj <- content(res, type = "application/json")
 ```
 
-And as before, we can turn this into a rectangular data set by parsing the
-list `obj`.
+The shape of `obj` is fairly complex. We could walk through it using the names
+function, dollar sign, and bracket operator. In RStudio, you can look at the
+object easily by clicking on it in the Environment Panel. With some
+experimentation, you can see that the core of the data we want is nested here:
+
+```{r}
+pviews <- obj$query$pages[[1]]$pageviews
+pviews
+```
+
+We can turn this into a rectangular data set by using the functions found in the
+slides.
 
 ```{r}
 dt <- tibble(
-  page = obj$query$pages[[1]]$title,
-  date = ymd(names(obj$query$pages[[1]]$pageviews)),
-  views = flatten_int(obj$query$pages[[1]]$pageviews)
+  page = "apple",
+  date = ymd(names(pviews)),
+  views = map_int(pviews, ~ dsst_null_to_na(..1))
 )
 dt
 ```
+
+We can then plot the data and see if there are any interesting patterns:
+
+```{r}
+dt %>%
+  filter(!is.na(views)) %>%
+  mutate(wt = if_else(wday(date, week_start = 1) > 5, "weekend", "weekday")) %>%
+  ggplot(aes(date, views)) +
+    geom_line() +
+    geom_point(aes(color = wt), size = 2, show.legend = FALSE) +
+    scale_x_date(
+      date_breaks = "1 week",
+      date_labels = "%m/%d",
+      date_minor_breaks = "1 week"
+    ) +
+    scale_color_viridis_d(begin = 0.2, end = 0.7) +
+    labs(x = "Views", y = "Date") +
+    dsst_tufte()
+```
+
+### XKCD
+
+As a second task for the notes, let's create a data set from the API for the popular
+web comic XKCD. The API has a slightly different structure because the
+information about the kind of data we want to grab is stored in the path rather
+than the query parameters. To get the URL for the 10th comic from XKCD, for
+example, we need this code:
+
+```{r}
+i <- 10
+url_str <- modify_url(sprintf("https://xkcd.com/%d/info.0.json", i))
+```
+
+In the following code, create a data set for the first 25 webcomes that has the
+year, month, day, safe title, and transcript of the comics. Notice that I am
+using some new code to store the data more easily within each loop.
+
+```{r}
+n <- 25
+output <- vector("list", length = n)
+
+for (i in seq_len(n))
+{
+  url_str <- modify_url(sprintf("https://xkcd.com/%d/info.0.json", i))
+  
+  res <- dsst_cache_get(url_str, cache_dir = "cache")
+  
+  obj <- content(res, type = "application/json")
+  output[[i]] <- tibble(
+    year = obj$year,
+    month = obj$month,
+    day = obj$day,
+    safe_title = obj$safe_title,
+    transcript = obj$transcript
+  )
+}
+
+output <- bind_rows(output)
+output
+```
+
+Note that it should be trivial to adjust your code to get all of the comics as
+long as you know the number of the most recent comic. We are stopping at 25 
+to reduce our load on their servers and also to avoid a long run.
+

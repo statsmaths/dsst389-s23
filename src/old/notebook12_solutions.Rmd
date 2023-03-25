@@ -1,0 +1,196 @@
+---
+title: "Notebook 12 -- Solutions"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+## Getting Started
+
+Before running this notebook, select "Session > Restart R and Clear Output" in
+the menu above to start a new R session. This will clear any old data sets and
+give us a blank slate to start with.
+
+After starting a new session, run the following code chunk to load the
+libraries and data that we will be working with today.
+
+```{r, include=FALSE, message=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+```
+
+## JSON Data
+
+### Wikipedia Pageviews
+
+We will start by reading in a JSON file that comes from one of the (many) 
+Wikipedia APIs. This one returns information about the number of page views
+for a give page for the last 60 days. In particular I created one for the 
+page "Art".
+
+```{r}
+obj <- read_json("../data/wiki_pageviews_art.json")
+```
+
+We will slowly go through the steps I would use to understand the structure of
+this JSON file in R. As an initial step, use the names() function to see if the
+root is an Object with names and to see what these names are:
+
+```{r}
+names(obj)
+```
+
+Now, using the name you found above, print out the first element of the object
+(it should be an empty string):
+
+```{r}
+obj$batchcomplete
+```
+
+Next, print out the names of the query key from the root Object:
+
+```{r}
+names(obj$query)
+```
+
+Then, grab the first element from within the query key (use the dollar sign and
+name, not square brackets). This should show the lower case version of the page
+name that I queried and the name of the page as it is capitalized on the site:
+
+```{r}
+obj$query$normalized
+```
+
+Now, write the code below to grab the fully capitalized version of the page 
+name. This may be slightly more complex than it first seems:
+
+```{r}
+obj$query$normalized[[1]]$to
+```
+
+Print the names of the pages key that is inside the query key. You should see
+that there is only a single name here.
+
+```{r}
+names(obj$query$pages)
+```
+
+The name above corresponds to the page id. Here, unlike above, it is better to
+grab the one element of the pages object using the square bracket notation so
+that we do not have to change the number if we use a different page. Below,
+print out the names of the keys within the specific page (there should be four
+of them):
+
+```{r}
+names(obj$query$pages[[1]])
+```
+
+
+The pageid, ns (namespace), and title are scalar values that capture metadata
+about the page. The real interesting data is inside the pageviews key. Show all
+of the data for the pageviews key below:
+
+```{r}
+obj$query$pages[[1]]$pageviews
+```
+
+Now, using the function we learned today, create a dataset using a map_ function
+that contains one row for each pageview and three features: the title of the
+page, the date of the observation, and the number of views.
+
+```{r}
+df <- tibble(
+  title = obj$query$pages[[1]]$title,
+  date = names(obj$query$pages[[1]]$pageviews),
+  views = map_int(obj$query$pages[[1]]$pageviews, ~ .x)
+  #views = flatten_int(obj$query$pages[[1]]$pageviews)
+)
+df
+```
+
+Repeat the last question, but now create the dataset using a flatten function.
+
+```{r}
+
+```
+
+## Wikipage
+
+Now, we will move onto a larger dataset. Here, we look at another API call from 
+Wikipedia, this time a call that returns the actual content of the page. Again,
+we will use the Art page. One element contains a long string of HTML code that
+I will remove here for you to avoid crashing RStudio if you accidentally print
+it out.
+
+```{r}
+obj <- read_json("../data/wikipage_art.json")
+obj$parse$text <- ""
+```
+
+Let's start by looking at the data inside `obj$parse$langlinks`. It gives 
+an array of information about links to Wikipedia pages in different languages.
+Print out the names of the keys under the first element of the langlinks key
+(all the elements have the same names):
+
+```{r}
+names(obj$parse$langlinks[[1]])
+```
+
+Now, create a data set that captures all of the information about all of the
+language links (one key is called "*", we don't need that). Do include the 
+original page title in English.
+
+```{r}
+df <- tibble(
+  title = obj$parse$title,
+  lang = map_chr(obj$parse$langlinks, ~ .x$lang),
+  url = map_chr(obj$parse$langlinks, ~ .x$url),
+  langname = map_chr(obj$parse$langlinks, ~ .x$langname),
+  autonym = map_chr(obj$parse$langlinks, ~ .x$autonym)
+)
+df
+```
+
+
+### Wikipedia Pageviews (again)
+
+To finish, we will read in another version of the Wikipedia page views data,
+but here for the Literature page. The biggest difference, though, is that the
+last day of data is missing (this is normal; in fact, I had to manually enter
+the missing value above to not slow us down).
+
+```{r}
+obj <- read_json("../data/wiki_pageviews_literature.json")
+```
+
+Try to figure out how to create a version of the data set that we created above
+by dealing with the missing value. Note that you may want to use the functions
+`is.null` and `ifelse` (and not if_else; I can explain more why if you would
+like) .
+
+```{r}
+df <- tibble(
+  title = obj$query$pages[[1]]$title,
+  date = names(obj$query$pages[[1]]$pageviews),
+  views = map_int(obj$query$pages[[1]]$pageviews, ~ ifelse(!is.null(.x), .x, NA))
+)
+df
+```
+
+Here is another way, using the keep function (more on this next time):
+
+```{r}
+pages <- keep(obj$query$pages[[1]]$pageviews, ~ !is.null(.x))
+
+df <- tibble(
+  title = obj$query$pages[[1]]$title,
+  date = names(pages),
+  views = map_int(pages, ~ .x)
+)
+df
+```
+
+
+
