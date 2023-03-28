@@ -38,9 +38,10 @@ hour behind the current time in Richmond, VA.
 
 The time API has another access point that gives the current time based on a
 latitude and longitude. The query starts with the URL
-"https://www.timeapi.io/api/Time/current/zone" and requires two query parameters,
-loatitude and longitude. Create a query string to detect the time in the city of
-Victoria, Seychelles. You'll need to look up its latitude and longitude online.
+"https://www.timeapi.io/api/Time/current/coordinate" and requires two query
+parameters, latitude and longitude. Create a query string to detect the time
+in the city of Victoria, Seychelles. You'll need to look up its latitude and
+longitude online.
 
 ```{r, question-03}
 

@@ -11,3 +11,179 @@ output:
 source("../funs/funs.R")
 options(dsst.traceit = FALSE)
 ```
+
+
+## Creating a Corpus of Wikipedia Documents
+
+For Project 4, unlike the other projects, you will be constructing your own
+corpus of documents to work with. These documents will come from the text of
+Wikipedia articles. You will build a corpus of documents by starting with one
+or more pages that have thematic lists of other pages, and then creating the
+corpus by selecting the list in question. This project is important in two
+ways.First, you will see how to build and annotate a corpus from scratch.
+Secondly, this data is of a different format than others that we have
+seen. It has a much shorter set of longer documents, more similar to what
+happens when we selected a different `doc_id` in the unsupervised learning
+tasks.
+
+## An Example: List of French Philosophers
+
+To start, we need to grab the data from a single Wikipedia page that has the
+links that we want to build a corpus from. We can do this, rather than scraping
+the page, through the MediaWiki API using the following (I've put a lot of
+helper functions it make sure you can use this code with other inputs):
+
+```{r}
+url <- httr::modify_url(
+  "https://en.wikipedia.org/w/api.php",
+  query = list(
+    action = "parse", format = "json", redirects = TRUE,
+    page = utils::URLdecode("Data_science"))
+)
+```
+
+Now, let's grab the page:
+
+```{r}
+res <- dsst_cache_get(url, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+```
+
+As we have seen from the previous notes, the object returned by the API is
+rather complex. We can get a canonical title of the page with the following:
+
+```{r}
+obj$parse$title
+```
+
+The actual text of the page is found in the first element of `obj$parse$text`
+and it's in HTML format (yes, it's XML inside of JSON; a rare combination).
+We can parse it with the following, which returns an HTML document as we saw
+in the previous notes.
+
+```{r}
+tree <- xml2::read_html(obj$parse$text[[1]])
+tree
+```
+
+Let's try to get all of the links in the body of the page using the HTML tags:
+
+```{r}
+links <- xml_find_all(tree, xpath = ".//p//a")
+links <- xml_attr(links, "href")
+head(links)
+```
+
+It looks like we need to do some cleaning of the page links, which we can do
+like this (these should work 99% of the time to clean links from Wikipedia):
+
+```{r}
+links <- links[stri_sub(links, 1L, 6L) == "/wiki/"]
+links <- links[stri_sub(links, 1L, 16L) != "/wiki/Wikipedia:"]
+links <- stri_sub(links, 7L, -1L)
+links <- links[!stri_detect(links, fixed = "#")]
+links <- unique(links)
+links <- tibble(links = links)
+links
+```
+
+Then, we want to cycle through the links, grab the text from each, and then 
+create a large `docs` table. Looping through the pages is no more complex than
+the examples we saw last week. The tricky thing is the cleaning of the HTML 
+data from each page to get usable text. I've wrapped some of the custom rules
+that I have learned for cleaning the data into the `dsst_wiki_make_data`
+function. I've also added a few extra cleaning functions that I have only 
+recently learned might be needed:
+
+```{r}
+docs <- dsst_wiki_make_data(links, cache_dir = "cache")
+docs <- mutate(docs, doc_id = stri_replace_all(doc_id, "", regex = "<[^>]+>"))
+docs <- mutate(docs, text = stri_replace_all(text, " ", regex = "[\n]+"))
+docs <- filter(docs, !duplicated(doc_id))
+docs
+```
+
+Now, we need to create the `anno` table from the `docs` table as we did in last
+week's notes. Here is the code again.
+
+```{r, eval=FALSE, message=FALSE, warning=FALSE}
+library(cleanNLP)
+cnlp_init_udpipe("english")
+
+docs <- filter(docs, stringi::stri_length(text) > 0)
+anno <- cnlp_annotate(docs)$token
+```
+The annotation process takes some time. Let's save the `docs` and `anno` table
+for next time.
+
+```{r, eval=FALSE}
+write_csv(docs, file.path("..", "data", "wiki_data_science.csv"))
+write_csv(anno, file.path("..", "data", "wiki_data_science.csv.gz"))
+```
+
+The saved results can then be read-in and used without having to re-create the
+data set. We will use this data in several of our upcoming notebooks.
+
+## Another Example: List of Sovereign States
+
+Let's look at one other example that illustrates a common trouble when using
+the above code. We will start with the "List_of_sovereign_states", which has
+all the current, officially recognised, countries in the world. As before, I
+will use the function `dsst_wiki_load` to download the page from the official
+Wikipedia API:
+
+```{r}
+url <- httr::modify_url(
+  "https://en.wikipedia.org/w/api.php",
+  query = list(
+    action = "parse", format = "json", redirects = TRUE,
+    page = utils::URLdecode("List_of_sovereign_states"))
+)
+res <- dsst_cache_get(url, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+```
+
+The difficulty here is that the links are contained inside a table object. On
+its own, this would just require using a different value for the `xpath`
+argument (`.//table//a`). However, in this case we only want to get those links
+in the first column. This is a bit trickier but fairly common. To fix this
+issue, I tried to write a different function called `dsst_wiki_get_links_table`
+that allows you to grab a specific table and a specific column. There are a 
+lot of edge cases though, and you may need to look at the
+[source code]() and modify the .
+Here is the function in action:
+
+```{r}
+links <- dsst_wiki_get_links_table(obj, table_num = 1L, column_num = 1L)
+links
+```
+
+You will find that the often the function grabs one or two rows you do not
+want. We will remove these manually:
+
+```{r}
+links <- links[-1,]
+```
+
+Once we have the links, we can make the pages from all the links just as before:
+
+```{r}
+docs <- dsst_wiki_make_data(links, cache_dir = "cache")
+docs <- mutate(docs, doc_id = stri_replace_all(doc_id, "", regex = "<[^>]+>"))
+docs <- mutate(docs, text = stri_replace_all(text, " ", regex = "[\n]+"))
+docs <- filter(docs, !duplicated(doc_id))
+docs
+```
+
+And then make the annotation and save the results:
+
+```{r, eval=FALSE, message=FALSE, warning=FALSE}
+library(cleanNLP)
+cnlp_init_udpipe("english")
+anno <- cnlp_annotate(docs)$token
+
+write_csv(docs, file.path("..", "data", "wiki_list_of_sovereign_states.csv"))
+write_csv(anno, file.path("..", "data", "wiki_list_of_sovereign_states_anno.csv.gz"))
+```
+
+We will use both of these datasets in several of our upcoming notebooks.
