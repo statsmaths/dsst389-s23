@@ -62,7 +62,7 @@ slides.
 
 ```{r}
 dt <- tibble(
-  page = "apple",
+  page = "ChatGPT",
   date = ymd(names(pviews)),
   views = map_int(pviews, ~ dsst_null_to_na(..1))
 )
@@ -90,8 +90,8 @@ dt %>%
 
 ### XKCD
 
-As a second task for the notes, let's create a data set from the API for the popular
-web comic XKCD. The API has a slightly different structure because the
+As a second task for the notes, let's create a data set from the API for the
+popular web comic XKCD. The API has a slightly different structure because the
 information about the kind of data we want to grab is stored in the path rather
 than the query parameters. To get the URL for the 10th comic from XKCD, for
 example, we need this code:
