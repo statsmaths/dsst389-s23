@@ -62,7 +62,7 @@ slides.
 
 ```{r}
 dt <- tibble(
-  page = "ChatGPT",
+  page = obj$query$pages[[1]]$title,
   date = ymd(names(pviews)),
   views = map_int(pviews, ~ dsst_null_to_na(..1))
 )
@@ -112,10 +112,9 @@ output <- vector("list", length = n)
 for (i in seq_len(n))
 {
   url_str <- modify_url(sprintf("https://xkcd.com/%d/info.0.json", i))
-  
   res <- dsst_cache_get(url_str, cache_dir = "cache")
-  
   obj <- content(res, type = "application/json")
+  
   output[[i]] <- tibble(
     year = obj$year,
     month = obj$month,

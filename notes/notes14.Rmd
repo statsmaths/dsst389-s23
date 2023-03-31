@@ -30,15 +30,15 @@ tasks.
 
 To start, we need to grab the data from a single Wikipedia page that has the
 links that we want to build a corpus from. We can do this, rather than scraping
-the page, through the MediaWiki API using the following (I've put a lot of
-helper functions it make sure you can use this code with other inputs):
+the page, through the MediaWiki API using the following:
 
 ```{r}
-url <- httr::modify_url(
+url <- modify_url(
   "https://en.wikipedia.org/w/api.php",
   query = list(
     action = "parse", format = "json", redirects = TRUE,
-    page = utils::URLdecode("Data_science"))
+    page = utils::URLdecode("Data_science")
+  )
 )
 ```
 
@@ -100,6 +100,7 @@ docs <- dsst_wiki_make_data(links, cache_dir = "cache")
 docs <- mutate(docs, doc_id = stri_replace_all(doc_id, "", regex = "<[^>]+>"))
 docs <- mutate(docs, text = stri_replace_all(text, " ", regex = "[\n]+"))
 docs <- filter(docs, !duplicated(doc_id))
+docs <- mutate(docs, train_id = "train")
 docs
 ```
 
@@ -128,12 +129,10 @@ data set. We will use this data in several of our upcoming notebooks.
 
 Let's look at one other example that illustrates a common trouble when using
 the above code. We will start with the "List_of_sovereign_states", which has
-all the current, officially recognised, countries in the world. As before, I
-will use the function `dsst_wiki_load` to download the page from the official
-Wikipedia API:
+all the current, officially recognized, countries in the world. 
 
 ```{r}
-url <- httr::modify_url(
+url <- modify_url(
   "https://en.wikipedia.org/w/api.php",
   query = list(
     action = "parse", format = "json", redirects = TRUE,
@@ -150,8 +149,8 @@ in the first column. This is a bit trickier but fairly common. To fix this
 issue, I tried to write a different function called `dsst_wiki_get_links_table`
 that allows you to grab a specific table and a specific column. There are a 
 lot of edge cases though, and you may need to look at the
-[source code]() and modify the .
-Here is the function in action:
+[source code](https://github.com/statsmaths/dsst/blob/main/R/wiki.R#L70) and
+modify the code. Here is the function in action:
 
 ```{r}
 links <- dsst_wiki_get_links_table(obj, table_num = 1L, column_num = 1L)

@@ -1,0 +1,182 @@
+---
+title: "Notebook 14 -- Solutions"
+output:
+  html_document:
+    theme: cosmo
+    highlight: zenburn
+    css: "../css/note-style.css"
+---
+
+## Getting Started
+
+Before running this notebook, select "Session > Restart R and Clear Output" in
+the menu above to start a new R session. This will clear any old data sets and
+give us a blank slate to start with.
+
+After starting a new session, run the following code chunk to load the
+libraries and data that we will be working with today.
+
+```{r, include=FALSE, message=FALSE}
+source("../funs/funs.R")
+source("../funs/funs_custom.R")
+```
+
+## Exploring Richmond, Virginia Page
+
+Start by constructing the URL to grab the text for the Wikipedia page named
+"Richmond,_Virginia" from the MediaWiki API.
+
+```{r, question-01}
+url <- modify_url(
+  "https://en.wikipedia.org/w/api.php",
+  query = list(
+    action = "parse", format = "json", redirects = TRUE,
+    page = utils::URLdecode("Richmond,_Virginia")
+  )
+)
+```
+
+
+Now, make the API request and store the output as an R object called `obj`.
+
+```{r, question-02}
+res <- dsst_cache_get(url, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+```
+
+Next, parse the XML/HTML text using the function `read_html`.
+
+```{r, question-03}
+tree <- xml2::read_html(obj$parse$text[[1]])
+tree
+```
+
+Use the `xml_find_all` to find all of the nodes with the tag "h2". Look at the
+Wikipedia page in a browser and try to find what these correspond to.
+
+```{r, question-04}
+xml_find_all(tree, xpath = ".//h2")
+```
+
+Try to use a new `xpath` argument below to extract just the name of each 
+section. Turn it into an R string object using `xml_text`:
+
+```{r, question-05}
+xml_text(xml_find_all(tree, xpath = ".//h2/span[@class='mw-headline']"))
+```
+
+Repeat the previous question for the tag "h3". What are these?
+
+```{r, question-06}
+xml_text(xml_find_all(tree, xpath = ".//h3/span[@class='mw-headline']"))
+```
+
+Now, extract the paragraphs using the "p" tag.
+
+```{r, question-07}
+xml_find_all(tree, xpath = "..//p")
+```
+
+Continue by using `xml_text` to extract the text from each paragraph. Take a 
+few minutes to look through the results to see why we need some special logic
+to turn the output into something we can parse as text.
+
+```{r, question-08}
+xml_find_all(tree, xpath = "..//p") %>%
+  xml_text() %>%
+  head(n = 10)
+```
+
+Now, create a tibble object with one column called `links` and only one row 
+with the entry "Richmond,_Virginia" for the variable `links`. This is the format
+required in the next code block. Make sure to save the result.
+
+```{r, question-10}
+links <- tibble(links = "Richmond,_Virginia")
+links
+```
+
+Pass your data from the last code to the function `dsst_wiki_make_data`. Use
+the code from the notes to post-process the results and look through the text
+a bit to see how it corresponds with the result from your own usage of 
+`xml_text`.
+
+```{r, question-11}
+docs <- dsst_wiki_make_data(links, cache_dir = "cache")
+docs <- mutate(docs, doc_id = stri_replace_all(doc_id, "", regex = "<[^>]+>"))
+docs <- mutate(docs, text = stri_replace_all(text, " ", regex = "[\n]+"))
+docs <- filter(docs, !duplicated(doc_id))
+docs
+```
+
+## Building a Corpus of Virginia Cities
+
+Let's build a large corpus. Start by constructing the url for the page
+called "List_of_towns_in_Virginia".
+
+```{r, question-12}
+url <- modify_url(
+  "https://en.wikipedia.org/w/api.php",
+  query = list(
+    action = "parse", format = "json", redirects = TRUE,
+    page = utils::URLdecode("List_of_towns_in_Virginia")
+  )
+)
+```
+
+Now, call the API to grab the results and create an object `tree` that contains
+the parsed text of the page.
+
+```{r, question-13}
+res <- dsst_cache_get(url, cache_dir = "cache")
+obj <- content(res, type = "application/json")
+tree <- xml2::read_html(obj$parse$text[[1]])
+tree
+```
+
+Try to use the function `dsst_wiki_get_links_table` to get links to each of
+the cities. This will take a bit of trial and error and looking at the actual
+Wikipedia page.
+
+```{r, question-14}
+links <- dsst_wiki_get_links_table(obj, table_num = 3, column_num = 1)
+```
+
+Once you have the data, use `dsst_wiki_make_data` and the code from the notes
+to contruct a full `docs` table for the cities.
+
+```{r, question-15}
+docs <- dsst_wiki_make_data(links)
+docs <- mutate(docs, doc_id = stri_replace_all(doc_id, "", regex = "<[^>]+>"))
+docs <- mutate(docs, text = stri_replace_all(text, " ", regex = "[\n]+"))
+docs <- filter(docs, !duplicated(doc_id))
+docs <- mutate(docs, train_id = "train")
+docs
+```
+
+Now, parse the text using the `cnlp_annotate` function:
+
+```{r, question-16}
+library(cleanNLP)
+cnlp_init_udpipe("english")
+
+docs <- filter(docs, stringi::stri_length(text) > 0)
+anno <- cnlp_annotate(docs)$token
+```
+
+And finally, display the top 5 NOUNS/VERBS from each town's page (Hint: you 
+should be able to copy the code from the end of Notebook13).
+
+```{r, question-17}
+anno %>%
+  filter(upos %in% c("NOUN", "VERB")) %>%
+  dsst_metrics(docs, label_var = "doc_id") %>%
+  filter(count > expected) %>%
+  group_by(label) %>%
+  slice_head(n = 6L) %>%
+  summarize(terms = paste0(token, collapse = "; ")) %>%
+  mutate(out = sprintf("%30 s => %s", stri_sub(label, 1, 30), terms)) %>%
+  getElement("out") %>%
+  cat(sep = "\n")
+```
+

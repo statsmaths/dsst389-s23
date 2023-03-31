@@ -21,97 +21,119 @@ source("../funs/funs.R")
 source("../funs/funs_custom.R")
 ```
 
-Today's questions are more open-ended than in some of the previous notebooks.
+## Exploring Richmond, Virginia Page
 
-### Time API
-
-Let's come back to the largest cities data. This data contains a code for the
-latitude and longitude of each of the 81 cities:
-
-```{r}
-cities <- read_csv("../data/largest_cities.csv")
-cities
-```
-
-The time API we saw today has an API endpoint for looking up the time zone of
-a particular longitude and latitude. The URL has the following elements:
-
-  protocol:            https
-  authority:           www.timeapi.io
-  path:                /api/Time/current/coordinate 
-  query parameters:    longitude and latitude
-  
-Use this information and the techniques we learned today to build a data set 
-with one row for each city in `cities` and six columns: the city name, the
-longitude, the latitude, the name of the timezone, the current datetime, and
-the current hour.
+Start by constructing the URL to grab the text for the Wikipedia page named
+"Richmond,_Virginia" from the MediaWiki API.
 
 ```{r, question-01}
 
 ```
 
-Now, use the data to show a visualization of the current hours of the day in 
-different world cities:
+Now, make the API request and store the output as an R object called `obj`.
 
 ```{r, question-02}
 
 ```
 
-### XKCD
-
-As a second task for today, let's create a data set from the API for the popular
-web comic XKCD. The API has a slightly different structure because the
-information about the kind of data we want to grab is stored in the path rather
-than the query parameters. To get the URL for the 10th comic from XKCD, for
-example, we need this code:
-
-```{r}
-i <- 10
-url_str <- modify_url(sprintf("https://xkcd.com/%d/info.0.json", i))
-```
-
-In the following code, create a data set with all of the metadata for the first
-25 XKCD comics. Make sure to grab all of the fields in the data. 
+Next, parse the XML/HTML text using the function `read_html`.
 
 ```{r, question-03}
 
 ```
 
-Note that it should be trivial to adjust your code to get all of the comics as
-long as you know the number of the most recent comic. We are stopping at 25 
-to reduce our load on their servers and also to avoid a long run time in class.
+Use the `xml_find_all` to find all of the nodes with the tag "h2". Look at the
+Wikipedia page in a browser and try to find what these correspond to.
 
-### Qu'ran Cycle
+```{r, question-04}
 
-Return to the API we used in notebook14 to grab the text from the Qu'ran. 
-Create a data set that has one row for each ayah (verse) from the first 10 
-surah (chapters). The data only needs three columns: an id for the surah, an
-id for the ayah, and a column containing the actual text. You'll need to use a
-similar technique to the XKCD example above.
-
-```{r}
-n <- 10
-output <- vector("list", length = n)
-
-for (i in seq_len(n))
-{
-  url_str <- modify_url(sprintf("http://api.alquran.cloud/v1/surah/%d/en.asad", i))
-  res <- dsst_cache_get(url_str, cache_dir = "cache")
-  
-  stop_for_status(res)
-
-  obj <- content(res, type = "application/json")
-  output[[i]] <- tibble(
-    surah = obj$data$number,
-    ayah = map_int(obj$data$ayahs, ~ .x$number),
-    text = map_chr(obj$data$ayahs, ~ .x$text)
-  )
-}
-
-output <- bind_rows(output)
-output
 ```
 
-We will use a version of this data set in the next class.
+Try to use a new `xpath` argument below to extract just the name of each 
+section. Turn it into an R string object using `xml_text`:
 
+```{r, question-05}
+
+```
+
+Repeat the previous question for the tag "h3". What are these?
+
+```{r, question-06}
+
+```
+
+Now, extract the paragraphs using the "p" tag.
+
+```{r, question-07}
+
+```
+
+Continue by using `xml_text` to extract the text from each paragraph. Take a 
+few minutes to look through the results to see why we need some special logic
+to turn the output into something we can parse as text.
+
+```{r, question-08}
+
+```
+
+Now, create a tibble object with one column called `links` and only one row 
+with the entry "Richmond,_Virginia" for the variable `links`. This is the format
+required in the next code block. Make sure to save the result.
+
+```{r, question-10}
+
+```
+
+Pass your data from the last code to the function `dsst_wiki_make_data`. Use
+the code from the notes to post-process the results and look through the text
+a bit to see how it corresponds with the result from your own usage of 
+`xml_text`.
+
+```{r, question-11}
+
+```
+
+## Building a Corpus of Virginia Cities
+
+Let's build a large corpus. Start by constructing the url for the page
+called "List_of_towns_in_Virginia".
+
+```{r, question-12}
+
+```
+
+Now, call the API to grab the results and create an object `tree` that contains
+the parsed text of the page.
+
+```{r, question-13}
+
+```
+
+Try to use the function `dsst_wiki_get_links_table` to get links to each of
+the cities. This will take a bit of trial and error and looking at the actual
+Wikipedia page.
+
+```{r, question-14}
+
+```
+
+Once you have the data, use `dsst_wiki_make_data` and the code from the notes
+to contruct a full `docs` table for the cities.
+
+```{r, question-15}
+
+```
+
+Now, parse the text using the `cnlp_annotate` function:
+
+```{r, question-16}
+
+```
+
+And finally, display the top 5 NOUNS/VERBS from each town's page (Hint: you 
+should be able to copy the code from the end of Notebook13).
+
+```{r, question-17}
+
+```
 

@@ -528,14 +528,14 @@ different <code>doc_id</code> in the unsupervised learning tasks.</p>
 <p>To start, we need to grab the data from a single Wikipedia page that
 has the links that we want to build a corpus from. We can do this,
 rather than scraping the page, through the MediaWiki API using the
-following (I’ve put a lot of helper functions it make sure you can use
-this code with other inputs):</p>
-<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> httr<span class="sc">::</span><span class="fu">modify_url</span>(</span>
+following:</p>
+<div class="sourceCode" id="cb1"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="fu">modify_url</span>(</span>
 <span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;https://en.wikipedia.org/w/api.php&quot;</span>,</span>
 <span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">query =</span> <span class="fu">list</span>(</span>
 <span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">action =</span> <span class="st">&quot;parse&quot;</span>, <span class="at">format =</span> <span class="st">&quot;json&quot;</span>, <span class="at">redirects =</span> <span class="cn">TRUE</span>,</span>
-<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">page =</span> utils<span class="sc">::</span><span class="fu">URLdecode</span>(<span class="st">&quot;Data_science&quot;</span>))</span>
-<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="at">page =</span> utils<span class="sc">::</span><span class="fu">URLdecode</span>(<span class="st">&quot;Data_science&quot;</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>)</span></code></pre></div>
 <p>Now, let’s grab the page:</p>
 <div class="sourceCode" id="cb2"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a>res <span class="ot">&lt;-</span> <span class="fu">dsst_cache_get</span>(url, <span class="at">cache_dir =</span> <span class="st">&quot;cache&quot;</span>)</span>
 <span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>obj <span class="ot">&lt;-</span> <span class="fu">content</span>(res, <span class="at">type =</span> <span class="st">&quot;application/json&quot;</span>)</span></code></pre></div>
@@ -597,21 +597,22 @@ learned might be needed:</p>
 <span id="cb11-2"><a href="#cb11-2" aria-hidden="true" tabindex="-1"></a>docs <span class="ot">&lt;-</span> <span class="fu">mutate</span>(docs, <span class="at">doc_id =</span> <span class="fu">stri_replace_all</span>(doc_id, <span class="st">&quot;&quot;</span>, <span class="at">regex =</span> <span class="st">&quot;&lt;[^&gt;]+&gt;&quot;</span>))</span>
 <span id="cb11-3"><a href="#cb11-3" aria-hidden="true" tabindex="-1"></a>docs <span class="ot">&lt;-</span> <span class="fu">mutate</span>(docs, <span class="at">text =</span> <span class="fu">stri_replace_all</span>(text, <span class="st">&quot; &quot;</span>, <span class="at">regex =</span> <span class="st">&quot;[</span><span class="sc">\n</span><span class="st">]+&quot;</span>))</span>
 <span id="cb11-4"><a href="#cb11-4" aria-hidden="true" tabindex="-1"></a>docs <span class="ot">&lt;-</span> <span class="fu">filter</span>(docs, <span class="sc">!</span><span class="fu">duplicated</span>(doc_id))</span>
-<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>docs</span></code></pre></div>
-<pre><code>## # A tibble: 60 × 2
-##    doc_id                text                                               
-##    &lt;chr&gt;                 &lt;chr&gt;                                              
-##  1 Interdisciplinarity   &quot;Interdisciplinarity or interdisciplinary studies …
-##  2 Statistics            &quot;Statistics is the discipline that concerns the co…
-##  3 Computational science &quot;In practical use it is typically the application …
-##  4 Scientific method     &quot;The scientific method is an empirical method for …
-##  5 Algorithm             &quot;In mathematics and computer science an algorithm …
-##  6 Knowledge             &quot;Knowledge is a form of awareness or familiarity. …
-##  7 Unstructured data     &quot;Unstructured data is information that either does…
-##  8 Data analysis         &quot;Finite element Boundary element Lattice Boltzmann…
-##  9 Informatics           &quot;Informatics is the study of computational systems…
-## 10 Phenomenon            &quot;A phenomenon sometimes spelled phaenomenon is an …
-## # … with 50 more rows</code></pre>
+<span id="cb11-5"><a href="#cb11-5" aria-hidden="true" tabindex="-1"></a>docs <span class="ot">&lt;-</span> <span class="fu">mutate</span>(docs, <span class="at">train_id =</span> <span class="st">&quot;train&quot;</span>)</span>
+<span id="cb11-6"><a href="#cb11-6" aria-hidden="true" tabindex="-1"></a>docs</span></code></pre></div>
+<pre><code>## # A tibble: 60 × 3
+##    doc_id                text                                        train…¹
+##    &lt;chr&gt;                 &lt;chr&gt;                                       &lt;chr&gt;  
+##  1 Interdisciplinarity   &quot;Interdisciplinarity or interdisciplinary … train  
+##  2 Statistics            &quot;Statistics is the discipline that concern… train  
+##  3 Computational science &quot;In practical use it is typically the appl… train  
+##  4 Scientific method     &quot;The scientific method is an empirical met… train  
+##  5 Algorithm             &quot;In mathematics and computer science an al… train  
+##  6 Knowledge             &quot;Knowledge is a form of awareness or famil… train  
+##  7 Unstructured data     &quot;Unstructured data is information that eit… train  
+##  8 Data analysis         &quot;Finite element Boundary element Lattice B… train  
+##  9 Informatics           &quot;Informatics is the study of computational… train  
+## 10 Phenomenon            &quot;A phenomenon sometimes spelled phaenomeno… train  
+## # … with 50 more rows, and abbreviated variable name ¹​train_id</code></pre>
 <p>Now, we need to create the <code>anno</code> table from the
 <code>docs</code> table as we did in last week’s notes. Here is the code
 again.</p>
@@ -633,10 +634,8 @@ notebooks.</p>
 <p>Let’s look at one other example that illustrates a common trouble
 when using the above code. We will start with the
 “List_of_sovereign_states”, which has all the current, officially
-recognised, countries in the world. As before, I will use the function
-<code>dsst_wiki_load</code> to download the page from the official
-Wikipedia API:</p>
-<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> httr<span class="sc">::</span><span class="fu">modify_url</span>(</span>
+recognized, countries in the world.</p>
+<div class="sourceCode" id="cb15"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb15-1"><a href="#cb15-1" aria-hidden="true" tabindex="-1"></a>url <span class="ot">&lt;-</span> <span class="fu">modify_url</span>(</span>
 <span id="cb15-2"><a href="#cb15-2" aria-hidden="true" tabindex="-1"></a>  <span class="st">&quot;https://en.wikipedia.org/w/api.php&quot;</span>,</span>
 <span id="cb15-3"><a href="#cb15-3" aria-hidden="true" tabindex="-1"></a>  <span class="at">query =</span> <span class="fu">list</span>(</span>
 <span id="cb15-4"><a href="#cb15-4" aria-hidden="true" tabindex="-1"></a>    <span class="at">action =</span> <span class="st">&quot;parse&quot;</span>, <span class="at">format =</span> <span class="st">&quot;json&quot;</span>, <span class="at">redirects =</span> <span class="cn">TRUE</span>,</span>
@@ -651,8 +650,8 @@ this case we only want to get those links in the first column. This is a
 bit trickier but fairly common. To fix this issue, I tried to write a
 different function called <code>dsst_wiki_get_links_table</code> that
 allows you to grab a specific table and a specific column. There are a
-lot of edge cases though, and you may need to look at the <a href>source code</a> and modify the . Here is the function in
-action:</p>
+lot of edge cases though, and you may need to look at the <a href="https://github.com/statsmaths/dsst/blob/main/R/wiki.R#L70">source
+code</a> and modify the code. Here is the function in action:</p>
 <div class="sourceCode" id="cb16"><pre class="sourceCode r"><code class="sourceCode r"><span id="cb16-1"><a href="#cb16-1" aria-hidden="true" tabindex="-1"></a>links <span class="ot">&lt;-</span> <span class="fu">dsst_wiki_get_links_table</span>(obj, <span class="at">table_num =</span> 1L, <span class="at">column_num =</span> 1L)</span>
 <span id="cb16-2"><a href="#cb16-2" aria-hidden="true" tabindex="-1"></a>links</span></code></pre></div>
 <pre><code>## # A tibble: 207 × 1
