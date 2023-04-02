@@ -10,4 +10,442 @@ output:
 ```{r, include=FALSE, message=FALSE}
 source("../funs/funs.R")
 options(dsst.traceit = FALSE)
+library(glmnet)
 ```
+
+## Flowers dataset
+
+Today we will look at an image image dataset. The data consists
+of photos of flowers. There are 17 types of flowers and the task
+is to recognize the flower from the image. We will look at just
+10 of the classes in the notes today. If you are curious, the original
+paper describing the data can be found in the following paper:
+
+- Nilsback, M-E., and Andrew Zisserman. "A visual vocabulary for flower classification." Computer Vision and Pattern Recognition, 2006 IEEE Computer Society Conference on. Vol. 2. IEEE, 2006.
+
+It was constructed by the Visual Geometry Group (VGG) at Oxford
+University. 
+
+## Image data in R
+
+We need to read image data into R in two steps. First, we load the
+metadata. This is exactly the same as any other dataset we have worked
+with:
+
+```{r, message=FALSE}
+flowers <- read_csv("../data/flowers_17.csv.bz2")
+flowers
+```
+
+Reading in the images themselves is similar to the process of having an
+annotation table in addition to the document table. However, unlike text, the
+"raw" data is not stored directly in the docs as well. Usually, the images will
+be individual image files on your computer. We can read a single image into R
+using the commands `readPNG` or `readJPEG`. For example, here is one of the 
+flowers:
+
+```{r}
+library(png)
+img_data <- readPNG("../data/flower.png")
+```
+
+What is this object? It is a something similar to a matrix called an array:
+
+```{r}
+class(img_data)
+```
+
+However, unlike a matrix that only has two dimensions (number of rows and
+number of columns) an array can have an arbitrary number of dimensions. We
+can show the image in R using the following:
+
+```{r, fig.asp=1, fig.width=3}
+par(mar = c(0,0,0,0))
+plot(0, 0, xlim=c(0,1), ylim=c(0,1), axes= FALSE, type = "n")
+rasterImage(img_data, 0, 0, 1, 1)
+```
+
+The array object in R has three dimensions:
+
+```{r}
+dim(img_data)
+```
+
+These correspond to an image that is 64 by 64 pixels wide and has three color 
+channels (red, green, and blue). Each number in the array contains a number
+between 0 and 1 that tells us how much each of the three colors are represented
+in the image. For example, here are the first five rows and columns of the
+image:
+
+```{r}
+img_data[1:5, 1:5,]
+```
+
+To get all of the data, we could write a loop and load each image into R.
+Another option that is common when working with a dataset like this created
+for training machine learning algorithms is to read the entire dataset from 
+a large binary file. Here are all of the images in the dataset as a single
+array?
+
+```{r}
+x64 <- read_rds("../data/flowers_17_x64.rds")
+```
+
+What is this object? It's another array:
+
+```{r}
+class(x64)
+```
+
+However, this array has four dimensions instead of three:
+
+```{r}
+dim(x64)
+```
+
+What these mean are:
+
+- we have 1360 images
+- that are 64 pixels wide
+- and 64 pixels high
+- containing three color channels (red, green and blue)
+
+We will explore this data more through today's notes.
+
+## Data subset
+
+I only want to look at the first 10 types of flowers in today's notes.
+
+```{r, message = FALSE}
+x64 <- x64[flowers$class %in% 0:9,,,]
+flowers <- flowers[flowers$class %in% 0:9,]
+fnames <- flowers$class_name[match(0:9, flowers$class)]
+fnames <- factor(fnames, levels = fnames)
+```
+
+Class "1" consists of the snowdrop flower. Let's see at a few of the images to
+get a sense of what this flower looks like:
+
+```{r, fig.asp=0.75, fig.width=10}
+par(mar = c(0,0,0,0))
+par(mfrow = c(3, 4))
+set.seed(1)
+for (i in sample(which(flowers$class == 1), 12)) {
+  plot(0,0,xlim=c(0,1),ylim=c(0,1),axes= FALSE,type = "n")
+  rasterImage(x64[i,,,],0,0,1,1)
+}
+```
+
+We can look at these and instantly see the similarities. The difficulty
+is going to be teaching the computer to understand these as well. Let's
+now look at a representative flower from all 10 classes:
+
+```{r, fig.asp=0.75, fig.width=10}
+par(mar = c(0,0,0,0))
+par(mfrow = c(3, 4))
+set.seed(1)
+for (i in 0:9) {
+  plot(0,0,xlim=c(0,1),ylim=c(0,1),axes= FALSE,type = "n")
+  j <- sample(which(flowers$class == i), 1)
+  rasterImage(x64[j,,,],0,0,1,1)
+  text(0.5, 0.1, flowers$class_name[j], cex = 3, col = "salmon")
+}
+```
+
+Notice that color will be useful for telling some of these apart, but
+not sufficent for distinguishing all classes. Crocus' and irises,
+for example, have very similar colors.
+
+## Collapse into data matrix
+
+To start, we use a trick to flatten the dataset from an array into a matrix.
+This just unravels the dataset.
+
+```{r, message = FALSE}
+X <- t(apply(x64, 1, cbind))
+y <- flowers$class
+
+X_train <- X[flowers$train_id == "train",]
+y_train <- y[flowers$train_id == "train"]
+dim(X_train)
+```
+
+Why does the matrix X have so many columns? It has `64*64*3` values, which
+yields 12288 total variables. Notice how quickly the number of components in an
+image becomes. If we had an HD image this would require 2.7 million values!
+
+$$ 1\;280 * 720 * 3 = 2\;764\;800$$
+
+Let's apply the elastic net to our data (it is really the only technique we
+know that can handle so many variables):
+
+```{r, meassage=FALSE}
+model <- cv.glmnet(X_train, y_train, family = "multinomial", nfolds = 3)
+beta <- coef(model, s = model$lambda.1se)
+beta <- Reduce(cbind, beta)
+
+dim(beta[apply(beta != 0, 1, any),])
+```
+
+The resulting model, even at `lambda.1se`, has near 500
+non-zero components. Evaluating the model we see that it
+overfits to the training data:
+
+```{r}
+pred <- predict(model, newx = X, type = "class")
+tapply(pred == y, flowers$train_id, mean)
+```
+
+There are ten classes here, so a 42% classification rate is actually quite good.
+I think we can probably do slightly better though! A confusion matrix is also
+instructive:
+
+```{r}
+table(pred[flowers$train_id == "valid"], y[flowers$train_id == "valid"])
+```
+
+Do some of the most confused classes correspond to what you would expect from
+the example images?
+
+## HSV Space
+
+One difficulty with using the red, green, and blue pixel values
+is that these do not map very well into a "natural" meaning of
+color. They are useful for digital screens to display images but
+not ideal for much else.
+
+Instead, we can use a different color space model that translates
+red, green, and blue into a different set of variables. One popular
+choice in statistical learning is the hue, saturation, value space.
+These three values range from 0 to 10. A good picture helps a lot to
+understand what the values mean:
+
+![](https://upload.wikimedia.org/wikipedia/commons/thumb/3/33/HSV_color_solid_cylinder_saturation_gray.png/640px-HSV_color_solid_cylinder_saturation_gray.png)
+
+**Value** tells how dark a pixel is, **saturation** how much color it
+has (with a low value being close to grey), and **hue** gives the specific
+point on a color wheel. Usually a hue of 0 indicates red. Notice that
+hue is a circular variable, so that a hue of 0.99 is close to a
+hue of 0.01.
+
+We can convert into HSV space with the base R function `rgb2hsv`:
+
+```{r}
+i <- 3
+red <- as.numeric(x64[i,,,1])
+green <- as.numeric(x64[i,,,2])
+blue <- as.numeric(x64[i,,,3])
+hsv <- t(rgb2hsv(red, green, blue, maxColorValue = 1))
+head(hsv)
+```
+
+To make sure we understand exactly what these values mean,
+let's plot some values in R. The `hsv` function maps a set
+of HSV coordinates into a name of the color. Here we look
+at a bunch of grey colors with varying values (hue is set
+to 1 and saturation to zero), as well as a set of 10 of
+hues where saturation and value are set at 1.
+
+```{r}
+color_vals <- c(hsv(1, 0, seq(0, 1, by = 0.2)),
+                hsv(seq(0, 0.9, by = 0.1), 1, 1))
+df_cv <- tibble(color_vals = color_vals, num = seq_along(color_vals))
+
+df_cv %>%
+  ggplot(aes(num, num)) +
+    geom_point(aes(fill = color_vals), color = "black", size = 12, shape = 21) +
+    scale_fill_identity() +
+    theme_void()
+```
+
+A good trick with HSV space is to place each pixels into a small set of fixed
+colors. We will start by using the buckets defined in the previous plot.
+
+We will do that we creating a vector called `color` set to `#000000`
+(pure black) and then changing the color depending on the HSV
+coordinates. If the saturation is less than 0.2 this is a pixel
+too washed out to make out a reasonable color. We then set it to
+a shade of grey depending on value split into five buckets. If
+the saturation is higher than 0.2 and value is higher than 0.2
+(i.e., it is not too dark), we bucket the hue into ten buckets.
+Points with a low value are all kept at the default of black.
+
+```{r}
+color <- rep("#000000", nrow(hsv))
+
+index <- which(hsv[,2] < 0.2)
+color[index] <- hsv(1, 0, round(hsv[index,2] * 5) / 5)
+
+index <- which(hsv[,2] > 0.2 & hsv[,3] > 0.2)
+color[index] <- hsv(round(hsv[index,1],1), 1, 1)
+
+table(factor(color, levels = color_vals))
+```
+
+For the one test image, we see that the dominant color is "#FF9900",
+an orange, followed by "#0066FF", a blue.
+
+We can use these counts as features to tell us about a given flower.
+Let's cycle over the entire dataset and grab these features.
+
+```{r}
+X_hsv <- matrix(0, ncol = length(color_vals),
+                   nrow = nrow(flowers))
+for (i in seq_len(nrow(flowers))) {
+  red <- as.numeric(x64[i,,,1])
+  green <- as.numeric(x64[i,,,2])
+  blue <- as.numeric(x64[i,,,3])
+  hsv <- t(rgb2hsv(red, green, blue, maxColorValue = 1))
+
+  color <- rep("#000000", nrow(hsv))
+
+  index <- which(hsv[,2] < 0.2)
+  color[index] <- hsv(1, 0, round(hsv[index,3] * 5) / 5)
+
+  index <- which(hsv[,2] > 0.2 & hsv[,3] > 0.2)
+  color[index] <- hsv(round(hsv[index,1],1), 1, 1)
+
+  X_hsv[i,] <- table(factor(color, levels = color_vals))
+}
+head(X_hsv)
+```
+
+The 8th column is the orange color and the 9th a greenish color,
+both popular from the flowers and the background greenery.
+
+We can use this new matrix to fit another elastic net. The matrix
+is small enough that we could use other techniques too, but I'll
+keep it consistent here.
+
+```{r, message = FALSE}
+y <- flowers$class
+
+X_train <- X_hsv[flowers$train_id == "train",]
+X_valid <- X_hsv[flowers$train_id == "valid",]
+y_train <- y[flowers$train_id == "train"]
+y_valid <- y[flowers$train_id == "valid"]
+
+library(glmnet)
+model <- cv.glmnet(X_train, y_train, family = "multinomial")
+beta <- coef(model, s = model$lambda.1se)
+beta <- Reduce(cbind, beta)
+colnames(beta) <- fnames
+rownames(beta) <- c("(intercept)", color_vals)
+as.matrix(beta)
+```
+
+We see that some nice patterns here. Snowdrops have a large
+coefficient for light grey ("#CCCCCC" and "#999999") and white ("#FFFFFF") and
+bluebells have a large value for blue ("#3300FF") and purple ("#CC00FF").
+Sunflowers have a large coefficient for orange ("#FF9900").
+
+This model is slightly more predictive and not nearly as overfit.
+
+```{r}
+pred <- as.numeric(predict(model, newx = X_hsv,
+                           type = "class"))
+
+tapply(pred == y, flowers$train_id, mean)
+```
+
+The reason for this that the first elastic net likely approximated the kind of
+analysis we did here, but in doing overfit to the way hue, value, and saturation
+looked on the training data.
+
+### More Colors
+
+We can improve our model by including more colors. We don't need
+any more greys, but lets include a set of 100 hues. This will give
+us more information about the particular colors for each flower.
+
+```{r}
+color_vals <- c(hsv(1, 0, seq(0, 1, by = 0.2)),
+                hsv(seq(0, 0.99, by = 0.01), 1, 1))
+
+X_hsv <- matrix(0, ncol = length(color_vals),
+                   nrow = nrow(flowers))
+for (i in seq_len(nrow(flowers))) {
+  red <- as.numeric(x64[i,,,1])
+  green <- as.numeric(x64[i,,,2])
+  blue <- as.numeric(x64[i,,,3])
+  hsv <- t(rgb2hsv(red, green, blue, maxColorValue = 1))
+
+  color <- rep("#000000", nrow(hsv))
+
+  index <- which(hsv[,2] < 0.2)
+  color[index] <- hsv(1, 0, round(hsv[index,3] * 5) / 5)
+
+  index <- which(hsv[,2] > 0.2 & hsv[,3] > 0.2)
+  color[index] <- hsv(round(hsv[index,1], 2), 1, 1)
+
+  X_hsv[i,] <- table(factor(color, levels = color_vals))
+}
+```
+
+We will use the elastic net again here. With the increased
+set of colors, let's set alpha to 0.2 to spread the weights
+out over similar colors.
+
+```{r, message = FALSE, warning = FALSE}
+y <- flowers$class
+
+X_train <- X_hsv[flowers$train_id == "train",]
+X_valid <- X_hsv[flowers$train_id == "valid",]
+y_train <- y[flowers$train_id == "train"]
+y_valid <- y[flowers$train_id == "valid"]
+
+library(glmnet)
+model <- cv.glmnet(X_train, y_train, family = "multinomial",
+                   alpha = 0.2)
+```
+
+The model is more predictive with the more grainular
+color labels:
+
+```{r}
+pred <- as.numeric(predict(model, newx = X_hsv, type = "class"))
+tapply(pred == y, flowers$train_id, mean)
+```
+
+We can create an interesting visualization of these values by
+showing the weights as a function of the actual colors for
+each flower.
+
+```{r, message=FALSE, warning=FALSE}
+beta <- coef(model, s = model$lambda.min)
+beta <- as.matrix(Reduce(cbind, beta))[-1,]
+colnames(beta) <- fnames
+rownames(beta) <- color_vals
+df <- tibble(flower = rep(colnames(beta), each = nrow(beta)),
+             color = rep(rownames(beta), ncol(beta)),
+             beta = as.numeric(beta))
+cols <- color_vals; names(cols) <- color_vals
+df$color <- factor(df$color, levels = color_vals)
+filter(df, beta > 0) %>%
+  ggplot(aes(color, flower)) +
+    geom_point(aes(color = color, size = beta), show.legend = FALSE) +
+    theme_minimal() +
+    scale_colour_manual(values = cols) +
+    theme(axis.title.x=element_blank(),
+        axis.text.x=element_blank(),
+        axis.ticks.x=element_blank(),
+        panel.border = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.line = element_line(colour = "black"))
+```
+
+Tiger Lily's are very red, whereas bluebells, crocuses, and
+irises have a blue/purple color.
+
+The notes here show how we can apply the techniques we have seen in class to the
+raw pixel intensities in the flowers. This works because flowers can be largely
+described through color and the images themselves are fairly small. Note though
+that we did a better job by hand constructing features that capture exactly what
+we want. In this case, it was the count of different hues and greys. We know 
+that the flowers can be distinguished reasonably well with this kind of
+technique because each flower has a relatively unique flower color. What is 
+different from text though, is that while word counts work well as at least a 
+good first pass for almost all text processing tasks, there is not uniform set
+of features that work for all image processing tasks. We'll return to this 
+idea in the second set of notes.

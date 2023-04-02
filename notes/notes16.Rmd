@@ -11,3 +11,361 @@ output:
 source("../funs/funs.R")
 options(dsst.traceit = FALSE)
 ```
+
+As I have tried to emphasize all semester, the trick to building good supervised
+and unsupervised models is to start with good features. That is, we need to have
+each observation described by numeric features appropriate to the task at hand.
+With structured data, like the ones we focused on in DSST289, this is usually
+something that needs to be done at the time of the data collection. In some
+cases, particularly if data are stored in multiple tables, creating good
+features may also involve very custom approaches that require deep domain 
+knowledge. 
+
+As I have said many times, the reason I focus on text in this course is that 
+textual data provides many different rich options for creating features. This
+process is not trivial but at the same time there are several approaches that
+work across many different tasks. Our basic approach has been to use word
+counts, but we can adjust these by different kinds of filtering, using N-grams,
+using POS tags, and cycling between tokens and lemmas. 
+
+Images are even more difficult. Our initial data will consist of pixel
+intensities. For small relatively simple tasks and small images, we can unravel
+the image and treat each pixel intensity as its own feature. We saw that this
+did okay in the last set of notes on 64x64 square images of flowers. We also
+saw that constructing new features by transforming to HSV space and aggregating
+discrete buckets of the hues (for colorful pixels) and greys (for non-colorful
+pixels) produced an even better model. Hand constructing features, however,
+because essentially impossible in more complex cases. As we will see, even 
+in this small example, the hand-created features can be easily improved on.
+
+The secret to building better models is to use a class of techniques that fall
+under the umbrella of *Deep Learning*, specially a *neural network*.
+We can think of these models as combining
+the ideas from supervised learning and unsupervised learning. Conceptually, they
+a sequence of dimensionality reduction algorithms that transform the input 
+image into lower-dimensional spaces, and then take the last set and build a 
+supervised model that makes a prediction from labels in the training data. All
+of the elements are *learned* together at the same time to optimize the 
+predicted values at the output of the model. We can think of the model as
+looking like this:
+
+![](../extra/deep.png)
+
+Each of the arrows corresponds to an element in a logistic regression (yes,
+these are really just arrays of logistic regressions). What the diagram calls
+*hidden layers* are just features that are automatically learned by the data.
+Let's see how this works with our flowers data. We'll start again by loading 
+it into R:
+
+```{r, message=FALSE}
+flowers <- read_csv("../data/flowers_17.csv.bz2")
+x64 <- read_rds("../data/flowers_17_x64.rds")
+x64 <- x64[flowers$class %in% 0:9,,,]
+flowers <- flowers[flowers$class %in% 0:9,]
+```
+
+In the following, we'll see three increasingly complex types of neural networks
+that we can use to predict the type of flower in the image.
+
+## 1. Dense Neural Network
+
+To build neural networks, I will use the **keras** library. It is a little less
+popular at the moment (PyTorch is currently the most frequently used in academic
+research). But, I think it is the best for the quick treatment we are doing 
+here. Installing the R package is easy, but requires that you also have a
+working Python installation with a number of other packages installed; this is
+the part I did not want to try to do this semester.
+
+```{r}
+library(keras)
+```
+
+Here, we will start as we did last time by unraveling the image data into a
+large matrix.
+
+```{r}
+X <- t(apply(x64, 1, cbind))
+y <- flowers$class
+
+X_train <- X[flowers$train_id == "train",]
+y_train <- to_categorical(y[flowers$train_id == "train"], num_classes = 10)
+```
+
+Now, we need to build an empty neural network. This requires describing exactly
+how many hidden layers exist, the number of features in each layer, and some 
+additional details that are not important for the first pass of the material.
+Here, we will have three hidden layers with 128 inputs each.
+
+```{r, message=FALSE, warning=FALSE}
+model <- keras_model_sequential()
+model %>%
+  layer_dense(units = 128, input_shape = c(64 * 64 * 3)) %>%
+  layer_activation(activation = "relu") %>%
+  layer_dense(units = 128) %>%
+  layer_activation(activation = "relu") %>%
+  layer_dense(units = 128) %>%
+  layer_activation(activation = "relu") %>%
+  layer_dense(units = 10) %>%
+  layer_activation(activation = "softmax")
+
+model %>% compile(loss = 'categorical_crossentropy',
+                  optimizer = optimizer_rmsprop(),
+                  metrics = c('accuracy'))
+
+model
+```
+
+Once the model has been build, we need to train it with our data. This process
+is quite similar to the way that that we trained the **xgboost** models. We
+pass data for a given number of iterations until we are happy with the model.
+Here, I will run the algorithm for 60 different iterations through the training
+data.
+
+```{r, message=FALSE}
+history <- model %>%
+  fit(X_train, y_train, epochs = 60)
+```
+
+Once the model has been fit, we can make predictions just as we did with any
+other model.
+
+```{r}
+y_pred <- predict(model, X)
+y_pred <- apply(y_pred, 1, which.max) - 1L
+tapply(y == y_pred, flowers$train_id, mean)
+```
+
+Notice that while the data are over fit in a sense, the neural network has done
+this in a way that still greatly outperforms the results from last time using
+our hand-constructed features.
+
+## 2. Convolutional Neural Networks (CNN)
+
+Above, we are still treating each of the pixel intensities as unrelated raw
+features. This is not very efficient because we know that the pixels have a 
+spatial relationship with one another. In order to make use of this information
+in a deep learning model, we need to use something called a convolutional
+neural network, or CNN. Let's start by recreating the data without collapsing
+it into a matrix.
+
+```{r}
+X <- x64
+y <- flowers$class
+
+X_train <- X[flowers$train_id == "train",,,,drop = FALSE]
+y_train <- to_categorical(y[flowers$train_id == "train"], num_classes = 10)
+```
+
+I will now build a new model that replaces the first dense layer with a CNN
+layer. This has a similar structure to the first model, but the first two 
+dense layers have been replaced with convolutional layers. These are restricted
+to only allow features that iteract nearby pixels with one another. They also
+must do the same kind of process to each part of the image. In theory, these
+layers would be more likely to create something similar to the HSV space that
+we created the first time. 
+
+```{r}
+model <- keras_model_sequential()
+model %>%
+  layer_conv_2d(filters = 16, kernel_size = c(3, 3),
+                  input_shape = dim(X_train)[-1],
+                  padding = "same") %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_conv_2d(filters = 16, kernel_size = c(3, 3),
+                  input_shape = dim(X_train)[-1],
+                  padding = "same") %>%
+  layer_max_pooling_2d(pool_size = c(2, 2)) %>%
+  layer_activation(activation = "relu") %>%
+  layer_flatten() %>%
+  layer_activation(activation = "relu") %>%
+  layer_dense(units = 128) %>%
+
+  layer_dense(units = 10) %>%
+  layer_activation(activation = "softmax")
+
+model %>% compile(loss = 'categorical_crossentropy',
+                  optimizer = optimizer_rmsprop(),
+                  metrics = c('accuracy'))
+```
+
+Training works the same as before:
+
+```{r, message=FALSE}
+history <- model %>%
+  fit(X_train, y_train, epochs = 25)
+```
+
+And we can again see how well the data predicts the validation labels:
+
+```{r}
+y_pred <- predict(model, X)
+y_pred <- apply(y_pred, 1, which.max) - 1L
+tapply(y == y_pred, flowers$train_id, mean)
+```
+
+We can see that the CNN does a better job of predicting the labels of the
+flowers. While the improvement is noticeable even here, the difference between
+these two approaches would be vastly different larger images and more complex
+tasks. Working with HD images, for example, would be virtually impossible with
+the first approach. CNNs, however, can easily process and train models based on
+high-definition training images.
+
+## 3. Transfer Learning
+
+We will finish by looking at one of the most important features of deep learning
+algorithms. The internal layers of a neural network, as mentioned above, can 
+be thought of as progressively predictive features that get used in the last
+layer to build a supervised model. What's really interesting about this is that
+if we build a deep learning model with data and labels that are sufficiently 
+varied and complex, the internal layers of the model end up being features that
+can be reused in different tasks. This is particularly powerful when we have a
+complex predictive modelling tasks but only a limited amount of training data.
+
+The **keras** library contains several large, pre-trained neural network models.
+One of the best is called ResNet-50; the name comes from the fact that it has 
+50 hidden layers! We can load this model in R with the following:
+
+```{r}
+resnet50 <- application_resnet50(weights = 'imagenet', include_top = TRUE)
+```
+
+If we want to apply this model to new data, but get the hidden layer values 
+rather than the final predictions for the task it was built on (object detection
+from 1000 categories), we can create a sub-model as follows:
+
+```{r}
+model_avg_pool <- keras_model(inputs = resnet50$input,
+                              outputs = get_layer(resnet50, 'avg_pool')$output)
+```
+
+Once we have the model, we can apply the model to our flowers data set with
+the following:
+
+```{r, eval=FALSE}
+# This is not quite right, because our images are the wrong size for
+# the network, but this gives you the general idea
+X_pp <- imagenet_preprocess_input(X)
+pred <- predict(model_avg_pool, x = X_pp)
+```
+
+I have cached the results from the code above; we will read the results in
+directly below. Notice that the output has 2048 (2^11) features.
+
+```{r}
+X <- read_rds("../data/flowers_17_resnet.rds")
+dim(X)
+```
+
+Now that we have the internal features from the last hidden layer, we can 
+create a training version of our data as before:
+
+```{r}
+X_train <- X[flowers$train_id == "train",]
+y_train <- to_categorical(y[flowers$train_id == "train"], num_classes = 10)
+```
+
+And then fit a dense neural network that takes these as an input (you could
+fit an elastic net as well, which would prefer fairly well):
+
+```{r}
+model <- keras_model_sequential()
+model %>%
+  layer_dense(units = 128, input_shape = ncol(X)) %>%
+  layer_activation(activation = "relu") %>%
+  layer_dense(units = 128) %>%
+  layer_activation(activation = "relu") %>%
+  layer_dense(units = 128) %>%
+  layer_activation(activation = "relu") %>%
+  layer_dense(units = 10) %>%
+  layer_activation(activation = "softmax")
+
+model %>% compile(loss = 'categorical_crossentropy',
+                  optimizer = optimizer_rmsprop(),
+                  metrics = c('accuracy'))
+
+model
+```
+
+Which we can train as before:
+
+```{r, message=FALSE}
+history <- model %>%
+  fit(X_train, y_train, epochs = 10)
+```
+
+And once again see how predictive the model is:
+
+```{r}
+y_pred <- predict(model, X)
+y_pred <- apply(y_pred, 1, which.max) - 1L
+tapply(y == y_pred, flowers$train_id, mean)
+```
+
+This is much better than the previous model, because it can use all of the
+information in the very large training data used to build ResNet-50. Again,
+the improvement here would be even more noticeable with a more complex dataset.
+
+## 4. Transfer Learning: Visualization
+
+The features created by the hidden layers of ResNet-50 can also be used to 
+visualize the dataset of flowers. The output features have 2^11 values, far
+too many to plot. However, we could use our UMAP algorithm to collapse these
+into two dimensions as follows:
+
+```{r}
+rot <- umap::umap(X, n_components = 2L)$layout
+df <- tibble(flower = flowers$class_name, v1 = rot[,1], v2 = rot[,2])
+df
+```
+
+Let's compute the center of each flowers UMAP scores to put on the plot:
+
+```{r}
+centers <- df %>%
+  group_by(flower) %>%
+  summarize(v1 = median(v1), v2 = median(v2))
+```
+
+And finally, we can visualize the data:
+
+```{r}
+df %>%
+  ggplot(aes(v1, v2)) +
+    geom_point(
+      aes(color = flower),
+      alpha = 0.3,
+      show.legend = FALSE
+    ) +
+    geom_text(
+      aes(label = flower, color = flower),
+      data = centers,
+      size = 4,
+      show.legend = FALSE
+    ) +
+    theme_void()
+```
+
+Or, if you prefer, we can look at the actual images:
+
+```{r}
+library(ggimg)
+
+df$img_array <- vector("list", nrow(df))
+for (j in seq_len(nrow(df))) { df$img_array[j] <- list(x64[j,,,]) }
+
+set.seed(1)
+df %>%
+  slice_sample(n = 250) %>%
+  ggplot(aes(v1, v2)) +
+    geom_point_img(aes(img = img_array), size = 0.8) +
+    theme_void()
+```
+
+Not a bad place to stop with new material for the semester...
+
+## 5. More?
+
+If you want to do a much deeper dive into deep learning and neural networks,
+I recommend the free [Practical Deep Learning](https://course.fast.ai/) course
+offered by fast.ai. There is a lot of material there, including, code, data,
+notes, and a sequence of videos.
