@@ -26,7 +26,7 @@ seen. It has a much shorter set of longer documents, more similar to what
 happens when we selected a different `doc_id` in the unsupervised learning
 tasks.
 
-## An Example: List of French Philosophers
+## An Example: Data Science Page
 
 To start, we need to grab the data from a single Wikipedia page that has the
 links that we want to build a corpus from. We can do this, rather than scraping

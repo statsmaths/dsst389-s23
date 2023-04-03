@@ -38,18 +38,19 @@ td <- as_date(now() + 60 * 60 * 13.25) + 0L
 if (length(args) == 0 || (args[1] != "notime"))
 {
   index <- which(td < avail) 
-  if (length(index)) { links <- links[index] }
-  xml_set_name(links, "span")
-  xml_set_attr(links, "href", NULL)
-  xml_set_attr(links, "class", "futurelink")  
+  if (length(index)) {
+    links <- links[index]
+    xml_set_name(links, "span")
+    xml_set_attr(links, "href", NULL)
+    xml_set_attr(links, "class", "futurelink")  
+  }
 }
 
-
-index <- which(!file.exists(xml_attr(links, "href")))
-if (length(index)) { links <- links[index] }
-xml_set_name(links, "span")
-xml_set_attr(links, "href", NULL)
-xml_set_attr(links, "class", "futurelink")
+#index <- which(!file.exists(xml_attr(links, "href")))
+#if (length(index)) { links <- links[index] }
+#xml_set_name(links, "span")
+#xml_set_attr(links, "href", NULL)
+#xml_set_attr(links, "class", "futurelink")
 
 # write the file
 write_html(obj, file.path("index.html"), options = "format")
