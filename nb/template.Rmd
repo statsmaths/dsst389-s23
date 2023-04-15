@@ -1,0 +1,38 @@
+---
+title: "Title Here"
+output:
+  html_document
+---
+
+This is a template RMarkdown document that you can use for your own
+work. Unlike the notebooks, it puts all of the code that you need
+directly in  the code, so you can place this file anywhere on your
+machine (as well as create as many copies as you need) and it should
+still work. Note that you can delete/replace this paragraph of text
+as well as the following.
+
+To start, you should always have a block of code that does all of
+the setup and options that you need for the rest of the document.
+As with the notebooks, you need to rerun this each time you restart
+R. You can add more library commands if needed or delete ones you 
+do not need or prefix them with a pound sign (as I've done with the
+dsst package).
+
+```{r, include=FALSE, message=FALSE}
+library(tidyverse)
+library(lubridate)
+library(jsonlite)
+library(ggrepel)
+library(stringi)
+# library(dsst) 
+
+options(dplyr.summarise.inform = FALSE)
+options(ggrepel.max.overlaps = Inf)
+```
+
+Now, you can add whatever text or code you would like below. The
+part above should give you the the setup we had in class.
+
+```{r}
+
+```
